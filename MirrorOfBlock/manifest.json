@@ -1,0 +1,31 @@
+{
+  "description": "트위터에서 나를 차단한 사람을 표시하고, 맞차단(차단반사)할 수 있는 웹 브라우저용 확장기능입니다.",
+  "manifest_version": 2,
+  "name": "Mirror Of Block",
+  "author": "Gaeulbyul <aeiou256@gmail.com>",
+  "version": "0.1.0",
+  "homepage_url": "https://github.com/zn/MirrorOfBlock",
+  "icons": {
+    "48": "icons/icon.png"
+  },
+
+  "permissions": [
+    "storage"
+  ],
+  
+  "options_ui": {
+    "page": "options/options.html",
+    "browser_style": true
+  },
+  "options_page": "options/options.html",
+
+  "content_scripts": [
+    {
+      "matches": ["*://twitter.com/*"],
+      "js": [
+        "vendor/browser-polyfill.min.js",
+        "content_scripts/mirror-of-block.js"
+      ]
+    }
+  ]
+}

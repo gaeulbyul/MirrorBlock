@@ -1,0 +1,69 @@
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
+:root {
+  --default-font-size: 16px;
+}
+
+body {
+  font-size: var(--default-font-size);
+  font-family: 'NanumGothic', 'Malgun Gothic', sans-serif;
+}
+
+a, a:visited {
+  color: crimson;
+}
+
+fieldset {
+  border: 1px solid #ccc;
+  margin: 1em 0;
+}
+
+hr {
+  border-top: 1px solid #ccc;
+  border-bottom: 0;
+}
+
+kbd {
+  font-family: 'Consolas', monospace;
+}
+
+.field:not(:first-of-type) {
+  display: block;
+  margin-top: .5em;
+}
+
+.field input {
+  user-action: none;
+}
+
+/*
+.saveButton {
+  display: block;
+  padding: .5em 1em;
+  margin: auto;
+  font-size: var(--default-font-size);
+  min-width: 200px;
+}
+*/
+
+#outlineBlockUser:checked+.outlineExample {
+  outline: 2px solid crimson;
+}
+
+.info-reload {
+  padding: .5em 1em;
+  background-color: #eef;
+  color: #000;
+}
+
+.info-option {
+  margin: .5em 2em;
+  font-size: small;
+}
+
+.info-option mark {
+  background-color: #fe0;
+  color: #000;
+}
