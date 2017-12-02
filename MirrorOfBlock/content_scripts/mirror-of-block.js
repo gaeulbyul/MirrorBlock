@@ -177,6 +177,13 @@ injectCSS(`
   .mob-blocks-you-outline {
     outline: 3px solid crimson;
   }
+  .mob-nightmode .mob-BlockStatus {
+    background-color: #141d26;
+  }
+  .mob-nightmode .mob-BlockReflectedStatus {
+    background-color: #141d26;
+    color: #fce8b3;
+  }
 `)
 
 const observer = new MutationObserver(mutations => {
@@ -196,11 +203,29 @@ const observer = new MutationObserver(mutations => {
   })
 })
 
+const nightModeObserver = new MutationObserver(mutations => {
+  for (const mutation of mutations) {
+    for (const node of mutation.addedNodes) {
+      if (node.matches('link.coreCSSBundles')) {
+        const nightMode = /nightmode/.test(node.href)
+        document.body.classList.toggle('mob-nightmode', nightMode)
+      }
+    }
+  }
+})
+
 observer.observe(document.body, {
   childList: true,
   characterData: true,
   subtree: true
 })
+
+nightModeObserver.observe(document.head, {
+  childList: true,
+  subtree: true
+})
+
+document.body.classList.toggle('mob-nightmode', /\bnight_mode=1\b/.test(document.cookie))
 
 window.setInterval(() => {
   applyToRendered()
