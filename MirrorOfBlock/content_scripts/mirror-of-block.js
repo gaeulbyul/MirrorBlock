@@ -206,6 +206,9 @@ const observer = new MutationObserver(mutations => {
 const nightModeObserver = new MutationObserver(mutations => {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
+      if (!node.matches) {
+        return
+      }
       if (node.matches('link.coreCSSBundles')) {
         const nightMode = /nightmode/.test(node.href)
         document.body.classList.toggle('mob-nightmode', nightMode)
