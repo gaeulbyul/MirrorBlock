@@ -158,6 +158,12 @@ function applyToRendered () {
   }
 }
 
+function toggleNightMode (mode) {
+  document.documentElement.classList.toggle('mob-nightmode', mode)
+}
+
+// language=CSS
+// noinspection CssUnusedSymbol
 injectCSS(`
   .mob-BlockStatus, .mob-BlockReflectedStatus {
     border-radius: 4px;
@@ -211,7 +217,7 @@ const nightModeObserver = new MutationObserver(mutations => {
       }
       if (node.matches('link.coreCSSBundles')) {
         const nightMode = /nightmode/.test(node.href)
-        document.body.classList.toggle('mob-nightmode', nightMode)
+        toggleNightMode(nightMode)
       }
     }
   }
@@ -228,7 +234,7 @@ nightModeObserver.observe(document.head, {
   subtree: true
 })
 
-document.body.classList.toggle('mob-nightmode', /\bnight_mode=1\b/.test(document.cookie))
+toggleNightMode(/\bnight_mode=1\b/.test(document.cookie))
 
 window.setInterval(() => {
   applyToRendered()
