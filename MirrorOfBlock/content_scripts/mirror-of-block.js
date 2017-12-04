@@ -75,6 +75,17 @@ function indicateBlockToUserName (profile) {
   }
 }
 
+// 뮤트/차단목록에서 "나를 차단함" 딱지 붙이기.
+function indicateBlockToUserItem (item) {
+  if (item.querySelector('.mob-BlockStatus')) {
+    return
+  }
+  const content = item.querySelector('.content')
+  if (content) {
+    content.innerHTML += '<span class="mob-BlockStatus">Blocks you</span>'
+  }
+}
+
 // 차단반사를 적용한 사용자의 프로필에 "차단 반사함" 딱지 붙이기
 function indicateBlockReflectedToUserName (profile) {
   if (profile.querySelector('.mob-BlockReflectedStatus')) {
@@ -105,28 +116,27 @@ function reflectBlock (profile) {
   })
 }
 
-function profileHandler (profile) {
-  const blocksYou = !!profile.querySelector('.blocks-you')
-  const alreadyBlocked = !!profile.querySelector('.blocked')
+function userHandler (user) {
+  const blocksYou = !!user.querySelector('.blocks-you')
+  const alreadyBlocked = !!user.querySelector('.blocked')
   if (blocksYou) {
-    const alreadyChecked = profile.classList.contains('mob-checked')
+    const alreadyChecked = user.classList.contains('mob-checked')
     if (alreadyChecked) {
       return
     }
-    profile.classList.add('mob-checked')
+    user.classList.add('mob-checked')
   } else {
     return
   }
-  if (profile.classList.contains('ProfileCard')) {
-    indicateBlockToUserName(profile)
-    profile.classList.add('mob-blocks-you')
+  if (user.classList.contains('ProfileCard')) {
+    indicateBlockToUserName(user)
     optionP.then(option => {
       if (option.outlineBlockUser) {
-        profile.classList.add('mob-blocks-you-outline')
+        user.classList.add('mob-blocks-you-outline')
       }
     })
-  } else if (profile.classList.contains('ProfileNav')) {
-    indicateBlockToUserName(profile)
+  } else if (user.classList.contains('ProfileNav')) {
+    indicateBlockToUserName(user)
     optionP.then(option => {
       if (option.outlineBlockUser) {
         const circleProfileAvatar = document.querySelector('.ProfileAvatar')
@@ -135,13 +145,20 @@ function profileHandler (profile) {
         }
       }
     })
+  } else if (user.matches('.blocked-setting.account, .muted-setting.account')) {
+    indicateBlockToUserItem(user)
+    optionP.then(option => {
+      if (option.outlineBlockUser) {
+        user.classList.add('mob-blocks-you-outline')
+      }
+    })
   }
   // Block Reflection
-  const muted = !!profile.querySelector('.muting')
+  const muted = !!user.querySelector('.muting')
   if (!alreadyBlocked && !muted) {
     optionP.then(option => {
       if (option.enableBlockReflection) {
-        reflectBlock(profile)
+        reflectBlock(user)
       }
     })
   }
@@ -150,11 +167,15 @@ function profileHandler (profile) {
 function applyToRendered () {
   const profileCards = document.querySelectorAll('.ProfileCard')
   for (const profileCard of profileCards) {
-    profileHandler(profileCard)
+    userHandler(profileCard)
   }
   const profileNav = document.querySelector('.ProfileNav')
   if (profileNav) {
-    profileHandler(profileNav)
+    userHandler(profileNav)
+  }
+  const userList = document.querySelectorAll('.blocked-setting.account, .muted-setting.account')
+  if (userList.length > 0) {
+    userList.forEach(userHandler)
   }
 }
 
@@ -165,12 +186,17 @@ function toggleNightMode (mode) {
 // language=CSS
 // noinspection CssUnusedSymbol
 injectCSS(`
-  .mob-BlockStatus, .mob-BlockReflectedStatus {
+  .mob-BlockStatus,
+  .mob-BlockReflectedStatus {
     border-radius: 4px;
     font-size: 12px;
     font-weight: normal;
     margin-left: 2px;
     padding: 2px 4px;
+  }
+  .blocked-setting .mob-BlockStatus,
+  .muted-setting .mob-BlockStatus {
+    margin: 0;
   }
   .mob-BlockStatus {
     background-color: #f9f2f4;
@@ -180,8 +206,13 @@ injectCSS(`
     background-color: #fcf8e3;
     color: #8a6d3b;
   }
-  .mob-blocks-you-outline {
+  .ProfileCard.mob-blocks-you-outline {
     outline: 3px solid crimson;
+  }
+  .blocked-setting.mob-blocks-you-outline,
+  .muted-setting.mob-blocks-you-outline {
+    border: 3px solid crimson !important;
+    margin: 1px 0;
   }
   .mob-nightmode .mob-BlockStatus {
     background-color: #141d26;
@@ -199,11 +230,15 @@ const observer = new MutationObserver(mutations => {
         continue
       }
       if (node.classList.contains('ProfileCard')) {
-        profileHandler(node)
+        userHandler(node)
       }
       const profileNav = node.querySelector('.ProfileNav')
       if (profileNav) {
-        profileHandler(profileNav)
+        userHandler(profileNav)
+      }
+      const isUserItem = node.matches('.blocked-setting.account, .muted-setting.account')
+      if (isUserItem) {
+        userHandler(node)
       }
     }
   })
