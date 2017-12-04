@@ -145,7 +145,7 @@ function userHandler (user) {
         }
       }
     })
-  } else if (user.matches('.blocked-setting.account, .muted-setting.account')) {
+  } else if (user.matches('.js-actionable-user.account')) {
     indicateBlockToUserItem(user)
     optionP.then(option => {
       if (option.outlineBlockUser) {
@@ -173,7 +173,7 @@ function applyToRendered () {
   if (profileNav) {
     userHandler(profileNav)
   }
-  const userList = document.querySelectorAll('.blocked-setting.account, .muted-setting.account')
+  const userList = document.querySelectorAll('.js-actionable-user.account')
   if (userList.length > 0) {
     userList.forEach(userHandler)
   }
@@ -194,8 +194,8 @@ injectCSS(`
     margin-left: 2px;
     padding: 2px 4px;
   }
-  .blocked-setting .mob-BlockStatus,
-  .muted-setting .mob-BlockStatus {
+  .account .mob-BlockStatus,
+  .account .mob-BlockReflectedStatus {
     margin: 0;
   }
   .mob-BlockStatus {
@@ -209,8 +209,7 @@ injectCSS(`
   .ProfileCard.mob-blocks-you-outline {
     outline: 3px solid crimson;
   }
-  .blocked-setting.mob-blocks-you-outline,
-  .muted-setting.mob-blocks-you-outline {
+  .account.mob-blocks-you-outline {
     border: 3px solid crimson !important;
     margin: 1px 0;
   }
@@ -236,7 +235,7 @@ const observer = new MutationObserver(mutations => {
       if (profileNav) {
         userHandler(profileNav)
       }
-      const isUserItem = node.matches('.blocked-setting.account, .muted-setting.account')
+      const isUserItem = node.matches('.js-actionable-user.account')
       if (isUserItem) {
         userHandler(node)
       }
