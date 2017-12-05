@@ -1,5 +1,8 @@
 /* globals browser, fetch, location, URLSearchParams, MutationObserver  */
 
+const BLOCKS_YOU = '<span class="mob-BlockStatus">Blocks you</span>'
+const BLOCK_REFLECTED = '<span class="mob-BlockReflectedStatus">Block Reflected!</span>'
+
 const optionP = (function () {
   const defaultOption = {
     outlineBlockUser: false,
@@ -65,35 +68,20 @@ function getScreenName (profile) {
 }
 
 // 나를 차단한 사용자의 프로필에 "나를 차단함" 딱지 붙이기
-function indicateBlockToUserName (profile) {
-  if (profile.querySelector('.mob-BlockStatus')) {
+function indicateBlockToUser (user, badge) {
+  const alreadyBadged = badge === BLOCKS_YOU && user.querySelector('.mob-BlockStatus')
+  const alreadyBadged2 = badge === BLOCK_REFLECTED && user.querySelector('.mob-BlockReflectedStatus')
+  if (alreadyBadged || alreadyBadged2) {
     return
   }
-  const username = getScreenName(profile)
+  const username = getScreenName(user)
   if (username) {
-    username.innerHTML += '<span class="mob-BlockStatus">Blocks you</span>'
-  }
-}
-
-// 뮤트/차단목록에서 "나를 차단함" 딱지 붙이기.
-function indicateBlockToUserItem (item) {
-  if (item.querySelector('.mob-BlockStatus')) {
-    return
-  }
-  const content = item.querySelector('.content')
-  if (content) {
-    content.innerHTML += '<span class="mob-BlockStatus">Blocks you</span>'
-  }
-}
-
-// 차단반사를 적용한 사용자의 프로필에 "차단 반사함" 딱지 붙이기
-function indicateBlockReflectedToUserName (profile) {
-  if (profile.querySelector('.mob-BlockReflectedStatus')) {
-    return
-  }
-  const username = getScreenName(profile)
-  if (username) {
-    username.innerHTML += '<span class="mob-BlockReflectedStatus">Block Reflected!</span>'
+    username.innerHTML += badge
+  } else if (user.matches('.js-actionable-user.account')) {
+    const content = user.querySelector('.content')
+    if (content) {
+      content.innerHTML += badge
+    }
   }
 }
 
@@ -105,14 +93,14 @@ function markBlockedToProfile (profile) {
 }
 
 // 차단반사
-function reflectBlock (profile) {
-  const actions = profile.querySelector('.user-actions')
+function reflectBlock (user) {
+  const actions = user.querySelector('.user-actions')
   const userId = actions.getAttribute('data-user-id')
   const userName = actions.getAttribute('data-screen-name')
   return sendBlockRequest(userId).then(response => {
     console.log('%s에게 차단반사!', userName, response)
-    markBlockedToProfile(profile)
-    indicateBlockReflectedToUserName(profile)
+    markBlockedToProfile(user)
+    indicateBlockToUser(user, BLOCK_REFLECTED)
   })
 }
 
@@ -129,14 +117,14 @@ function userHandler (user) {
     return
   }
   if (user.classList.contains('ProfileCard')) {
-    indicateBlockToUserName(user)
+    indicateBlockToUser(user, BLOCKS_YOU)
     optionP.then(option => {
       if (option.outlineBlockUser) {
         user.classList.add('mob-blocks-you-outline')
       }
     })
   } else if (user.classList.contains('ProfileNav')) {
-    indicateBlockToUserName(user)
+    indicateBlockToUser(user, BLOCKS_YOU)
     optionP.then(option => {
       if (option.outlineBlockUser) {
         const circleProfileAvatar = document.querySelector('.ProfileAvatar')
@@ -146,7 +134,7 @@ function userHandler (user) {
       }
     })
   } else if (user.matches('.js-actionable-user.account')) {
-    indicateBlockToUserItem(user)
+    indicateBlockToUser(user, BLOCKS_YOU)
     optionP.then(option => {
       if (option.outlineBlockUser) {
         user.classList.add('mob-blocks-you-outline')
