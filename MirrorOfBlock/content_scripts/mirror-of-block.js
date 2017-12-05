@@ -57,36 +57,52 @@ function sendBlockRequest (userId) {
   })
 }
 
-function getScreenName (profile) {
-  if (profile.classList.contains('ProfileCard')) {
-    return profile.querySelector('.ProfileCard-screenname')
-  } else if (profile.classList.contains('ProfileNav')) {
-    return document.querySelector('.ProfileHeaderCard-screenname')
-  } else {
-    return null
+// 딱지 붙일 요소 찾기
+function getPlaceForBadge (user) {
+  // 팔로잉/팔로워 페이지
+  const pcScreenName = user.querySelector('.ProfileCard-screenname')
+  if (pcScreenName) {
+    return pcScreenName
   }
+  // 차단/뮤트 사용자 목록 및 리스트 멤버
+  const content = user.querySelector('.content')
+  if (content) {
+    return content
+  }
+  const phcScreenName = document.querySelector('.ProfileHeaderCard-screenname')
+  if (phcScreenName) {
+    return phcScreenName
+  }
+  return null
 }
 
-// 나를 차단한 사용자의 프로필에 "나를 차단함" 딱지 붙이기
+// 사용자 옆에 "나를 차단함" 또는 "차단반사" 딱지 붙이기
 function indicateBlockToUser (user, badge) {
   const alreadyBadged = badge === BLOCKS_YOU && user.querySelector('.mob-BlockStatus')
   const alreadyBadged2 = badge === BLOCK_REFLECTED && user.querySelector('.mob-BlockReflectedStatus')
   if (alreadyBadged || alreadyBadged2) {
     return
   }
-  const username = getScreenName(user)
-  if (username) {
-    username.innerHTML += badge
-  } else if (user.matches('.js-actionable-user.account')) {
-    const content = user.querySelector('.content')
-    if (content) {
-      content.innerHTML += badge
+  const badgePlace = getPlaceForBadge(user)
+  if (badgePlace) {
+    badgePlace.innerHTML += badge
+  }
+}
+
+// 나를 차단한 사용자가 눈에 잘 띄도록 테두리 표시
+function outlineToBlockedUser (user) {
+  if (user.matches('.js-actionable-user')) {
+    user.classList.add('mob-blocks-you-outline')
+  } else if (user.classList.contains('ProfileNav')) {
+    const circleProfileAvatar = document.querySelector('.ProfileAvatar')
+    if (circleProfileAvatar) {
+      circleProfileAvatar.style.borderColor = 'crimson'
     }
   }
 }
 
 // 내가 차단한 사용자의 프로필에 "차단됨" 표시
-function markBlockedToProfile (profile) {
+function changeButtonToBlocked (profile) {
   const actions = profile.querySelector('.user-actions')
   actions.classList.remove('not-following')
   actions.classList.add('blocked')
@@ -99,71 +115,44 @@ function reflectBlock (user) {
   const userName = actions.getAttribute('data-screen-name')
   return sendBlockRequest(userId).then(response => {
     console.log('%s에게 차단반사!', userName, response)
-    markBlockedToProfile(user)
+    changeButtonToBlocked(user)
     indicateBlockToUser(user, BLOCK_REFLECTED)
   })
 }
 
 function userHandler (user) {
-  const blocksYou = !!user.querySelector('.blocks-you')
-  const alreadyBlocked = !!user.querySelector('.blocked')
-  if (blocksYou) {
-    const alreadyChecked = user.classList.contains('mob-checked')
-    if (alreadyChecked) {
-      return
-    }
-    user.classList.add('mob-checked')
-  } else {
+  const alreadyChecked = user.classList.contains('mob-checked')
+  if (alreadyChecked) {
     return
   }
-  if (user.classList.contains('ProfileCard')) {
-    indicateBlockToUser(user, BLOCKS_YOU)
-    optionP.then(option => {
-      if (option.outlineBlockUser) {
-        user.classList.add('mob-blocks-you-outline')
-      }
-    })
-  } else if (user.classList.contains('ProfileNav')) {
-    indicateBlockToUser(user, BLOCKS_YOU)
-    optionP.then(option => {
-      if (option.outlineBlockUser) {
-        const circleProfileAvatar = document.querySelector('.ProfileAvatar')
-        if (circleProfileAvatar) {
-          circleProfileAvatar.style.borderColor = 'crimson'
-        }
-      }
-    })
-  } else if (user.matches('.js-actionable-user.account')) {
-    indicateBlockToUser(user, BLOCKS_YOU)
-    optionP.then(option => {
-      if (option.outlineBlockUser) {
-        user.classList.add('mob-blocks-you-outline')
-      }
-    })
-  }
-  // Block Reflection
+  user.classList.add('mob-checked')
+  const blocksYou = !!user.querySelector('.blocks-you')
+  const alreadyBlocked = !!user.querySelector('.blocked')
   const muted = !!user.querySelector('.muting')
-  if (!alreadyBlocked && !muted) {
-    optionP.then(option => {
-      if (option.enableBlockReflection) {
-        reflectBlock(user)
-      }
-    })
+  if (!blocksYou) {
+    return
   }
+  indicateBlockToUser(user, BLOCKS_YOU)
+  optionP.then(option => {
+    if (option.outlineBlockUser) {
+      outlineToBlockedUser(user)
+    }
+    // Block Reflection
+    const shouldBlock = option.enableBlockReflection && !alreadyBlocked && !muted
+    if (shouldBlock) {
+      reflectBlock(user)
+    }
+  })
 }
 
 function applyToRendered () {
-  const profileCards = document.querySelectorAll('.ProfileCard')
-  for (const profileCard of profileCards) {
-    userHandler(profileCard)
+  const userList = document.querySelectorAll('.js-actionable-user')
+  if (userList.length > 0) {
+    userList.forEach(userHandler)
   }
   const profileNav = document.querySelector('.ProfileNav')
   if (profileNav) {
     userHandler(profileNav)
-  }
-  const userList = document.querySelectorAll('.js-actionable-user.account')
-  if (userList.length > 0) {
-    userList.forEach(userHandler)
   }
 }
 
@@ -211,24 +200,21 @@ injectCSS(`
 `)
 
 const observer = new MutationObserver(mutations => {
-  mutations.forEach(mutation => {
+  for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
       if (!('querySelector' in node)) {
         continue
       }
-      if (node.classList.contains('ProfileCard')) {
+      const isUser = node.matches('.js-actionable-user')
+      if (isUser) {
         userHandler(node)
       }
       const profileNav = node.querySelector('.ProfileNav')
       if (profileNav) {
         userHandler(profileNav)
       }
-      const isUserItem = node.matches('.js-actionable-user.account')
-      if (isUserItem) {
-        userHandler(node)
-      }
     }
-  })
+  }
 })
 
 const nightModeObserver = new MutationObserver(mutations => {
