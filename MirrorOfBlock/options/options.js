@@ -2,12 +2,14 @@
 
 const defaultOption = {
   outlineBlockUser: false,
-  enableBlockReflection: false
+  enableBlockReflection: false,
+  hideDoubleBlockedUser: false
 }
 
 const elements = {
   outlineBlockUser: document.getElementById('outlineBlockUser'),
-  enableBlockReflection: document.getElementById('enableBlockReflection')
+  enableBlockReflection: document.getElementById('enableBlockReflection'),
+  hideDoubleBlockedUser: document.getElementById('hideDoubleBlockedUser')
 }
 
 function saveOption () {
@@ -28,6 +30,12 @@ async function loadOption () {
   }
 }
 
+function displayVersion () {
+  const elem = document.getElementById('version')
+  const manifest = browser.runtime.getManifest()
+  elem.textContent = `v${manifest.version}`
+}
+
 function init () {
   loadOption()
   for (const input of document.querySelectorAll('.field input')) {
@@ -35,12 +43,7 @@ function init () {
       saveOption()
     })
   }
-  /*
-  document.querySelector('.saveButton').onclick = event => {
-    event.preventDefault();
-    saveOption();
-  };
-  */
+  displayVersion()
 }
 
 document.addEventListener('DOMContentLoaded', init)

@@ -5,12 +5,18 @@
 </head><body>
 <div class="whole">
   <fieldset>
-    <legend>표시</legend>
+    <legend>표시/숨기기</legend>
     <div class="browser-style">
       <label class="field">
         <input type="checkbox" id="outlineBlockUser">
         <span class="outlineExample">
           나를 차단한 사용자가 더욱 잘 보이게 빨간 테두리 표시하기
+        </span>
+      </label>
+      <label class="field">
+        <input type="checkbox" id="hideDoubleBlockedUser">
+        <span class="hideDoubleBlockedUser">
+          맞차단한 사용자를 안 보이게 숨기기
         </span>
       </label>
     </div>
@@ -31,7 +37,11 @@
     <p>설정을 바꾼 이후엔 열려있는 트위터 탭을 꼭 <b>새로고침</b>(단축키 <kbd>F5</kbd> 또는 <kbd>Ctrl+R</kbd>)해주세요.</p>
   </div>
   <hr>
-  Mirror Of Block &lt;by <a href="https://twitter.com/gaeulbyul" rel="noopener noreferrer">@gaeulbyul</a>&gt;
+  Mirror Of Block
+  <small>
+    &lt;by <a href="https://twitter.com/gaeulbyul" rel="noopener noreferrer">@gaeulbyul</a>&gt;
+    / 버전 <span id="version"></span>
+  </small>
 </div>
 <script src="../vendor/browser-polyfill.min.js"></script>
 <script src="options.js"></script>
