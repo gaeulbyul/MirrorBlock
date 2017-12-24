@@ -7,7 +7,7 @@ const optionP = (function () {
   const defaultOption = {
     outlineBlockUser: false,
     enableBlockReflection: false,
-    hideDoubleBlockedUser: false
+    hideBlockedUser: false
   }
   return browser.storage.local.get('option').then(
     storage => Object.assign(defaultOption, storage.option),
@@ -144,12 +144,12 @@ function userHandler (user) {
     if (option.outlineBlockUser) {
       outlineToBlockedUser(user)
     }
-    // Hide Double-blocked User
-    const shouldHide = option.hideDoubleBlockedUser && alreadyBlocked && user.matches('.js-actionable-user')
+    // 나를 차단한 사용자 숨기기
+    const shouldHide = option.hideBlockedUser && user.matches('.js-actionable-user')
     if (shouldHide) {
       hideUser(user)
     }
-    // Block Reflection
+    // 차단반사
     const shouldBlock = option.enableBlockReflection && !alreadyBlocked && !muted
     if (shouldBlock) {
       reflectBlock(user)
