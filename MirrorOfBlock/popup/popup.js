@@ -23,19 +23,17 @@ async function executeChainBlock () {
   const tabs = await browser.tabs.query({active: true, currentWindow: true})
   const currentTab = tabs[0]
   if (!isChainBlockablePage(currentTab.url)) {
-    window.alert('You should go followers or followings page on twitter.com')
+    window.alert('PC용 트위터(twitter.com)의 팔로잉 혹은 팔로워 페이지에서만 작동합니다.')
     return
   }
-  const scriptUrl = browser.runtime.getURL('/page_scripts/chainblock.js')
-  const code = `(${injectChainBlockScript.toString()})('${scriptUrl}', window.document)`
-  browser.tabs.executeScript(currentTab.id, {
-    code
-  })
-  /*
-  browser.tabs.executeScript(currentTab.id, {
-    file: '/page_scripts/chainblock.js'
-  })
-  */
+  const scripts = ['/scripts/block.js', '/scripts/chainblock.js']
+  for (const script of scripts) {
+    const scriptUrl = browser.runtime.getURL(script)
+    const code = `(${injectChainBlockScript.toString()})('${scriptUrl}', window.document)`
+    browser.tabs.executeScript(currentTab.id, {
+      code
+    })
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
