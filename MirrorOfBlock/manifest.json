@@ -10,7 +10,8 @@
   },
 
   "permissions": [
-    "storage"
+    "storage",
+    "activeTab"
   ],
   
   "options_ui": {
@@ -27,5 +28,14 @@
         "content_scripts/mirror-of-block.js"
       ]
     }
-  ]
+  ],
+  "web_accessible_resources": [
+    "page_scripts/chainblock.js"
+  ],
+
+  "browser_action": {
+    "default_icon": "icons/icon.png",
+    "default_title": "Mirror of Block",
+    "default_popup": "popup/popup.html"
+  }
 }
