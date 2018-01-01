@@ -25,8 +25,8 @@ function chainBlock (callbacks) {
   let currentList = ''
   if (/\/followers$/.test(location.pathname)) {
     currentList = 'followers'
-  } else if (/\/followings$/.test(location.pathname)) {
-    currentList = 'followings'
+  } else if (/\/following$/.test(location.pathname)) {
+    currentList = 'following'
   } else {
     throw new Error('unsupported page')
   }

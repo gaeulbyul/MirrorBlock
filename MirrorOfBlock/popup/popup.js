@@ -6,7 +6,7 @@ function isChainBlockablePage (urlstr) {
     if (url.hostname !== 'twitter.com') {
       return false
     }
-    return /^\/@?[\w\d_]+\/(?:followers|followings)$/.test(url.pathname)
+    return /^\/@?[\w\d_]+\/(?:followers|following)$/.test(url.pathname)
   } catch (e) {
     return false
   }
