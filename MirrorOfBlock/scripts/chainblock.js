@@ -145,9 +145,13 @@ function doChainBlock (ui) {
       ui.find('.mobcb-progress').text(
         `체인블락 중간 보고: ${totalCount}명 중 타겟 ${targets.length}명, 스킵 ${skipped.length}명`
       )
-      ;[...newTargets, ...newSkipped].forEach(user => {
+      newTargets.forEach(user => {
         const a = makeUser(user)
-        ui.find('.mobcb-users').append(a)
+        ui.find('.mobcb-target-users').append(a)
+      })
+      newSkipped.forEach(user => {
+        const a = makeUser(user)
+        ui.find('.mobcb-skipped-users').append(a)
       })
     },
     finalCallback ({targets, skipped, totalCount}) {
@@ -175,7 +179,7 @@ function doChainBlock (ui) {
               .then(() => ' \u2714', () => ' \u274C')
               .then(result => {
                 const text = document.createTextNode(result)
-                ui.find(`a[data-user-id="${userId}"]`).append(text)
+                ui.find(`.mobcb-target-users a[data-user-id="${userId}"]`).prepend(text)
                 return {
                   user,
                   ok: result === ' \u2714'
@@ -247,7 +251,10 @@ function initUI () {
       <div class="mobcb-dialog modal modal-content is-autoPosition">
         <span class="mobcb-progress"></span>
         <hr class="mobcb-hr">
-        <div class="mobcb-users"></div>
+        <div class="mobcb-users">
+          <div class="mobcb-target-users"></div>
+          <div class="mobcb-skipped-users"></div>
+        </div>
         <div class="mobcb-controls">
           <div class="mobcb-bottom-message"></div>
           <button class="mobcb-close btn">닫기</button>
