@@ -29,3 +29,10 @@ function sendBlockRequest (userId) { // eslint-disable-line no-unused-vars
     }
   })
 }
+
+// 내가 차단한 사용자의 프로필에 "차단됨" 표시
+function changeButtonToBlocked (profile) { // eslint-disable-line no-unused-vars
+  const actions = profile.querySelector('.user-actions')
+  actions.classList.remove('not-following')
+  actions.classList.add('blocked')
+}

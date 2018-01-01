@@ -1,4 +1,4 @@
-/* globals fetch, location, $, sendBlockRequest */
+/* globals fetch, location, $, sendBlockRequest, changeButtonToBlocked */
 
 // some code taken from:
 // https://github.com/satsukitv/twitter-block-chain
@@ -154,14 +154,15 @@ function doChainBlock (ui) {
       ui.find('.mobcb-progress').text(
         `체인블락 결과 보고: ${totalCount}명 중 타겟 ${targets.length}명, 스킵 ${skipped.length}명`
       )
+      ui.find('.mobcb-bottom-message').text(`${targets.length}명 차단 가능`)
       if (targets.length === 0 && skipped.length === 0) {
         window.alert('여기에선 아무도 나를 차단하지 않았습니다.')
         ui.remove()
         return
       } else if (targets.length > 0) {
-        $(ui.find('.mobcb-controls .btn')).prop('disabled', false)
+        ui.find('.mobcb-controls .btn').prop('disabled', false)
       }
-      $(ui.find('.mobcb-execute')).click(event => {
+      ui.find('.mobcb-execute').click(event => {
         event.preventDefault()
         if (targets.length === 0) {
           window.alert('차단할 사용자가 없습니다.')
@@ -175,10 +176,21 @@ function doChainBlock (ui) {
               .then(result => {
                 const text = document.createTextNode(result)
                 ui.find(`a[data-user-id="${userId}"]`).append(text)
+                return {
+                  user,
+                  ok: result === ' \u2714'
+                }
               })
           })
-          Promise.all(promises).then(() => {
-            window.alert('완료!')
+          Promise.all(promises).then(results => {
+            const successes = results.filter(x => x.ok)
+            ui.find('.mobcb-execute').prop('disabled', true)
+            ui.find('.mobcb-bottom-message').text(`${successes.length}명 차단 완료!`)
+            for (const result of successes) {
+              const {userId} = result.user
+              const profileCard = $(`.ProfileCard[data-user-id="${userId}"]`)
+              profileCard.each((_, card) => changeButtonToBlocked(card))
+            }
             targets.length = 0
           })
         }
@@ -189,30 +201,6 @@ function doChainBlock (ui) {
 }
 
 function initUI () {
-  const progressUI = $('<div>')
-  progressUI.html(`
-    <div class="mobcb-bg modal-container block-dialog">
-      <div class="mobcb-dialog modal modal-content is-autoPosition">
-        <span class="mobcb-progress"></span>
-        <hr class="mobcb-hr">
-        <div class="mobcb-users"></div>
-        <div class="mobcb-controls">
-          <button class="mobcb-close btn">닫기</button>
-          <button disabled class="mobcb-execute btn caution-btn">차단</button>
-        </div>
-      </div>
-    </div>
-  `)
-  progressUI.appendTo(document.body)
-  progressUI.on('click', '.mobcb-close', event => {
-    event.preventDefault()
-    progressUI.remove()
-  })
-  return progressUI
-}
-
-{
-  restoreConsole()
   const CHAINBLOCK_CSS = `
     .mobcb-bg {
       position: fixed;
@@ -244,13 +232,40 @@ function initUI () {
     .mobcb-controls {
       margin-top: 5px;
     }
+    .mobcb-bottom-message {
+      float: left;
+      padding: 10px 0;
+    }
     .mobcb-controls .btn ~ .btn {
       margin: 0 5px;
     }
   `
   $('<div>').html(`&shy;<style>${CHAINBLOCK_CSS}</style>`).appendTo(document.body)
-  if (window.confirm('체인블락을 위해 나를 차단한 사용자를 찾습니다. 계속하시겠습니까?')) {
-    const ui = initUI()
-    doChainBlock(ui)
-  }
+  const progressUI = $('<div>')
+  progressUI.html(`
+    <div class="mobcb-bg modal-container block-dialog">
+      <div class="mobcb-dialog modal modal-content is-autoPosition">
+        <span class="mobcb-progress"></span>
+        <hr class="mobcb-hr">
+        <div class="mobcb-users"></div>
+        <div class="mobcb-controls">
+          <div class="mobcb-bottom-message"></div>
+          <button class="mobcb-close btn">닫기</button>
+          <button disabled class="mobcb-execute btn caution-btn">차단</button>
+        </div>
+      </div>
+    </div>
+  `)
+  progressUI.appendTo(document.body)
+  progressUI.on('click', '.mobcb-close', event => {
+    event.preventDefault()
+    progressUI.remove()
+  })
+  return progressUI
+}
+
+restoreConsole()
+if (window.confirm('체인블락을 위해 나를 차단한 사용자를 찾습니다. 계속하시겠습니까?')) {
+  const ui = initUI()
+  doChainBlock(ui)
 }

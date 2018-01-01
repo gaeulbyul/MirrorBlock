@@ -1,4 +1,4 @@
-/* globals browser, MutationObserver, sendBlockRequest */
+/* globals browser, MutationObserver, sendBlockRequest, changeButtonToBlocked */
 
 const BLOCKS_YOU = '<span class="mob-BlockStatus">Blocks you</span>'
 const BLOCK_REFLECTED = '<span class="mob-BlockReflectedStatus">Block Reflected!</span>'
@@ -75,13 +75,6 @@ function outlineToBlockedUser (user) {
 // 맞차단 사용자 숨기기
 function hideUser (user) {
   user.style.display = 'none'
-}
-
-// 내가 차단한 사용자의 프로필에 "차단됨" 표시
-function changeButtonToBlocked (profile) {
-  const actions = profile.querySelector('.user-actions')
-  actions.classList.remove('not-following')
-  actions.classList.add('blocked')
 }
 
 // 차단반사
