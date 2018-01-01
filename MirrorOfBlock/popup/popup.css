@@ -20,21 +20,31 @@ hr {
   border-bottom: 0;
 }
 
+.whole .title {
+  text-align: center;
+  font-size: 14px;
+  user-select: none
+}
+
 .menu {
-  width: 160px;
+  width: 200px;
 }
 
 .menu-item {
   width: 100%;
   padding: 5px 10px;
   margin: 3px 0;
-  border: 0;
   border-radius: 3px;
-  background-color: crimson;
+  border: 2px solid crimson;
   font-size: var(--default-font-size);
-  color: white;
+  background-color: white;
+  color: black;
+  cursor: pointer;
+  transition: background-color .2s ease, color .2s ease;
 }
 
 .menu-item:hover {
   text-decoration: underline;
+  background-color: crimson;
+  color: white;
 }

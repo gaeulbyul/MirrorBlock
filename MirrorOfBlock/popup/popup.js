@@ -15,7 +15,6 @@ function isChainBlockablePage (urlstr) {
 function injectChainBlockScript (src, document) {
   const script = document.createElement('script')
   script.src = src
-  // script.onload = function () { this.remove() }
   ;(document.head || document.documentElement).appendChild(script)
 }
 
