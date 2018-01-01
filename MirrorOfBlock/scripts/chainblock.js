@@ -3,6 +3,8 @@
 // some code taken from:
 // https://github.com/satsukitv/twitter-block-chain
 
+let chainBlockCancel = false
+
 function restoreConsole () {
   if (/\[native code]/.test(window.console.log.toString())) {
     return
@@ -89,7 +91,7 @@ function chainBlock (callbacks) {
       setTimeout(async () => {
         const response = await fetch(moreUsersUrl, fetchOptions)
         const json = await response.json()
-        progressCallback({
+        const shouldContinue = progressCallback({
           targets,
           skipped,
           newTargets: newTargets.slice(),
@@ -98,10 +100,14 @@ function chainBlock (callbacks) {
           totalCount
         })
         newTargets.length = newSkipped.length = 0
-        scanner(json, callbacks)
+        if (shouldContinue) {
+          scanner(json, callbacks)
+        } else {
+          console.info('체인블락 중단')
+        }
       }, 200 + (Math.round(Math.random() * 400)))
     } else if (typeof finalCallback === 'function') {
-      progressCallback({
+      const shouldContinue = progressCallback({
         targets,
         skipped,
         newTargets: newTargets.slice(),
@@ -110,11 +116,15 @@ function chainBlock (callbacks) {
         totalCount
       })
       newTargets.length = newSkipped.length = 0
-      finalCallback({
-        targets,
-        skipped,
-        totalCount
-      })
+      if (shouldContinue) {
+        finalCallback({
+          targets,
+          skipped,
+          totalCount
+        })
+      } else {
+        console.info('체인블락 중단')
+      }
     }
   }
   const grid = $('.GridTimeline-items')
@@ -160,6 +170,9 @@ function doChainBlock (ui) {
   }
   chainBlock({
     progressCallback ({targets, skipped, newTargets, newSkipped, totalCount}) {
+      if (chainBlockCancel) {
+        return false
+      }
       ui.find('.mobcb-progress').text(
         `체인블락 중간 보고: ${totalCount}명 중 타겟 ${targets.length}명, 스킵 ${skipped.length}명`
       )
@@ -171,8 +184,12 @@ function doChainBlock (ui) {
         const a = makeUser(user)
         ui.find('.mobcb-skipped-users').append(a)
       })
+      return true
     },
     finalCallback ({targets, skipped, totalCount}) {
+      if (chainBlockCancel) {
+        return false
+      }
       ui.find('.mobcb-progress').text(
         `체인블락 결과 보고: ${totalCount}명 중 타겟 ${targets.length}명, 스킵 ${skipped.length}명`
       )
@@ -218,6 +235,7 @@ function doChainBlock (ui) {
         }
       })
       console.dir({targets, skipped})
+      return true
     }
   })
 }
@@ -284,6 +302,7 @@ function initUI () {
   progressUI.appendTo(document.body)
   progressUI.on('click', '.mobcb-close', event => {
     event.preventDefault()
+    chainBlockCancel = true
     progressUI.remove()
   })
   return progressUI
@@ -295,6 +314,7 @@ if (!isChainBlockablePage()) {
 } else if (checkSelfChainBlock()) {
   window.alert('자기 자신에게 체인블락을 할 순 없습니다.')
 } else if (window.confirm('체인블락을 위해 나를 차단한 사용자를 찾습니다. 계속하시겠습니까?')) {
+  chainBlockCancel = false
   const ui = initUI()
   doChainBlock(ui)
 }
