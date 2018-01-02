@@ -35,8 +35,11 @@
 
     function scanner (data, callbacks) {
       const {progressCallback, finalCallback} = callbacks
-      const cards = $(data.items_html).find('.ProfileCard')
-      cards.each((index, card_) => {
+      const templ = document.createElement('template')
+      templ.innerHTML = data.items_html
+      const nodes = templ.content.cloneNode(true)
+      const cards = nodes.querySelectorAll('.ProfileCard')
+      cards.forEach(card_ => {
         const $card = $(card_)
         const blocksYou = $card.find('.blocks-you').length > 0
         const actions = $($card.find('.user-actions'))
