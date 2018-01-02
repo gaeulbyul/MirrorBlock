@@ -158,6 +158,14 @@
     return valid && (currentUserId === myUserId)
   }
 
+  function alreadyRunning () {
+    return $('.mobcb-bg').length > 0
+  }
+
+  function blockedUser () {
+    return $('.BlocksYouTimeline').length > 0
+  }
+
   function doChainBlock (ui) {
     function makeUser (user) {
       const {userId, userName, userNickName, reason} = user
@@ -319,6 +327,10 @@
     window.alert('PC용 트위터(twitter.com)의 팔로잉 혹은 팔로워 페이지에서만 작동합니다.')
   } else if (checkSelfChainBlock()) {
     window.alert('자기 자신에게 체인블락을 할 순 없습니다.')
+  } else if (alreadyRunning()) {
+    window.alert('현재 체인블락이 가동중입니다. 잠시만 기다려주세요.')
+  } else if (blockedUser()) {
+    window.alert('이미 나를 차단한 사용자의 팔로잉/팔로워가 누군지 알 수 없습니다.')
   } else if (window.confirm('체인블락을 위해 나를 차단한 사용자를 찾습니다. 계속하시겠습니까?')) {
     chainBlockCancel = false
     const ui = initUI()
