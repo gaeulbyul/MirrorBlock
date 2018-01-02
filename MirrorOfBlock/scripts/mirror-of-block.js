@@ -6,8 +6,7 @@ const BLOCK_REFLECTED = '<span class="mob-BlockReflectedStatus">Block Reflected!
 const optionP = (function () {
   const defaultOption = {
     outlineBlockUser: false,
-    enableBlockReflection: false,
-    hideBlockedUser: false
+    enableBlockReflection: false
   }
   return browser.storage.local.get('option').then(
     storage => Object.assign(defaultOption, storage.option),
@@ -72,11 +71,6 @@ function outlineToBlockedUser (user) {
   }
 }
 
-// 맞차단 사용자 숨기기
-function hideUser (user) {
-  user.style.display = 'none'
-}
-
 // 차단반사
 function reflectBlock (user) {
   const actions = user.querySelector('.user-actions')
@@ -106,11 +100,6 @@ function userHandler (user) {
   optionP.then(option => {
     if (option.outlineBlockUser) {
       outlineToBlockedUser(user)
-    }
-    // 나를 차단한 사용자 숨기기
-    const shouldHide = option.hideBlockedUser && user.matches('.js-actionable-user')
-    if (shouldHide) {
-      hideUser(user)
     }
     // 차단반사
     const shouldBlock = option.enableBlockReflection && !alreadyBlocked && !muted

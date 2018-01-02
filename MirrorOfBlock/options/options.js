@@ -2,14 +2,12 @@
 
 const defaultOption = {
   outlineBlockUser: false,
-  enableBlockReflection: false,
-  hideBlockedUser: false
+  enableBlockReflection: false
 }
 
 const elements = {
   outlineBlockUser: document.getElementById('outlineBlockUser'),
-  enableBlockReflection: document.getElementById('enableBlockReflection'),
-  hideBlockedUser: document.getElementById('hideBlockedUser')
+  enableBlockReflection: document.getElementById('enableBlockReflection')
 }
 
 function saveOption () {
