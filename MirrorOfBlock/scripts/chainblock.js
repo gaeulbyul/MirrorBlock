@@ -175,11 +175,14 @@
       } else if (reason === 'muted') {
         userPrefix = '[Skip] '
       }
-      return $('<a>')
-        .css('display', 'block')
+      const item = $('<li>')
+      const link = $('<a>')
         .attr('data-user-id', userId)
         .attr('href', `https://twitter.com/${userName}`)
+        .attr('target', '_blank')
         .text(`${userPrefix} @${userName}: ${userNickName}`)
+      item.append(link)
+      return item
     }
 
     chainBlock({
@@ -283,6 +286,9 @@
         min-width: 60px;
         overflow-y: scroll;
       }
+      .mobcb-users > ul {
+        list-style: none;
+      }
       .mobcb-controls {
         margin-top: 5px;
       }
@@ -302,8 +308,8 @@
           <span class="mobcb-progress"></span>
           <hr class="mobcb-hr">
           <div class="mobcb-users">
-            <div class="mobcb-target-users"></div>
-            <div class="mobcb-skipped-users"></div>
+            <ul class="mobcb-target-users"></ul>
+            <ul class="mobcb-skipped-users"></ul>
           </div>
           <div class="mobcb-controls">
             <div class="mobcb-bottom-message"></div>
