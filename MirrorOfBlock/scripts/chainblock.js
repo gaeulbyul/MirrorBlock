@@ -18,20 +18,23 @@
     })
   }
 
+  function getTypeOfUserList () {
+    if (/\/followers$/.test(location.pathname)) {
+      return 'followers'
+    } else if (/\/following$/.test(location.pathname)) {
+      return 'following'
+    } else {
+      throw new Error('unsupported page')
+    }
+  }
+
   function chainBlock (callbacks) {
     const targets = []
     const skipped = []
     const newTargets = []
     const newSkipped = []
     let totalCount = 0
-    let currentList = ''
-    if (/\/followers$/.test(location.pathname)) {
-      currentList = 'followers'
-    } else if (/\/following$/.test(location.pathname)) {
-      currentList = 'following'
-    } else {
-      throw new Error('unsupported page')
-    }
+    const currentList = getTypeOfUserList()
 
     function scanner (data, callbacks) {
       const {progressCallback, finalCallback} = callbacks
@@ -167,6 +170,12 @@
   }
 
   function doChainBlock (ui) {
+    const currentList = getTypeOfUserList()
+    const count = Number($(`.ProfileNav-item--${currentList} [data-count]`).eq(0).data('count'))
+    if (count > 2000) {
+      window.alert('주의! 팔로잉/팔로워 사용자가 지나치게 많은 경우 중간에 체인블락의 작동이 정지할 수 있습니다.')
+    }
+
     function makeUser (user) {
       const {userId, userName, userNickName, reason} = user
       let userPrefix = ''
