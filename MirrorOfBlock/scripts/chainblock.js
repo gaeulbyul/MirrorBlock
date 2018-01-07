@@ -297,6 +297,7 @@
       }
       .mobcb-users > ul {
         list-style: none;
+        line-height: 150%;
       }
       .mobcb-controls {
         margin-top: 5px;
