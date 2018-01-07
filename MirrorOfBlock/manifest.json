@@ -37,7 +37,7 @@
 
   "browser_action": {
     "default_icon": "icons/icon.png",
-    "default_title": "Mirror of Block",
+    "default_title": "Mirror Of Block",
     "default_popup": "popup/popup.html"
   }
 }

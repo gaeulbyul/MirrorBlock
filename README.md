@@ -1,6 +1,6 @@
-# Mirror of Block
+# Mirror Of Block
 
-Mirror of Block은 트위터에서 나를 차단한 사람을 표시하고, 맞차단(차단반사)할 수 있는 웹 브라우저용 확장기능입니다.
+Mirror Of Block은 트위터에서 나를 차단한 사람을 표시하고, 맞차단(차단반사)할 수 있는 웹 브라우저용 확장기능입니다.
 
 ## 주의사항
 
