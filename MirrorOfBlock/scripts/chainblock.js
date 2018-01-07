@@ -75,7 +75,7 @@
           skipped.push(user)
           newSkipped.push(user)
         } else {
-          console.log('체인블락 타겟 발견! @%s(%s) - %s', userName, userId, userNickName)
+          console.log('맞차단 타겟 발견! @%s(%s) - %s', userName, userId, userNickName)
           const user = {
             userId,
             userName,
@@ -110,7 +110,7 @@
           if (shouldContinue) {
             scanner(json, callbacks)
           } else {
-            console.info('체인블락 중단')
+            console.info('체인맞블락 중단')
           }
         }, 200 + (Math.round(Math.random() * 400)))
       } else if (typeof finalCallback === 'function') {
@@ -130,7 +130,7 @@
             totalCount
           })
         } else {
-          console.info('체인블락 중단')
+          console.info('체인맞블락 중단')
         }
       }
     }
@@ -173,7 +173,7 @@
     const currentList = getTypeOfUserList()
     const count = Number($(`.ProfileNav-item--${currentList} [data-count]`).eq(0).data('count'))
     if (count > 2000) {
-      window.alert('주의! 팔로잉/팔로워 사용자가 지나치게 많은 경우 중간에 체인블락의 작동이 정지할 수 있습니다.')
+      window.alert('주의! 팔로잉/팔로워 사용자가 지나치게 많은 경우 중간에 체인맞블락의 작동이 정지할 수 있습니다.')
     }
 
     function makeUser (user) {
@@ -200,7 +200,7 @@
           return false
         }
         ui.find('.mobcb-progress').text(
-          `체인블락 중간 보고: ${totalCount}명 중 타겟 ${targets.length}명, 스킵 ${skipped.length}명`
+          `체인맞블락 중간 보고: ${totalCount}명 중 타겟 ${targets.length}명, 스킵 ${skipped.length}명`
         )
         newTargets.forEach(user => {
           const a = makeUser(user)
@@ -217,9 +217,9 @@
           return false
         }
         ui.find('.mobcb-progress').text(
-          `체인블락 결과 보고: ${totalCount}명 중 타겟 ${targets.length}명, 스킵 ${skipped.length}명`
+          `체인맞블락 결과 보고: ${totalCount}명 중 타겟 ${targets.length}명, 스킵 ${skipped.length}명`
         )
-        ui.find('.mobcb-bottom-message').text(`${targets.length}명 차단 가능`)
+        ui.find('.mobcb-bottom-message').text(`${targets.length}명 맞차단 가능`)
         if (targets.length === 0 && skipped.length === 0) {
           window.alert('여기에선 아무도 나를 차단하지 않았습니다.')
           ui.remove()
@@ -230,10 +230,10 @@
         ui.find('.mobcb-execute').click(event => {
           event.preventDefault()
           if (targets.length === 0) {
-            window.alert('차단할 사용자가 없습니다.')
+            window.alert('맞차단할 사용자가 없습니다.')
             return
           }
-          if (window.confirm('실제로 차단하시겠습니까?')) {
+          if (window.confirm('실제로 맞차단하시겠습니까?')) {
             const promises = targets.map(user => {
               const {userId} = user
               return sendBlockRequest(userId)
@@ -250,7 +250,7 @@
             Promise.all(promises).then(results => {
               const successes = results.filter(x => x.ok)
               ui.find('.mobcb-execute').prop('disabled', true)
-              ui.find('.mobcb-bottom-message').text(`${successes.length}명 차단 완료!`)
+              ui.find('.mobcb-bottom-message').text(`${successes.length}명 맞차단 완료!`)
               for (const result of successes) {
                 const {userId} = result.user
                 const profileCard = $(`.ProfileCard[data-user-id="${userId}"]`)
@@ -342,12 +342,12 @@
   if (!isChainBlockablePage()) {
     window.alert('PC용 트위터(twitter.com)의 팔로잉 혹은 팔로워 페이지에서만 작동합니다.')
   } else if (checkSelfChainBlock()) {
-    window.alert('자기 자신에게 체인블락을 할 순 없습니다.')
+    window.alert('자기 자신에게 체인맞블락을 할 순 없습니다.')
   } else if (alreadyRunning()) {
-    window.alert('현재 체인블락이 가동중입니다. 잠시만 기다려주세요.')
+    window.alert('현재 체인맞블락이 가동중입니다. 잠시만 기다려주세요.')
   } else if (blockedUser()) {
     window.alert('이미 나를 차단한 사용자의 팔로잉/팔로워가 누군지 알 수 없습니다.')
-  } else if (window.confirm('체인블락을 위해 나를 차단한 사용자를 찾습니다. 계속하시겠습니까?')) {
+  } else if (window.confirm('체인맞블락을 위해 나를 차단한 사용자를 찾습니다. 계속하시겠습니까?')) {
     chainBlockCancel = false
     const ui = initUI()
     doChainBlock(ui)
