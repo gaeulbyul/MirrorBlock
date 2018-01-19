@@ -1,6 +1,6 @@
 /* globals browser, MutationObserver, sendBlockRequest, changeButtonToBlocked */
 
-const BLOCKS_YOU = '<span class="mob-BlockStatus">나를 차단합니다</span>'
+const BLOCKS_YOU = '<span class="mob-BlockStatus">나를 차단함</span>'
 const BLOCK_REFLECTED = '<span class="mob-BlockReflectedStatus">차단반사 발동!</span>'
 
 const optionP = (function () {
