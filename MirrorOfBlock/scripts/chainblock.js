@@ -96,8 +96,6 @@
           referrer: location.href
         }
         setTimeout(async () => {
-          const response = await fetch(moreUsersUrl, fetchOptions)
-          const json = await response.json()
           const shouldContinue = progressCallback({
             targets,
             skipped,
@@ -108,7 +106,24 @@
           })
           newTargets.length = newSkipped.length = 0
           if (shouldContinue) {
-            scanner(json, callbacks)
+            const response = await fetch(moreUsersUrl, fetchOptions)
+            if (response.ok) {
+              const json = await response.json()
+              scanner(json, callbacks)
+            } else {
+              const limited = response.status === 429
+              if (limited) {
+                window.alert('더 이상 사용자 목록을 가져올 수 없습니다. 체인맞블락을 중단합니다.')
+              } else {
+                window.alert('사용자 목록을 가져오는 도중 오류가 발생했습니다. 체인맞블락을 중단합니다.')
+                console.error(response)
+              }
+              finalCallback({
+                targets,
+                skipped,
+                totalCount
+              })
+            }
           } else {
             console.info('체인맞블락 중단')
           }
