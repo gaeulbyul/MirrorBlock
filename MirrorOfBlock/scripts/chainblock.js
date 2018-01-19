@@ -171,7 +171,7 @@
 
   function checkSelfChainBlock () {
     const currentUserId = String($('.ProfileNav').data('user-id'))
-    const myUserId = String($('#user-dropdown.me [data-user-id]').data('user-id'))
+    const myUserId = String($('#current-user-id').val())
     const valid = /\d+/.test(currentUserId) && /\d+/.test(myUserId)
     return valid && (currentUserId === myUserId)
   }
