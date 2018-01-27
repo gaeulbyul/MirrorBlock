@@ -54,37 +54,23 @@
         if (!blocksYou) {
           return
         }
+        const user = {
+          userId,
+          userName,
+          userNickName
+        }
         if (alreadyBlocked) {
           console.log('이미 차단한 사용자! @%s(%s) - %s', userName, userId, userNickName)
-          const user = {
-            userId,
-            userName,
-            userNickName,
-            reason: 'already-blocked'
-          }
-          skipped.push(user)
-          newSkipped.push(user)
+          user.reason = 'already-blocked'
         } else if (muted) {
           console.log('뮤트한 사용자! @%s(%s) - %s', userName, userId, userNickName)
-          const user = {
-            userId,
-            userName,
-            userNickName,
-            reason: 'muted'
-          }
-          skipped.push(user)
-          newSkipped.push(user)
+          user.reason = 'muted'
         } else {
           console.log('맞차단 타겟 발견! @%s(%s) - %s', userName, userId, userNickName)
-          const user = {
-            userId,
-            userName,
-            userNickName,
-            reason: null
-          }
-          targets.push(user)
-          newTargets.push(user)
+          user.reason = null
         }
+        skipped.push(user)
+        newSkipped.push(user)
       })
       totalCount += cards.length
       if (data.has_more_items) {
@@ -105,7 +91,9 @@
             totalCount
           })
           newTargets.length = newSkipped.length = 0
-          if (shouldContinue) {
+          if (!shouldContinue) {
+            console.info('체인맞블락 중단')
+          } else {
             const response = await fetch(moreUsersUrl, fetchOptions)
             if (response.ok) {
               const json = await response.json()
@@ -124,8 +112,6 @@
                 totalCount
               })
             }
-          } else {
-            console.info('체인맞블락 중단')
           }
         }, 200 + (Math.round(Math.random() * 400)))
       } else if (typeof finalCallback === 'function') {
@@ -193,12 +179,8 @@
 
     function makeUser (user) {
       const {userId, userName, userNickName, reason} = user
-      let userPrefix = ''
-      if (reason === 'already-blocked') {
-        userPrefix = '[Blocked] '
-      } else if (reason === 'muted') {
-        userPrefix = '[Skip] '
-      }
+      const userPrefix = (reason === 'already-blocked') ? '[Blocked] ' :
+        (reason === 'muted') ? '[Skip]' : ''
       const item = $('<li>')
       const link = $('<a>')
         .attr('data-user-id', userId)
