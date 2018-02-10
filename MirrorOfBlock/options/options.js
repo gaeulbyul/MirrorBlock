@@ -1,4 +1,4 @@
-/* globals browser */
+/* globals browser, ExtOption */
 
 const defaultOption = {
   outlineBlockUser: false,
@@ -15,14 +15,11 @@ function saveOption () {
   for (const key of Object.keys(elements)) {
     option[key] = elements[key].checked
   }
-  return browser.storage.local.set({
-    option
-  })
+  return ExtOption.save(option)
 }
 
 async function loadOption () {
-  const customOption = (await browser.storage.local.get('option')).option
-  const option = Object.assign({}, defaultOption, customOption)
+  const option = await ExtOption.load()
   for (const key of Object.keys(elements)) {
     elements[key].checked = option[key]
   }

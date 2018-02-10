@@ -1,18 +1,9 @@
-/* globals browser, MutationObserver, sendBlockRequest, changeButtonToBlocked */
+/* globals MutationObserver, sendBlockRequest, changeButtonToBlocked, ExtOption */
 
 const BLOCKS_YOU = '<span class="mob-BlockStatus">나를 차단함</span>'
 const BLOCK_REFLECTED = '<span class="mob-BlockReflectedStatus">차단반사 발동!</span>'
 
-const optionP = (function () {
-  const defaultOption = {
-    outlineBlockUser: false,
-    enableBlockReflection: false
-  }
-  return browser.storage.local.get('option').then(
-    storage => Object.assign(defaultOption, storage.option),
-    () => defaultOption
-  )
-}())
+const optionP = ExtOption.load()
 
 // 페이지에 CSS를 삽입
 function injectCSS (css) {
