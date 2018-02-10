@@ -111,23 +111,34 @@
           })
           newTargets.length = newSkipped.length = 0
           if (shouldContinue) {
-            const response = await fetch(moreUsersUrl, fetchOptions)
-            if (response.ok) {
-              const json = await response.json()
-              scanner(json, parameters)
-            } else {
-              const limited = response.status === 429
-              if (limited) {
-                window.alert('더 이상 사용자 목록을 가져올 수 없습니다. 체인맞블락을 중단합니다.')
+            try {
+              const response = await fetch(moreUsersUrl, fetchOptions)
+              if (response.ok) {
+                const json = await response.json()
+                scanner(json, parameters)
               } else {
-                window.alert('사용자 목록을 가져오는 도중 오류가 발생했습니다. 체인맞블락을 중단합니다.')
-                console.error(response)
+                const limited = response.status === 429
+                if (limited) {
+                  window.alert('더 이상 사용자 목록을 가져올 수 없습니다. 체인맞블락을 중단합니다.')
+                } else {
+                  window.alert('사용자 목록을 가져오는 도중 오류가 발생했습니다. 체인맞블락을 중단합니다.')
+                  console.error(response)
+                }
+                finalCallback({
+                  targets,
+                  skipped,
+                  totalCount
+                })
               }
+            } catch (error) {
+              console.error(error)
+              window.alert('사용자 목록을 가져오는 도중 에러가 발생했습니다. 체인맞블락을 중단합니다.')
               finalCallback({
                 targets,
                 skipped,
                 totalCount
               })
+              throw error
             }
           } else {
             console.info('체인맞블락 중단')
