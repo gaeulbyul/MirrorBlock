@@ -222,7 +222,7 @@
           return false
         }
         const percentage = Math.round(totalCount / count * 100)
-        document.title = `(${percentage}%) 체인맞블락 사용자 수집중\u2026 \u2013 ${originalTitle}`
+        document.title = `(${percentage}% | ${targets.length}명) 체인맞블락 사용자 수집중\u2026 \u2013 ${originalTitle}`
         ui.find('.mobcb-progress').text(
           `체인맞블락 중간 보고: ${totalCount}명 중 타겟 ${targets.length}명, 스킵 ${skipped.length}명`
         )
