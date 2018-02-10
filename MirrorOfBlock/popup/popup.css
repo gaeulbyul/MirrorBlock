@@ -48,3 +48,14 @@ hr {
   background-color: crimson;
   color: white;
 }
+
+.option-item {
+  margin: 5px 0;
+  font-size: .8rem;
+  color: #666;
+}
+
+.option-item.on {
+  font-weight: bold;
+  color: green;
+}

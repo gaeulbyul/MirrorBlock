@@ -48,4 +48,18 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault()
     browser.runtime.openOptionsPage()
   }
+  ExtOption.load().then(option => {
+    {
+      const blockReflection = document.querySelector('.blockReflection')
+      const val = option.enableBlockReflection
+      blockReflection.classList.toggle('on', val)
+      blockReflection.textContent = `차단반사: ${val ? 'On \u2714' : 'Off'}`
+    }
+    {
+      const over10KMode = document.querySelector('.chainBlockOver10KMode')
+      const val = option.chainBlockOver10KMode
+      over10KMode.classList.toggle('on', val)
+      over10KMode.textContent = `슬로우모드: ${val ? 'On \u2714' : 'Off'}`
+    }
+  })
 })
