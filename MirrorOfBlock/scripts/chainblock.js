@@ -28,7 +28,7 @@
     }
   }
 
-  function chainBlock (callbacks) {
+  function chainBlock (parameters) {
     const targets = []
     const skipped = []
     const newTargets = []
@@ -36,8 +36,9 @@
     let totalCount = 0
     const currentList = getTypeOfUserList()
 
-    function scanner (data, callbacks) {
-      const {progressCallback, finalCallback} = callbacks
+    function scanner (data, parameters) {
+      const {options, progressCallback, finalCallback} = parameters
+      const over10KMode = options.chainBlockOver10KMode
       const templ = document.createElement('template')
       templ.innerHTML = data.items_html
       const nodes = templ.content.cloneNode(true)
@@ -95,6 +96,10 @@
           credentials: 'include',
           referrer: location.href
         }
+        let delay = 200 + Math.round(Math.random() * 400)
+        if (over10KMode) {
+          delay *= 5
+        }
         setTimeout(async () => {
           const shouldContinue = progressCallback({
             targets,
@@ -109,7 +114,7 @@
             const response = await fetch(moreUsersUrl, fetchOptions)
             if (response.ok) {
               const json = await response.json()
-              scanner(json, callbacks)
+              scanner(json, parameters)
             } else {
               const limited = response.status === 429
               if (limited) {
@@ -127,7 +132,7 @@
           } else {
             console.info('체인맞블락 중단')
           }
-        }, 200 + (Math.round(Math.random() * 400)))
+        }, delay)
       } else if (typeof finalCallback === 'function') {
         const shouldContinue = progressCallback({
           targets,
@@ -155,7 +160,7 @@
       items_html: grid.html(),
       min_position: grid.data('min-position'),
       has_more_items: true
-    }, callbacks)
+    }, parameters)
   }
 
   function isChainBlockablePage () {
@@ -184,7 +189,7 @@
     return $('.BlocksYouTimeline').length > 0
   }
 
-  function doChainBlock (ui) {
+  function doChainBlock (ui, options) {
     const currentList = getTypeOfUserList()
     const count = Number($(`.ProfileNav-item--${currentList} [data-count]`).eq(0).data('count'))
     if (count > 2000) {
@@ -210,6 +215,7 @@
     }
 
     chainBlock({
+      options,
       progressCallback ({targets, skipped, newTargets, newSkipped, totalCount}) {
         if (chainBlockCancel) {
           return false
@@ -281,7 +287,7 @@
     })
   }
 
-  function initUI () {
+  function initUI (options) {
     const CHAINBLOCK_CSS = `
       .mobcb-bg {
         position: fixed;
@@ -306,6 +312,11 @@
         width: 450px;
         max-height: 80vh;
       }
+      .mobcb-title {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
       .mobcb-users {
         min-width: 60px;
         overflow-y: scroll;
@@ -326,10 +337,13 @@
       }
     `
     $('<div>').html(`&shy;<style>${CHAINBLOCK_CSS}</style>`).appendTo(document.body)
+    const over10KMode = options.chainBlockOver10KMode ? '(슬로우 모드)' : ''
     const progressUI = $('<div>')
     progressUI.html(`
       <div class="mobcb-bg modal-container block-dialog">
         <div class="mobcb-dialog modal modal-content is-autoPosition">
+          <div class="mobcb-title">체인맞블락 ${over10KMode}</div>
+          <hr class="mobcb-hr">
           <span class="mobcb-progress"></span>
           <hr class="mobcb-hr">
           <div class="mobcb-users">
@@ -364,7 +378,15 @@
     window.alert('이미 나를 차단한 사용자의 팔로잉/팔로워가 누군지 알 수 없습니다.')
   } else if (window.confirm('체인맞블락을 위해 나를 차단한 사용자를 찾습니다. 계속하시겠습니까?')) {
     chainBlockCancel = false
-    const ui = initUI()
-    doChainBlock(ui)
+    let options = {}
+    try {
+      const optionsJSON = window.sessionStorage.getItem('$MirrorOfBlockOptions')
+      options = JSON.parse(optionsJSON || '{}')
+      Object.freeze(options)
+    } catch (error) {
+      console.error('fail to retrieve option: ', error)
+    }
+    const ui = initUI(options)
+    doChainBlock(ui, options)
   }
 }//

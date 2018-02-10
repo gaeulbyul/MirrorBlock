@@ -1,17 +1,13 @@
 /* globals browser, ExtOption */
 
-const defaultOption = {
-  outlineBlockUser: false,
-  enableBlockReflection: false
-}
-
 const elements = {
   outlineBlockUser: document.getElementById('outlineBlockUser'),
-  enableBlockReflection: document.getElementById('enableBlockReflection')
+  enableBlockReflection: document.getElementById('enableBlockReflection'),
+  chainBlockOver10KMode: document.getElementById('chainBlockOver10KMode')
 }
 
 function saveOption () {
-  const option = Object.assign({}, defaultOption)
+  const option = {}
   for (const key of Object.keys(elements)) {
     option[key] = elements[key].checked
   }
@@ -34,7 +30,7 @@ function displayVersion () {
 function init () {
   loadOption()
   for (const input of document.querySelectorAll('.field input')) {
-    input.addEventListener('change', event => {
+    input.addEventListener('change', () => {
       saveOption()
     })
   }

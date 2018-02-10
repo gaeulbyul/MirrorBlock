@@ -1,4 +1,4 @@
-/* globals URL, browser */
+/* globals URL, browser, ExtOption */
 
 function isChainBlockablePage (urlstr) {
   try {
@@ -12,13 +12,16 @@ function isChainBlockablePage (urlstr) {
   }
 }
 
-function injectChainBlockScript (src, document) {
+function injectChainBlockScript (src, options) {
+  window.sessionStorage.setItem('$MirrorOfBlockOptions', options)
   const script = document.createElement('script')
   script.src = src
   ;(document.head || document.documentElement).appendChild(script)
 }
 
 async function executeChainBlock () {
+  const options = await ExtOption.load()
+  const optionsJSON = JSON.stringify(options)
   const tabs = await browser.tabs.query({active: true, currentWindow: true})
   const currentTab = tabs[0]
   if (!isChainBlockablePage(currentTab.url)) {
@@ -29,7 +32,7 @@ async function executeChainBlock () {
   const scripts = ['/scripts/block.js', '/scripts/chainblock.js']
   for (const script of scripts) {
     const scriptUrl = browser.runtime.getURL(script)
-    const code = `(${injectChainBlockScript.toString()})('${scriptUrl}', window.document)`
+    const code = `(${injectChainBlockScript.toString()})('${scriptUrl}', \`${optionsJSON}\`)`
     browser.tabs.executeScript(currentTab.id, {
       code
     })
