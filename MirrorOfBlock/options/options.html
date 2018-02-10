@@ -20,10 +20,13 @@
     <div class="browser-style">
       <label class="field">
         <input type="checkbox" id="enableBlockReflection">
-        차단반사 기능 활성화 <small>(※1)</small>
+        차단반사 기능 활성화
       </label>
       <div class="info-option">
-        <p>※1 특정 사용자에게 차단반사를 원하지 않는다면 해당 사용자의 차단을 해제한 후 뮤트를 걸어두세요. <mark>뮤트를 걸어둔 사용자에겐 차단반사를 하지 않습니다.</mark></p>
+        <p>차단반사가 켜져있으면 트위터 사용 중 차단한 사용자를 발견하면 해당 사용자를 맞차단합니다.</p>
+        <p>특정 사용자에게 차단반사를 원하지 않는다면 해당 사용자의 차단을 해제한 후 뮤트를 걸어두세요.
+          <mark>뮤트를 걸어둔 사용자에겐 차단반사를 하지 않습니다.</mark>
+        </p>
       </div>
     </div>
   </fieldset>
@@ -33,10 +36,10 @@
       <label class="field">
         <input type="checkbox" id="chainBlockOver10KMode">
         체인맞블락 슬로우모드
-        <small>(※2)</small>
       </label>
       <div class="info-option">
         <p>슬로우모드가 켜져있으면 체인맞블락 실행시 사용자 목록을 천천히 가져옵니다. 이렇게 하면 팔로잉/팔로워가 10,000명 이상의 사용자에게도 체인맞블락을 실행할 수 있습니다.</p>
+        <p>단, 슬로우모드 중에도 중단될 가능성은 여전히 있습니다. (예: 여러 사용자에게 체인블락 동시 실행)</p>
       </div>
     </div>
   </fieldset>
@@ -44,7 +47,7 @@
     <p>설정을 바꾼 이후엔 열려있는 트위터 탭을 꼭 <b>새로고침</b>(단축키 <kbd>F5</kbd> 또는 <kbd>Ctrl+R</kbd>)해주세요.</p>
   </div>
   <hr>
-  Mirror Of Block
+  <a href="https://github.com/zn/MirrorOfBlock" rel="noopener noreferrer">Mirror Of Block</a>
   <small>
     &lt;by <a href="https://twitter.com/gaeulbyul" rel="noopener noreferrer">@gaeulbyul</a>&gt;
     / 버전 <span id="version"></span>
