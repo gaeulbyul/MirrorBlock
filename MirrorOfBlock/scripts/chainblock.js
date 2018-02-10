@@ -190,9 +190,10 @@
   }
 
   function doChainBlock (ui, options) {
+    const originalTitle = document.title
     const currentList = getTypeOfUserList()
     const count = Number($(`.ProfileNav-item--${currentList} [data-count]`).eq(0).data('count'))
-    if (count > 2000) {
+    if (count > 2000 && !options.chainBlockOver10KMode) {
       window.alert('주의! 팔로잉/팔로워 사용자가 지나치게 많은 경우 중간에 체인맞블락의 작동이 정지할 수 있습니다.')
     }
 
@@ -220,6 +221,8 @@
         if (chainBlockCancel) {
           return false
         }
+        const percentage = Math.round(totalCount / count * 100)
+        document.title = `(${percentage}%) 체인맞블락 사용자 수집중\u2026 \u2013 ${originalTitle}`
         ui.find('.mobcb-progress').text(
           `체인맞블락 중간 보고: ${totalCount}명 중 타겟 ${targets.length}명, 스킵 ${skipped.length}명`
         )
@@ -237,12 +240,14 @@
         if (chainBlockCancel) {
           return false
         }
+        document.title = `체인맞블락 수집완료! \u2013 ${originalTitle}`
         ui.find('.mobcb-progress').text(
           `체인맞블락 결과 보고: ${totalCount}명 중 타겟 ${targets.length}명, 스킵 ${skipped.length}명`
         )
         ui.find('.mobcb-bottom-message').text(`${targets.length}명 맞차단 가능`)
         if (targets.length === 0 && skipped.length === 0) {
           window.alert('여기에선 아무도 나를 차단하지 않았습니다.')
+          document.title = originalTitle
           ui.remove()
           return
         } else if (targets.length > 0) {
@@ -255,6 +260,7 @@
             return
           }
           if (window.confirm('실제로 맞차단하시겠습니까?')) {
+            document.title = `체인맞블락 차단중\u2026 \u2013 ${originalTitle}`
             const promises = targets.map(user => {
               const {userId} = user
               return sendBlockRequest(userId)
@@ -272,6 +278,7 @@
               const successes = results.filter(x => x.ok)
               ui.find('.mobcb-execute').prop('disabled', true)
               ui.find('.mobcb-bottom-message').text(`${successes.length}명 맞차단 완료!`)
+              document.title = `체인맞블락 차단완료! \u2013 ${originalTitle}`
               for (const result of successes) {
                 const {userId} = result.user
                 const profileCard = $(`.ProfileCard[data-user-id="${userId}"]`)
@@ -288,6 +295,7 @@
   }
 
   function initUI (options) {
+    const originalTitle = document.title
     const CHAINBLOCK_CSS = `
       .mobcb-bg {
         position: fixed;
@@ -362,6 +370,7 @@
     progressUI.on('click', '.mobcb-close', event => {
       event.preventDefault()
       chainBlockCancel = true
+      document.title = originalTitle
       progressUI.remove()
     })
     return progressUI
