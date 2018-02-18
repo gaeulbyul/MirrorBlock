@@ -25,6 +25,7 @@ Mirror Of Block은 트위터에서 나를 차단한 사람을 표시하고, 맞�
 
 - Firefox - https://addons.mozilla.org/ko/firefox/addon/mirror-of-block/
 - Chrome, Whale, Vivaldi - https://chrome.google.com/webstore/detail/mirror-of-block/hbpjabpglddifkpjeiggalbnpjmhkkac
+  - Whale 브라우저는 Whale 스토어에서도 설치할 수 있습니다: https://store.whale.naver.com/detail/ggkdhcjafohekmchjkkpaopdbmjkfgob
 - Opera - https://addons.opera.com/ko/extensions/details/mirror-of-block/
 
 ## 라이센스
