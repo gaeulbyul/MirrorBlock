@@ -130,13 +130,15 @@
       const userNickName = $card.find('.fullname').text().trim()
       const alreadyBlocked = $card.find('.blocked').length > 0
       const muted = $card.find('.muting').length > 0
+      const bio = $card.find('.ProfileCard-bio').text().trim()
       return {
         userId,
         userName,
         userNickName,
         blocksYou,
         alreadyBlocked,
-        muted
+        muted,
+        bio
       }
     }
     stop () {
@@ -284,6 +286,8 @@
           .attr('data-user-id', userId)
           .attr('href', `https://twitter.com/${userName}`)
           .attr('target', '_blank')
+          .attr('title', `@${userName} (${userNickName})
+프로필: ${user.bio}`)
           .text(`${userPrefix} @${userName}: ${userNickName}`)
         item.append(link)
         if (shouldSkip) {
