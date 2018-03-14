@@ -91,26 +91,37 @@
     })
   }
 
-  class FollwerGatherer {
-    constructor (options) {
-      this.options = Object.assign({}, {
-        // default options
-        delay: 500,
-        delayOnLimitation: 1000 * 60 * 2
-      }, options)
+  class EventEmitter {
+    constructor () {
       this.events = {}
-      this.canceled = false
     }
     on (eventname, handler) {
       if (!(eventname in this.events)) {
         this.events[eventname] = []
       }
       this.events[eventname].push(handler)
+      return this
     }
-    _emit (eventname, eparameter) {
-      (this.events[eventname] || []).forEach(handler => handler(eparameter))
+    emit (eventname, eparameter) {
+      const handlers = this.events[eventname] || []
+      handlers.forEach(handler => handler(eparameter))
+      return this
     }
-    _parseUserProfileCard (card_) {
+  }
+
+  class FollwerGatherer extends EventEmitter {
+    constructor (options) {
+      super()
+      this.options = Object.assign({}, {
+        // default options
+        delay: 500,
+        delayOnLimitation: 1000 * 60 * 2,
+        stopOnLimit: true,
+        filter: () => true
+      }, options)
+      this.stopped = false
+    }
+    static _parseUserProfileCard (card_) {
       const $card = $(card_)
       const blocksYou = $card.find('.blocks-you').length > 0
       const actions = $($card.find('.user-actions'))
@@ -128,22 +139,26 @@
         muted
       }
     }
-    cancel () {
-      this.canceled = true
+    stop () {
+      this.stopped = true
     }
     async start (username, followtype) {
-      const { delay, delayOnLimitation } = this.options
-      if (followtype !== 'followers' && followtype !== 'followings') {
+      const {
+        delay,
+        delayOnLimitation,
+        filter,
+        stopOnLimit
+      } = this.options
+      this.stopped = false
+      if (followtype !== 'followers' && followtype !== 'following') {
         throw new Error(`followtype ${followtype} is invalid!`)
       }
       let gatheredCount = 0
       let nextPosition = null
       while (true) {
-        if (this.canceled) {
-          this._emit('end', {
-            users: [],
-            gatheredCount,
-            userCanceled: true
+        if (this.stopped) {
+          this.emit('end', {
+            userStopped: true
           })
           break
         }
@@ -164,10 +179,15 @@
             break
           }
           if (response.status === 429) {
-            this._emit('limited')
+            this.emit('limit')
             console.info('FollowerGather: limited!')
-            await sleep(delayOnLimitation)
+            if (stopOnLimit) {
+              throw new Error('LimitError!')
+            } else {
+              await sleep(delayOnLimitation)
+            }
           } else {
+            this.emit('error', response)
             throw new Error('HTTPError!')
           }
         }
@@ -177,9 +197,11 @@
         const node = templ.content.cloneNode(true)
         const cards = node.querySelectorAll('.ProfileCard')
         gatheredCount += cards.length
-        const users = Array.from(cards || [], this._parseUserProfileCard)
-          .filter(user => user.blocksYou)
-        this._emit('progress', {
+        let users = Array.from(cards || [], FollwerGatherer._parseUserProfileCard)
+        if (typeof filter === 'function') {
+          users = users.filter(filter)
+        }
+        this.emit('progress', {
           users,
           gatheredCount
         })
@@ -187,10 +209,8 @@
           nextPosition = json.min_position
           await sleep(delay)
         } else {
-          this._emit('end', {
-            users,
-            gatheredCount,
-            userCanceled: false
+          this.emit('end', {
+            userStopped: false
           })
           break
         }
@@ -277,7 +297,8 @@
       )
     }
     finalize () {
-      const { targets,
+      const {
+        targets,
         skipped,
         originalTitle,
         followersCount,
@@ -395,15 +416,25 @@
     const ui = new ChainBlockUI(options)
     ui.followersCount = Number($(`.ProfileNav-item--${currentList} [data-count]`).eq(0).data('count'))
     const gatherer = new FollwerGatherer({
-      delay: options.chainBlockOver10KMode ? 2000 : 500
+      filter: user => user.blocksYou,
+      delay: options.chainBlockOver10KMode ? 2500 : 250
+    })
+    ui.progressUI.on('click', '.mobcb-close', () => {
+      gatherer.stop()
     })
     gatherer.on('progress', ({ users, gatheredCount }) => {
       console.log('progress', users)
       ui.update({ users, gatheredCount })
     })
-    gatherer.on('end', ({ users, gatheredCount }) => {
-      console.log('end', users)
-      ui.update({ users, gatheredCount })
+    gatherer.on('limit', () => {
+      window.alert('더 이상 사용자 목록을 가져올 수 없습니다. 체인맞블락을 중단합니다.')
+      gatherer.stop()
+    })
+    gatherer.on('error', () => {
+      window.alert('사용자 목록을 가져오는 도중 오류가 발생했습니다. 체인맞블락을 중단합니다.')
+      gatherer.stop()
+    })
+    gatherer.on('end', () => {
       ui.finalize()
     })
     const profileUsername = $('.ProfileHeaderCard .username b').text()
