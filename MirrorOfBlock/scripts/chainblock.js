@@ -281,8 +281,7 @@
         followersCount,
         progressUI: ui
       } = this
-      const count = targets.length + skipped.length
-      const percentage = Math.round(count / followersCount * 100)
+      const percentage = Math.round(gatheredCount / followersCount * 100)
       document.title = `(${percentage}% | ${targets.length}명) 체인맞블락 사용자 수집중\u2026 \u2013 ${originalTitle}`
       for (const user of users) {
         const {
