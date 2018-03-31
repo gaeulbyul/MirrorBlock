@@ -160,6 +160,21 @@
       }
       let gatheredCount = 0
       let nextPosition = null
+      // 이미 화면상에 렌더링된 프로필이 있으면 이를 먼저 사용한다.
+      const renderedTimeline = document.querySelector('.GridTimeline .GridTimeline-items')
+      if (renderedTimeline) {
+        nextPosition = renderedTimeline.getAttribute('data-min-position')
+        const cards = renderedTimeline.querySelectorAll('.ProfileCard')
+        gatheredCount += cards.length
+        let users = Array.from(cards || [], FollwerGatherer._parseUserProfileCard)
+        if (typeof filter === 'function') {
+          users = users.filter(filter)
+        }
+        this.emit('progress', {
+          users,
+          gatheredCount
+        })
+      }
       while (true) {
         if (this.stopped) {
           this.emit('end', {
