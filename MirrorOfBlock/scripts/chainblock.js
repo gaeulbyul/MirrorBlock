@@ -16,7 +16,7 @@
         </div>
         <div class="mobcb-controls">
           <div class="mobcb-bottom-message"></div>
-          <button class="mobcb-close btn">닫기</button>
+          <button class="mobcb-close btn normal-btn">닫기</button>
           <button disabled class="mobcb-execute btn caution-btn">차단</button>
         </div>
       </div>
@@ -65,6 +65,9 @@
     .mobcb-bottom-message {
       float: left;
       padding: 10px 0;
+    }
+    .mobcb-controls .normal-btn {
+      color: inherit;
     }
     .mobcb-controls .btn ~ .btn {
       margin: 0 5px;
