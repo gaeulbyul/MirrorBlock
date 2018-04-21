@@ -7,12 +7,17 @@
     <div class="mobcb-bg modal-container block-dialog">
       <div class="mobcb-dialog modal modal-content is-autoPosition">
         <div class="mobcb-title">체인맞블락</div>
-        <hr class="mobcb-hr">
         <span class="mobcb-progress"></span>
         <hr class="mobcb-hr">
         <div class="mobcb-users">
           <ul class="mobcb-target-users"></ul>
           <ul class="mobcb-skipped-users"></ul>
+        </div>
+        <hr class="mobcb-hr">
+        <div class="mobcb-extra-options">
+          <label title="맞차단할 사용자를 발견하면 ('차단'버튼을 누르지 않아도) 바로 맞차단합니다.">
+            <input type="checkbox" id="mobcb-block-immediately">발견 즉시 바로 맞차단하기
+          </label>
         </div>
         <div class="mobcb-controls">
           <div class="mobcb-bottom-message"></div>
@@ -59,8 +64,18 @@
       list-style: none;
       line-height: 150%;
     }
-    .mobcb-controls {
-      margin-top: 5px;
+    .mobcb-user-blocked:before {
+      content: '\u2714';
+    }
+    .mobcb-user-blockfailed:before {
+      content: '\u274C';
+    }
+    .mobcb-extra-options {
+      padding: 10px 0;
+    }
+    .mobcb-extra-options input[type="checkbox"] {
+      margin-right: .5em;
+      vertical-align: middle;
     }
     .mobcb-bottom-message {
       float: left;
@@ -242,6 +257,7 @@
     constructor (options) {
       this.targets = []
       this.skipped = []
+      this.immBlocked = new Set()
       this.followersCount = 0
       this.originalTitle = document.title
       $('<div>').html(`&shy;<style>${CHAINBLOCK_UI_CSS}</style>`).appendTo(document.body)
@@ -259,6 +275,20 @@
         this.close()
       })
     }
+
+    async blockTargets () {
+      const {targets} = this
+      const promises = targets.map(async user => {
+        const {userId} = user
+        return sendBlockRequest(userId)
+          .then(() => {
+            this.immBlocked.add(userId)
+            return true
+          })
+          .catch(() => false)
+      })
+      return Promise.all(promises)
+    }
     update ({ users, gatheredCount }) {
       for (const user of users) {
         if (user.alreadyBlocked) {
@@ -272,11 +302,14 @@
           this.targets.push(user)
         }
       }
+      const shouldImmBlock = this.progressUI.find('#mobcb-block-immediately').prop('checked')
+      if (shouldImmBlock) {
+        void this.blockTargets()
+      }
       this.updateUI({ users, gatheredCount })
     }
     updateUI ({ users, gatheredCount }) {
       const { targets,
-        skipped,
         originalTitle,
         followersCount,
         progressUI: ui
@@ -308,16 +341,33 @@
           .text(`${userPrefix} @${userName}: ${userNickName}`)
         item.append(link)
         if (shouldSkip) {
+          link.addClass('mobcb-user-skipped')
           ui.find('.mobcb-skipped-users').append(item)
         } else {
+          link.addClass('mobcb-user-target')
           ui.find('.mobcb-target-users').append(item)
         }
       }
+      for (const blockedUserId of this.immBlocked) {
+        const immBlockedUser = ui.find(`a[data-user-id="${blockedUserId}"]`)
+        immBlockedUser
+          .addClass('mobcb-user-blocked')
+          .removeClass('mobcb-user-target')
+      }
       ui.find('.mobcb-progress').text(
-        `체인맞블락 중간 보고: ${gatheredCount}명 중 타겟 ${targets.length}명, 스킵 ${skipped.length}명`
+        `중간 보고: ${gatheredCount}명 중 ${this.count()}`
       )
     }
+
+    count () {
+      const [ts, is, ss] = [this.targets.length, this.immBlocked.size, this.skipped.length]
+      return `타겟 ${ts}명(${is}명 즉시차단), 스킵 ${ss}명`
+    }
     finalize () {
+      this.finalizeUI()
+    }
+
+    finalizeUI () {
       const {
         targets,
         skipped,
@@ -325,21 +375,23 @@
         followersCount,
         progressUI: ui
       } = this
+      // let finallyBlocked = this.immBlocked.size
+      const blockableTargets = targets.filter(user => !this.immBlocked.has(user.userId))
       document.title = `체인맞블락 수집완료! \u2013 ${originalTitle}`
       ui.find('.mobcb-progress').text(
-        `체인맞블락 결과 보고: ${followersCount}명 중 타겟 ${targets.length}명, 스킵 ${skipped.length}명`
+        `결과 보고: ${followersCount}명 중 ${this.count()}`
       )
-      ui.find('.mobcb-bottom-message').text(`${targets.length}명 맞차단 가능`)
+      // ui.find('.mobcb-bottom-message').text(`맞차단: ${blockableTargets.length}명 가능/ ${finallyBlocked}명 차단성공`)
       if (targets.length === 0 && skipped.length === 0) {
         window.alert('여기에선 아무도 나를 차단하지 않았습니다.')
         this.close()
         return
-      } else if (targets.length > 0) {
+      } else if (blockableTargets.length > 0) {
         ui.find('.mobcb-controls .btn').prop('disabled', false)
       }
       ui.find('.mobcb-execute').click(event => {
         event.preventDefault()
-        if (targets.length === 0) {
+        if (blockableTargets.length === 0) {
           window.alert('맞차단할 사용자가 없습니다.')
           return
         }
@@ -347,21 +399,34 @@
           document.title = `체인맞블락 차단중\u2026 \u2013 ${originalTitle}`
           const promises = targets.map(user => {
             const {userId} = user
-            return sendBlockRequest(userId)
-              .then(() => ' \u2714', () => ' \u274C')
-              .then(result => {
-                const text = document.createTextNode(result)
-                ui.find(`.mobcb-target-users a[data-user-id="${userId}"]`).prepend(text)
-                return {
-                  user,
-                  ok: result === ' \u2714'
-                }
+            const userItem = ui.find(`.mobcb-target-users a[data-user-id="${userId}"]`)
+            if (this.immBlocked.has(userId)) {
+              return Promise.resolve({
+                user,
+                ok: true
               })
+            } else {
+              return sendBlockRequest(userId)
+                .then(() => true, () => false)
+                .then(result => {
+                  const prefix = 'mobcb-user-'
+                  const className = prefix + (result ? 'blocked' : 'blockfailed')
+                  userItem.addClass(className)
+                  if (result) {
+                    userItem.removeClass('mobcb-user-target')
+                  }
+                  return {
+                    user,
+                    ok: result
+                  }
+                })
+            }
           })
           Promise.all(promises).then(results => {
             const successes = results.filter(x => x.ok)
             ui.find('.mobcb-execute').prop('disabled', true)
-            ui.find('.mobcb-bottom-message').text(`${successes.length}명 맞차단 완료!`)
+            // finallyBlocked += successes.length
+            // ui.find('.mobcb-bottom-message').text(`맞차단: ${blockableTargets.length}명 가능/ ${finallyBlocked}명 차단성공`)
             document.title = `체인맞블락 차단완료! \u2013 ${originalTitle}`
             for (const result of successes) {
               const {userId} = result.user
