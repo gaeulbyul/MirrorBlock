@@ -363,11 +363,12 @@
       const [ts, is, ss] = [this.targets.length, this.immBlocked.size, this.skipped.length]
       return `타겟 ${ts}명(${is}명 즉시차단), 스킵 ${ss}명`
     }
-    finalize () {
-      this.finalizeUI()
+
+    finalize ({userStopped}) {
+      this.finalizeUI({userStopped})
     }
 
-    finalizeUI () {
+    finalizeUI ({userStopped}) {
       const {
         targets,
         skipped,
@@ -377,7 +378,11 @@
       } = this
       // let finallyBlocked = this.immBlocked.size
       const blockableTargets = targets.filter(user => !this.immBlocked.has(user.userId))
-      document.title = `체인맞블락 수집완료! \u2013 ${originalTitle}`
+      if (!userStopped) {
+        document.title = `체인맞블락 수집완료! \u2013 ${originalTitle}`
+      } else {
+        document.title = this.originalTitle
+      }
       ui.find('.mobcb-progress').text(
         `결과 보고: ${followersCount}명 중 ${this.count()}`
       )
@@ -520,8 +525,8 @@
       window.alert('사용자 목록을 가져오는 도중 오류가 발생했습니다. 체인맞블락을 중단합니다.')
       gatherer.stop()
     })
-    gatherer.on('end', () => {
-      ui.finalize()
+    gatherer.on('end', ({userStopped}) => {
+      ui.finalize({userStopped})
     })
     const profileUsername = $('.ProfileHeaderCard .username b').text()
     void gatherer.start(profileUsername, currentList)
