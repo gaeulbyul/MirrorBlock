@@ -316,6 +316,7 @@
       } = this
       const percentage = Math.round(gatheredCount / followersCount * 100)
       document.title = `(${percentage}% | ${targets.length}명) 체인맞블락 사용자 수집중\u2026 \u2013 ${originalTitle}`
+      this.notifyLimitation(false)
       for (const user of users) {
         const {
           userId,
@@ -362,6 +363,14 @@
     count () {
       const [ts, is, ss] = [this.targets.length, this.immBlocked.size, this.skipped.length]
       return `타겟 ${ts}명(${is}명 즉시차단), 스킵 ${ss}명`
+    }
+
+    notifyLimitation (limited) {
+      const bottomMessage = this.progressUI.find('.mobcb-bottom-message')
+      const message = (limited
+        ? `팔로워를 너무 많이 가져와 일시적인 제한이 걸렸습니다. 약 20분 뒤에 다시 시도합니다.`
+        : '')
+      bottomMessage.text(message)
     }
 
     finalize ({userStopped}) {
@@ -508,6 +517,7 @@
     ui.followersCount = Number($(`.ProfileNav-item--${currentList} [data-count]`).eq(0).data('count'))
     const gatherer = new FollwerGatherer({
       filter: user => user.blocksYou,
+      stopOnLimit: false,
       delay: options.chainBlockOver10KMode ? 2500 : 250
     })
     ui.progressUI.on('click', '.mobcb-close', () => {
@@ -518,8 +528,7 @@
       ui.update({ users, gatheredCount })
     })
     gatherer.on('limit', () => {
-      window.alert('더 이상 사용자 목록을 가져올 수 없습니다. 체인맞블락을 중단합니다.')
-      gatherer.stop()
+      ui.notifyLimitation(true)
     })
     gatherer.on('error', () => {
       window.alert('사용자 목록을 가져오는 도중 오류가 발생했습니다. 체인맞블락을 중단합니다.')
