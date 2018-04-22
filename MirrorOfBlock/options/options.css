@@ -35,7 +35,7 @@ kbd {
 }
 
 .field input {
-  user-action: none;
+  user-select: none;
 }
 
 /*
@@ -50,12 +50,6 @@ kbd {
 
 #outlineBlockUser:checked+.outlineExample {
   outline: 2px solid crimson;
-}
-
-.info-reload {
-  padding: .5em 1em;
-  background-color: #eef;
-  color: #000;
 }
 
 .info-option {

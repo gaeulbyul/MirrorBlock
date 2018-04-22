@@ -1,9 +1,16 @@
-/* globals MutationObserver, sendBlockRequest, changeButtonToBlocked, ExtOption */
+/* globals MutationObserver, sendBlockRequest, changeButtonToBlocked, ExtOption, browser */
 
 const BLOCKS_YOU = '<span class="mob-BlockStatus">나를 차단함</span>'
 const BLOCK_REFLECTED = '<span class="mob-BlockReflectedStatus">차단반사 발동!</span>'
 
-const optionP = ExtOption.load()
+browser.storage.onChanged.addListener(changes => {
+  const option = changes.option.newValue
+  document.body.classList.toggle('mob-enable-outline', option.outlineBlockUser)
+})
+
+ExtOption.load().then(option => {
+  document.body.classList.toggle('mob-enable-outline', option.outlineBlockUser)
+})
 
 // 페이지에 CSS를 삽입
 function injectCSS (css) {
@@ -17,6 +24,48 @@ function injectCSS (css) {
     })
   }
 }
+
+// language=CSS
+// noinspection CssUnusedSymbol
+injectCSS(`
+  .mob-BlockStatus,
+  .mob-BlockReflectedStatus {
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: normal;
+    margin-left: 2px;
+    padding: 2px 4px;
+  }
+  .account .mob-BlockStatus,
+  .account .mob-BlockReflectedStatus {
+    margin: 0;
+  }
+  .mob-BlockStatus {
+    background-color: #f9f2f4;
+    color: #c7254e;
+  }
+  .mob-BlockReflectedStatus {
+    background-color: #fcf8e3;
+    color: #8a6d3b;
+  }
+  body.mob-enable-outline .ProfileCard.mob-blocks-you-outline {
+    outline: 3px solid crimson;
+  }
+  body.mob-enable-outline .account.mob-blocks-you-outline {
+    border: 3px solid crimson !important;
+    margin: 1px 0;
+  }
+  body.mob-enable-outline .ProfileAvatar.mob-blocks-you-outline {
+    border-color: crimson !important;
+  }
+  .mob-nightmode .mob-BlockStatus {
+    background-color: #141d26;
+  }
+  .mob-nightmode .mob-BlockReflectedStatus {
+    background-color: #141d26;
+    color: #fce8b3;
+  }
+`)
 
 // 딱지 붙일 요소 찾기
 function getPlaceForBadge (user) {
@@ -57,7 +106,7 @@ function outlineToBlockedUser (user) {
   } else if (user.classList.contains('ProfileNav')) {
     const circleProfileAvatar = document.querySelector('.ProfileAvatar')
     if (circleProfileAvatar) {
-      circleProfileAvatar.style.borderColor = 'crimson'
+      circleProfileAvatar.classList.add('mob-blocks-you-outline')
     }
   }
 }
@@ -75,6 +124,9 @@ function reflectBlock (user) {
 }
 
 function userHandler (user) {
+  if (!user) {
+    return
+  }
   const alreadyChecked = user.classList.contains('mob-checked')
   if (alreadyChecked) {
     return
@@ -88,10 +140,8 @@ function userHandler (user) {
   indicateBlockToUser(user, BLOCKS_YOU)
   const alreadyBlocked = !!user.querySelector('.blocked')
   const muted = !!user.querySelector('.muting')
-  optionP.then(option => {
-    if (option.outlineBlockUser) {
-      outlineToBlockedUser(user)
-    }
+  outlineToBlockedUser(user)
+  ExtOption.load().then(option => {
     // 차단반사
     const shouldBlock = option.enableBlockReflection && !alreadyBlocked && !muted
     if (shouldBlock) {
@@ -101,58 +151,19 @@ function userHandler (user) {
 }
 
 function applyToRendered () {
-  const userList = document.querySelectorAll('.js-actionable-user')
-  if (userList.length > 0) {
-    userList.forEach(userHandler)
-  }
+  const elementsToHandle = [
+    ...document.querySelectorAll('.js-actionable-user')
+  ]
   const profileNav = document.querySelector('.ProfileNav')
   if (profileNav) {
-    userHandler(profileNav)
+    elementsToHandle.push(profileNav)
   }
+  elementsToHandle.forEach(userHandler)
 }
 
 function toggleNightMode (mode) {
   document.documentElement.classList.toggle('mob-nightmode', mode)
 }
-
-// language=CSS
-// noinspection CssUnusedSymbol
-injectCSS(`
-  .mob-BlockStatus,
-  .mob-BlockReflectedStatus {
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: normal;
-    margin-left: 2px;
-    padding: 2px 4px;
-  }
-  .account .mob-BlockStatus,
-  .account .mob-BlockReflectedStatus {
-    margin: 0;
-  }
-  .mob-BlockStatus {
-    background-color: #f9f2f4;
-    color: #c7254e;
-  }
-  .mob-BlockReflectedStatus {
-    background-color: #fcf8e3;
-    color: #8a6d3b;
-  }
-  .ProfileCard.mob-blocks-you-outline {
-    outline: 3px solid crimson;
-  }
-  .account.mob-blocks-you-outline {
-    border: 3px solid crimson !important;
-    margin: 1px 0;
-  }
-  .mob-nightmode .mob-BlockStatus {
-    background-color: #141d26;
-  }
-  .mob-nightmode .mob-BlockReflectedStatus {
-    background-color: #141d26;
-    color: #fce8b3;
-  }
-`)
 
 const observer = new MutationObserver(mutations => {
   for (const mutation of mutations) {
@@ -160,14 +171,18 @@ const observer = new MutationObserver(mutations => {
       if (!('querySelector' in node)) {
         continue
       }
-      const isUser = node.matches('.js-actionable-user')
-      if (isUser) {
-        userHandler(node)
+      const elementsToHandle = [
+        ...node.querySelectorAll('.js-actionable-user')
+      ]
+      if (node.matches('.js-actionable-user')) {
+        elementsToHandle.push(node)
       }
       const profileNav = node.querySelector('.ProfileNav')
       if (profileNav) {
-        userHandler(profileNav)
+        elementsToHandle.push(profileNav)
       }
+      elementsToHandle.forEach(userHandler)
+      // console.log(node)
     }
   }
 })
@@ -198,9 +213,5 @@ nightModeObserver.observe(document.head, {
 })
 
 toggleNightMode(/\bnight_mode=1\b/.test(document.cookie))
-
-window.setInterval(() => {
-  applyToRendered()
-}, 1500)
 
 applyToRendered()
