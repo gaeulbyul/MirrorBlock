@@ -6,7 +6,11 @@
   const CHAINBLOCK_UI_HTML = `
     <div class="mobcb-bg modal-container block-dialog">
       <div class="mobcb-dialog modal modal-content is-autoPosition">
-        <div class="mobcb-title">체인맞블락</div>
+        <div class="mobcb-titlebar">
+          <span class="mobcb-title">체인맞블락</span>
+          <span class="mobcb-title-extra"></span>
+          <span class="mobcb-title-status"></span>
+        </div>
         <span class="mobcb-progress"></span>
         <hr class="mobcb-hr">
         <div class="mobcb-users">
@@ -51,10 +55,18 @@
       width: 450px;
       max-height: 80vh;
     }
+    .mobcb-titlebar {
+      margin-bottom: 5px;
+    }
     .mobcb-title {
       font-size: 16px;
       font-weight: bold;
-      margin-bottom: 5px;
+    }
+    .mobcb-title-extra {
+      font-size: 14px;
+    }
+    .mobcb-title-status {
+      font-size: 14px;
     }
     .mobcb-users {
       min-width: 60px;
@@ -83,6 +95,9 @@
     }
     .mobcb-controls .normal-btn {
       color: inherit;
+    }
+    .mobcb-controls .btn:disabled {
+      cursor: not-allowed;
     }
     .mobcb-controls .btn ~ .btn {
       margin: 0 5px;
@@ -261,16 +276,13 @@
       this.followersCount = 0
       this.originalTitle = document.title
       $('<div>').html(`&shy;<style>${CHAINBLOCK_UI_CSS}</style>`).appendTo(document.body)
-      const progressUI = this.progressUI = $('<div>')
-      progressUI.html(CHAINBLOCK_UI_HTML)
-      progressUI.appendTo(document.body)
+      const ui = this.progressUI = $('<div>')
+      ui.html(CHAINBLOCK_UI_HTML)
+      ui.appendTo(document.body)
       if (options.chainBlockOver10KMode) {
-        const dialogTitle = progressUI.find('.mobcb-title')
-        dialogTitle.text(
-          dialogTitle.text() + ' (슬로우 모드)'
-        )
+        ui.find('.mobcb-title-extra').text('(슬로우 모드)')
       }
-      progressUI.on('click', '.mobcb-close', event => {
+      ui.on('click', '.mobcb-close', event => {
         event.preventDefault()
         this.close()
       })
@@ -391,7 +403,9 @@
         document.title = `체인맞블락 수집완료! \u2013 ${originalTitle}`
       } else {
         document.title = this.originalTitle
+        return
       }
+      ui.find('.mobcb-title-status').text('(수집완료)')
       ui.find('.mobcb-progress').text(
         `결과 보고: ${followersCount}명 중 ${this.count()}`
       )
@@ -401,6 +415,8 @@
         return
       } else if (blockableTargets.length > 0) {
         ui.find('.mobcb-controls .btn').prop('disabled', false)
+      } else if (blockableTargets.length === 0) {
+        ui.find('.mobcb-bottom-message').text('맞차단할 사용자가 없거나 이미 맞차단을 했습니다.')
       }
       ui.find('.mobcb-execute').click(event => {
         event.preventDefault()
@@ -410,6 +426,7 @@
         }
         if (window.confirm('실제로 맞차단하시겠습니까?')) {
           document.title = `체인맞블락 차단중\u2026 \u2013 ${originalTitle}`
+          ui.find('.mobcb-title-status').text('(차단중)')
           const promises = targets.map(user => {
             const {userId} = user
             const userItem = ui.find(`.mobcb-target-users a[data-user-id="${userId}"]`)
@@ -439,6 +456,7 @@
             const successes = results.filter(x => x.ok)
             ui.find('.mobcb-execute').prop('disabled', true)
             document.title = `체인맞블락 차단완료! \u2013 ${originalTitle}`
+            ui.find('.mobcb-title-status').text('(차단완료)')
             for (const result of successes) {
               const {userId} = result.user
               const profileCard = $(`.ProfileCard[data-user-id="${userId}"]`)
