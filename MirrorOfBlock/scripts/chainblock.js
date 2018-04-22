@@ -286,15 +286,16 @@
             return true
           })
           .catch(() => false)
+          .then(result => {
+            console.log('즉시차단(%s) = %s', userId, result)
+            return result
+          })
       })
       return Promise.all(promises)
     }
     update ({ users, gatheredCount }) {
       for (const user of users) {
-        if (user.alreadyBlocked) {
-          user.shouldSkip = true
-          this.skipped.push(user)
-        } else if (user.muted) {
+        if (user.alreadyBlocked || user.muted) {
           user.shouldSkip = true
           this.skipped.push(user)
         } else {
@@ -385,7 +386,6 @@
         followersCount,
         progressUI: ui
       } = this
-      // let finallyBlocked = this.immBlocked.size
       const blockableTargets = targets.filter(user => !this.immBlocked.has(user.userId))
       if (!userStopped) {
         document.title = `체인맞블락 수집완료! \u2013 ${originalTitle}`
@@ -395,7 +395,6 @@
       ui.find('.mobcb-progress').text(
         `결과 보고: ${followersCount}명 중 ${this.count()}`
       )
-      // ui.find('.mobcb-bottom-message').text(`맞차단: ${blockableTargets.length}명 가능/ ${finallyBlocked}명 차단성공`)
       if (targets.length === 0 && skipped.length === 0) {
         window.alert('여기에선 아무도 나를 차단하지 않았습니다.')
         this.close()
@@ -439,8 +438,6 @@
           Promise.all(promises).then(results => {
             const successes = results.filter(x => x.ok)
             ui.find('.mobcb-execute').prop('disabled', true)
-            // finallyBlocked += successes.length
-            // ui.find('.mobcb-bottom-message').text(`맞차단: ${blockableTargets.length}명 가능/ ${finallyBlocked}명 차단성공`)
             document.title = `체인맞블락 차단완료! \u2013 ${originalTitle}`
             for (const result of successes) {
               const {userId} = result.user
