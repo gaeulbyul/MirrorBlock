@@ -3,7 +3,7 @@
   "manifest_version": 2,
   "name": "Mirror Of Block",
   "author": "Gaeulbyul <aeiou256@gmail.com>",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "homepage_url": "https://github.com/gaeulbyul/MirrorOfBlock",
   "icons": {
     "48": "icons/icon.png"
@@ -13,7 +13,7 @@
     "storage",
     "activeTab"
   ],
-  
+
   "options_ui": {
     "page": "options/options.html"
   },
