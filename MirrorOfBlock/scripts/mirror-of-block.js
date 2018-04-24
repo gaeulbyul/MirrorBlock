@@ -5,11 +5,11 @@ const BLOCK_REFLECTED = '<span class="mob-BlockReflectedStatus">차단반사 발
 
 browser.storage.onChanged.addListener(changes => {
   const option = changes.option.newValue
-  document.body.classList.toggle('mob-enable-outline', option.outlineBlockUser)
+  document.documentElement.classList.toggle('mob-enable-outline', option.outlineBlockUser)
 })
 
 ExtOption.load().then(option => {
-  document.body.classList.toggle('mob-enable-outline', option.outlineBlockUser)
+  document.documentElement.classList.toggle('mob-enable-outline', option.outlineBlockUser)
 })
 
 // 페이지에 CSS를 삽입
@@ -48,14 +48,14 @@ injectCSS(`
     background-color: #fcf8e3;
     color: #8a6d3b;
   }
-  body.mob-enable-outline .ProfileCard.mob-blocks-you-outline {
+  .mob-enable-outline .ProfileCard.mob-blocks-you-outline {
     outline: 3px solid crimson;
   }
-  body.mob-enable-outline .account.mob-blocks-you-outline {
+  .mob-enable-outline .account.mob-blocks-you-outline {
     border: 3px solid crimson !important;
     margin: 1px 0;
   }
-  body.mob-enable-outline .ProfileAvatar.mob-blocks-you-outline {
+  .mob-enable-outline .ProfileAvatar.mob-blocks-you-outline {
     border-color: crimson !important;
   }
   .mob-nightmode .mob-BlockStatus {
