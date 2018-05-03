@@ -290,19 +290,21 @@
 
     async blockTargets () {
       const {targets} = this
-      const promises = targets.map(async user => {
-        const {userId} = user
-        return sendBlockRequest(userId)
-          .then(() => {
-            this.immBlocked.add(userId)
-            return true
-          })
-          .catch(() => false)
-          .then(result => {
-            console.log('즉시차단(%s) = %s', userId, result)
-            return result
-          })
-      })
+      const promises = targets
+        .filter(user => !this.immBlocked.has(user.userId))
+        .map(async user => {
+          const {userId} = user
+          return sendBlockRequest(userId)
+            .then(() => {
+              this.immBlocked.add(userId)
+              return true
+            })
+            .catch(() => false)
+            .then(result => {
+              console.log('즉시차단(%s) = %s', userId, result)
+              return result
+            })
+        })
       return Promise.all(promises)
     }
     update ({ users, gatheredCount }) {
