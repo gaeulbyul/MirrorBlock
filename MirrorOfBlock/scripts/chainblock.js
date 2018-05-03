@@ -92,6 +92,7 @@
     .mobcb-bottom-message {
       float: left;
       padding: 10px 0;
+      width: 100%;
     }
     .mobcb-controls .normal-btn {
       color: inherit;
