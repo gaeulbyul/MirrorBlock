@@ -22,6 +22,9 @@
   "content_scripts": [
     {
       "matches": ["*://twitter.com/*"],
+      "css": [
+        "styles/mirror-of-block.css"
+      ],
       "js": [
         "vendor/browser-polyfill.min.js",
         "/extoption.js",

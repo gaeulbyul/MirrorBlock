@@ -12,61 +12,6 @@ ExtOption.load().then(option => {
   document.documentElement.classList.toggle('mob-enable-outline', option.outlineBlockUser)
 })
 
-// 페이지에 CSS를 삽입
-function injectCSS (css) {
-  const div = document.createElement('div')
-  div.innerHTML = `&shy;<style>${css}</style>`
-  if (document.body) {
-    document.body.appendChild(div)
-  } else {
-    document.addEventListener('DOMContentLoaded', () => {
-      document.body.appendChild(div)
-    })
-  }
-}
-
-// language=CSS
-// noinspection CssUnusedSymbol
-injectCSS(`
-  .mob-BlockStatus,
-  .mob-BlockReflectedStatus {
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: normal;
-    margin-left: 2px;
-    padding: 2px 4px;
-  }
-  .account .mob-BlockStatus,
-  .account .mob-BlockReflectedStatus {
-    margin: 0;
-  }
-  .mob-BlockStatus {
-    background-color: #f9f2f4;
-    color: #c7254e;
-  }
-  .mob-BlockReflectedStatus {
-    background-color: #fcf8e3;
-    color: #8a6d3b;
-  }
-  .mob-enable-outline .ProfileCard.mob-blocks-you-outline {
-    outline: 3px solid crimson;
-  }
-  .mob-enable-outline .account.mob-blocks-you-outline {
-    border: 3px solid crimson !important;
-    margin: 1px 0;
-  }
-  .mob-enable-outline .ProfileAvatar.mob-blocks-you-outline {
-    border-color: crimson !important;
-  }
-  .mob-nightmode .mob-BlockStatus {
-    background-color: #141d26;
-  }
-  .mob-nightmode .mob-BlockReflectedStatus {
-    background-color: #141d26;
-    color: #fce8b3;
-  }
-`)
-
 // 딱지 붙일 요소 찾기
 function getPlaceForBadge (user) {
   // 팔로잉/팔로워 페이지

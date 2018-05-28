@@ -4,7 +4,7 @@
 // https://github.com/satsukitv/twitter-block-chain
 {
   const CHAINBLOCK_UI_HTML = `
-    <div class="mobcb-bg modal-container block-dialog">
+    <div class="mobcb-bg modal-container block-dialog" style="display:flex">
       <div class="mobcb-dialog modal modal-content is-autoPosition">
         <div class="mobcb-titlebar">
           <span class="mobcb-title">체인맞블락</span>
@@ -30,79 +30,6 @@
         </div>
       </div>
     </div>
-  `
-  const CHAINBLOCK_UI_CSS = `
-    .mobcb-bg {
-      position: fixed;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 9999;
-      overflow: hidden;
-      background-color: rgba(0, 0, 0, .6);
-    }
-    hr.mobcb-hr {
-      margin: 3px 0;
-    }
-    .mobcb-dialog {
-      padding: 15px;
-      display: flex;
-      flex-direction: column;
-      width: 450px;
-      max-height: 80vh;
-    }
-    .mobcb-titlebar {
-      margin-bottom: 5px;
-    }
-    .mobcb-title {
-      font-size: 16px;
-      font-weight: bold;
-    }
-    .mobcb-title-extra {
-      font-size: 14px;
-    }
-    .mobcb-title-status {
-      font-size: 14px;
-    }
-    .mobcb-users {
-      min-width: 60px;
-      overflow-y: scroll;
-    }
-    .mobcb-users > ul {
-      list-style: none;
-      line-height: 150%;
-    }
-    .mobcb-user-blocked:before {
-      content: '\u2714';
-    }
-    .mobcb-user-blockfailed:before {
-      content: '\u274C';
-    }
-    .mobcb-extra-options {
-      padding: 10px 0;
-    }
-    .mobcb-extra-options input[type="checkbox"] {
-      margin-right: .5em;
-      vertical-align: middle;
-    }
-    .mobcb-bottom-message {
-      float: left;
-      padding: 10px 0;
-      width: 100%;
-    }
-    .mobcb-controls .normal-btn {
-      color: inherit;
-    }
-    .mobcb-controls .btn:disabled {
-      cursor: not-allowed;
-    }
-    .mobcb-controls .btn ~ .btn {
-      margin: 0 5px;
-    }
   `
   function restoreConsole () {
     if (/\[native code]/.test(window.console.log.toString())) {
@@ -276,7 +203,6 @@
       this.immBlocked = new Set()
       this.followersCount = 0
       this.originalTitle = document.title
-      $('<div>').html(`&shy;<style>${CHAINBLOCK_UI_CSS}</style>`).appendTo(document.body)
       const ui = this.progressUI = $('<div>')
       ui.html(CHAINBLOCK_UI_HTML)
       ui.appendTo(document.body)
