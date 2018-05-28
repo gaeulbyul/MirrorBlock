@@ -12,16 +12,7 @@ function isChainBlockablePage (urlstr) {
   }
 }
 
-function injectChainBlockScript (src, options) {
-  window.sessionStorage.setItem('$MirrorOfBlockOptions', options)
-  const script = document.createElement('script')
-  script.src = src
-  ;(document.head || document.documentElement).appendChild(script)
-}
-
 async function executeChainBlock () {
-  const options = await ExtOption.load()
-  const optionsJSON = JSON.stringify(options)
   const tabs = await browser.tabs.query({active: true, currentWindow: true})
   const currentTab = tabs[0]
   if (!isChainBlockablePage(currentTab.url)) {
@@ -29,14 +20,9 @@ async function executeChainBlock () {
 (예: https://twitter.com/(UserName)/followers)`)
     return
   }
-  const scripts = ['/scripts/block.js', '/scripts/chainblock.js']
-  for (const script of scripts) {
-    const scriptUrl = browser.runtime.getURL(script)
-    const code = `(${injectChainBlockScript.toString()})('${scriptUrl}', \`${optionsJSON}\`)`
-    browser.tabs.executeScript(currentTab.id, {
-      code
-    })
-  }
+  browser.tabs.sendMessage(currentTab.id, {
+    action: 'MirrorOfBlock/start-chainblock'
+  })
 }
 
 document.addEventListener('DOMContentLoaded', () => {
