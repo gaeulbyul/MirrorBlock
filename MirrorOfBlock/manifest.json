@@ -34,7 +34,7 @@
         "scripts/chainblock.js"
       ]
     }
-  ]
+  ],
 
   "browser_action": {
     "default_icon": "icons/icon.png",
