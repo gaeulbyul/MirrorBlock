@@ -87,8 +87,8 @@ function userHandler (user) {
   const muted = !!user.querySelector('.muting')
   outlineToBlockedUser(user)
   ExtOption.load().then(option => {
-    // 차단반사
-    const shouldBlock = option.enableBlockReflection && !alreadyBlocked && !muted
+    const muteSkip = muted && !option.blockMutedUser
+    const shouldBlock = option.enableBlockReflection && !alreadyBlocked && !muteSkip
     if (shouldBlock) {
       reflectBlock(user)
     }

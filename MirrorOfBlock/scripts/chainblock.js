@@ -1,4 +1,12 @@
-/* globals browser, fetch, location, $, sendBlockRequest, changeButtonToBlocked */
+/* globals
+  browser,
+  fetch,
+  location,
+  $,
+  sendBlockRequest,
+  changeButtonToBlocked,
+  ExtOption,
+*/
 
 const CHAINBLOCK_UI_HTML = `
   <div class="mobcb-bg modal-container block-dialog" style="display:flex">
@@ -188,6 +196,7 @@ class ChainBlockUI {
     this.immBlocked = new Set()
     this.followersCount = 0
     this.originalTitle = document.title
+    this.options = options
     const ui = this.progressUI = $('<div>')
     ui.html(CHAINBLOCK_UI_HTML)
     ui.appendTo(document.body)
@@ -221,7 +230,8 @@ class ChainBlockUI {
   }
   update ({ users, gatheredCount }) {
     for (const user of users) {
-      if (user.alreadyBlocked || user.muted) {
+      const muteSkip = user.muted && !this.options.blockMutedUser
+      if (user.alreadyBlocked || muteSkip) {
         user.shouldSkip = true
         this.skipped.push(user)
       } else {
@@ -253,10 +263,11 @@ class ChainBlockUI {
         muted,
         shouldSkip
       } = user
+      const muteSkip = muted && !this.options.blockMutedUser
       let userPrefix = ''
       if (alreadyBlocked) {
         userPrefix = '[Blocked] '
-      } else if (muted) {
+      } else if (muteSkip) {
         userPrefix = '[Skip] '
       }
       const item = $('<li>')
@@ -428,7 +439,7 @@ async function chainBlock () {
   } else if (blockedUser()) {
     window.alert('이미 나를 차단한 사용자의 팔로잉/팔로워가 누군지 알 수 없습니다.')
   } else if (window.confirm('체인맞블락을 위해 나를 차단한 사용자를 찾습니다. 계속하시겠습니까?')) {
-    const options = await browser.storage.local.get('option').then(s => s.option, () => ({}))
+    const options = await ExtOption.load()
     Object.freeze(options)
     const currentList = (path => {
       if (/\/followers$/.test(path)) {
