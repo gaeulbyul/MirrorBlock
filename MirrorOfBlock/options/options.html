@@ -5,41 +5,41 @@
 </head><body>
 <div class="whole">
   <fieldset>
-    <legend>표시</legend>
-    <div class="browser-style">
+    <legend>옵션</legend>
+    <div class="option-item">
       <label class="field">
         <input type="checkbox" id="outlineBlockUser">
-        <span class="outlineExample">
+        <span>
           나를 차단한 사용자가 더욱 잘 보이게 빨간 테두리 표시하기
         </span>
       </label>
     </div>
-  </fieldset>
-  <fieldset>
-    <legend>차단반사 (자동 맞차단)</legend>
-    <div class="browser-style">
+    <div class="option-item">
       <label class="field">
         <input type="checkbox" id="enableBlockReflection">
-        차단반사 기능 활성화
+        <span>차단반사 기능 활성화</span>
       </label>
       <div class="info-option">
-        <p>차단반사가 켜져있으면 트위터 사용 중 차단한 사용자를 발견하면 해당 사용자를 맞차단합니다.</p>
-        <p>특정 사용자에게 차단반사를 원하지 않는다면 해당 사용자의 차단을 해제한 후 뮤트를 걸어두세요.
-          <mark>뮤트를 걸어둔 사용자에겐 차단반사를 하지 않습니다.</mark>
-        </p>
+        <p>차단반사가 켜져있으면 트위터 사용 중 차단한 사용자를 발견할 때 그 사용자를 맞차단합니다.</p>
       </div>
     </div>
-  </fieldset>
-  <fieldset>
-    <legend>체인맞블락</legend>
-    <div class="browser-style">
+    <div class="option-item">
       <label class="field">
         <input type="checkbox" id="chainBlockOver10KMode">
-        체인맞블락 슬로우모드
+        <span>체인맞블락 슬로우모드</span>
       </label>
       <div class="info-option">
         <p>슬로우모드가 켜져있으면 체인맞블락 실행시 사용자 목록을 천천히 가져옵니다. 이렇게 하면 체인맞블락하는데 더 오랜 시간이 걸리지만 팔로잉/팔로워가 10,000명 이상의 사용자에게도 체인맞블락을
           실행할 수 있습니다.</p>
+      </div>
+    </div>
+    <div class="option-item">
+      <label class="field">
+        <input type="checkbox" id="blockMutedUser">
+        <span>내가 뮤트한 사용자도 차단하기</span>
+      </label>
+      <div class="info-option">
+        <p>이 옵션을 끄면 뮤트를 건 사용자에겐 맞차단을 하지 않고, 옵션을 키면 뮤트여부과 상관없이 맞차단을 합니다.</p>
       </div>
     </div>
   </fieldset>

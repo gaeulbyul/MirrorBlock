@@ -29,32 +29,25 @@ kbd {
   font-family: 'Consolas', monospace;
 }
 
-.field:not(:first-of-type) {
-  display: block;
-  margin-top: .5em;
+.option-item:not(:first-of-type) {
+  margin-top: 1em;
 }
 
 .field input {
   user-select: none;
 }
 
-/*
-.saveButton {
-  display: block;
-  padding: .5em 1em;
-  margin: auto;
-  font-size: var(--default-font-size);
-  min-width: 200px;
-}
-*/
-
-#outlineBlockUser:checked+.outlineExample {
-  outline: 2px solid crimson;
+.field input[type="checkbox"]:checked + span {
+  font-weight: bold;
 }
 
 .info-option {
-  margin: .5em 2em;
+  margin: 0 2em;
   font-size: small;
+}
+
+.info-option > p {
+  margin: .5em 0;
 }
 
 .info-option mark {
