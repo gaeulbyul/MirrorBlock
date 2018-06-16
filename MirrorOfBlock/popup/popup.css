@@ -59,3 +59,7 @@ hr {
   font-weight: bold;
   color: green;
 }
+
+.option-item.currentVersion {
+  color: #333;
+}

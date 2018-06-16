@@ -34,6 +34,12 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault()
     browser.runtime.openOptionsPage()
   }
+  {
+    const manifest = browser.runtime.getManifest()
+    const currentVersion = document.querySelector('.currentVersion')
+    currentVersion.textContent = `버전: ${manifest.version}`
+    currentVersion.title = `Mirror Of Block 버전 ${manifest.version}을(를) 사용하고 있습니다.`
+  }
   ExtOption.load().then(option => {
     {
       const blockReflection = document.querySelector('.blockReflection')
