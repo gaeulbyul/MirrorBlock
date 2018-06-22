@@ -18,6 +18,7 @@ function saveOption () {
 async function loadOption () {
   const option = await ExtOption.load()
   for (const key of Object.keys(elements)) {
+    elements[key].disabled = false
     elements[key].checked = option[key]
   }
 }
@@ -25,7 +26,7 @@ async function loadOption () {
 function displayVersion () {
   const elem = document.getElementById('version')
   const manifest = browser.runtime.getManifest()
-  elem.textContent = `v${manifest.version}`
+  elem.textContent = manifest.version
 }
 
 function init () {
