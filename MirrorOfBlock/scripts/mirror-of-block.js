@@ -61,8 +61,7 @@ function reflectBlock (user) {
   const actions = user.querySelector('.user-actions')
   const userId = actions.getAttribute('data-user-id')
   const userName = actions.getAttribute('data-screen-name')
-  return sendBlockRequest(userId).then(response => {
-    console.log('%s에게 차단반사!', userName, response)
+  return sendBlockRequest(userId).then(() => {
     changeButtonToBlocked(user)
     indicateBlockToUser(user, BLOCK_REFLECTED)
   })
@@ -127,7 +126,6 @@ const observer = new MutationObserver(mutations => {
         elementsToHandle.push(profileNav)
       }
       elementsToHandle.forEach(userHandler)
-      // console.log(node)
     }
   }
 })
