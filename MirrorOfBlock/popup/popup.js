@@ -16,8 +16,10 @@ async function executeChainBlock () {
   const tabs = await browser.tabs.query({active: true, currentWindow: true})
   const currentTab = tabs[0]
   if (!isChainBlockablePage(currentTab.url)) {
-    window.alert(`PC용 트위터(twitter.com)의 팔로잉 혹은 팔로워 페이지에서만 작동합니다.
-(예: https://twitter.com/(UserName)/followers)`)
+    const message = String.raw`Mirror Of Block: PC용 트위터(twitter.com)의 팔로잉 혹은 팔로워 페이지에서만 작동합니다.\n(예: https://twitter.com/(UserName)/followers)`.replace(/'/g, '')
+    browser.tabs.executeScript(currentTab.id, {
+      code: `window.alert('${message}')`
+    })
     return
   }
   browser.tabs.sendMessage(currentTab.id, {
