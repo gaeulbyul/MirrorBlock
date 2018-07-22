@@ -1,0 +1,111 @@
+/* 차단표시/반사 */
+.mob-BlockStatus,
+.mob-BlockReflectedStatus {
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: normal;
+  margin-left: 2px;
+  padding: 2px 4px;
+}
+.account .mob-BlockStatus,
+.account .mob-BlockReflectedStatus {
+  margin: 0;
+}
+.mob-BlockStatus {
+  background-color: #f9f2f4;
+  color: #c7254e;
+}
+.mob-BlockReflectedStatus {
+  background-color: #fcf8e3;
+  color: #8a6d3b;
+}
+.mob-enable-outline .ProfileCard.mob-blocks-you-outline {
+  outline: 3px solid crimson;
+}
+.mob-enable-outline .account.mob-blocks-you-outline {
+  border: 3px solid crimson !important;
+  margin: 1px 0;
+}
+.mob-enable-outline .ProfileAvatar.mob-blocks-you-outline {
+  border-color: crimson !important;
+}
+.mob-nightmode .mob-BlockStatus {
+  background-color: #141d26;
+}
+.mob-nightmode .mob-BlockReflectedStatus {
+  background-color: #141d26;
+  color: #fce8b3;
+}
+
+/* 체인맞블락 관련 */
+.mobcb-bg {
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, .6);
+}
+hr.mobcb-hr {
+  margin: 3px 0;
+}
+.mobcb-dialog {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  width: 450px;
+  max-height: 80vh;
+}
+.mobcb-titlebar {
+  margin-bottom: 5px;
+}
+.mobcb-title {
+  font-size: 16px;
+  font-weight: bold;
+}
+.mobcb-title-extra {
+  font-size: 14px;
+}
+.mobcb-title-status {
+  font-size: 14px;
+}
+.mobcb-users {
+  min-width: 60px;
+  overflow-y: scroll;
+}
+.mobcb-users > ul {
+  list-style: none;
+  line-height: 150%;
+}
+.mobcb-user-blocked:before {
+  content: '\u2714';
+}
+.mobcb-user-blockfailed:before {
+  content: '\u274C';
+}
+.mobcb-extra-options {
+  padding: 10px 0;
+}
+.mobcb-extra-options input[type="checkbox"] {
+  margin-right: .5em;
+  vertical-align: middle;
+}
+.mobcb-bottom-message {
+  float: left;
+  padding: 10px 0;
+  width: 100%;
+}
+.mobcb-controls .normal-btn {
+  color: inherit;
+}
+.mobcb-controls .btn:disabled {
+  cursor: not-allowed;
+}
+.mobcb-controls .btn ~ .btn {
+  margin: 0 5px;
+}

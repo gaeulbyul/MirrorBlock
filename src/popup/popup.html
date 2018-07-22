@@ -1,0 +1,26 @@
+<!doctype html><html lang="ko"><head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+  <title>Mirror Of Block</title>
+</head><body>
+<div class="whole">
+  <div class="title">Mirror Of Block 메뉴</div>
+  <div class="menu">
+    <button class="menu-item chain-block" title="팔로잉/팔로워 사용자를 수집한 후 일괄적으로 맞차단할 수 있습니다. (실행하자마자 바로 차단하지 않습니다.)">
+      체인맞블락
+    </button>
+    <button class="menu-item open-option" title="Mirror Of Block의 설정을 수정할 수 있습니다.">
+      설정
+    </button>
+  </div>
+  <hr>
+  <div class="current-options">
+    <div class="option-item blockReflection" title="차단반사: 나를 차단한 사용자를 발견하면 맞차단합니다."></div>
+    <div class="option-item chainBlockOver10KMode" title="슬로우모드: 체인맞블락을 천천히 실행합니다."></div>
+    <div class="option-item currentVersion"></div>
+  </div>
+</div>
+<script src="../vendor/browser-polyfill.min.js"></script>
+<script src="/extoption.js"></script>
+<script src="popup.js"></script>
+</body></html>

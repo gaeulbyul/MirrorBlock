@@ -1,0 +1,65 @@
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
+:root {
+  --default-font-size: 16px;
+}
+
+body {
+  font-size: var(--default-font-size);
+  font-family: 'NanumGothic', 'Malgun Gothic', sans-serif;
+}
+
+a, a:visited {
+  color: crimson;
+}
+
+hr {
+  border-top: 1px solid #ccc;
+  border-bottom: 0;
+}
+
+.whole .title {
+  text-align: center;
+  font-size: 14px;
+  user-select: none
+}
+
+.menu {
+  width: 200px;
+}
+
+.menu-item {
+  width: 100%;
+  padding: 5px 10px;
+  margin: 3px 0;
+  border-radius: 3px;
+  border: 2px solid crimson;
+  font-size: var(--default-font-size);
+  background-color: white;
+  color: black;
+  cursor: pointer;
+  transition: background-color .2s ease, color .2s ease;
+}
+
+.menu-item:hover {
+  text-decoration: underline;
+  background-color: crimson;
+  color: white;
+}
+
+.option-item {
+  margin: 5px 0;
+  font-size: .8rem;
+  color: #666;
+}
+
+.option-item.on {
+  font-weight: bold;
+  color: green;
+}
+
+.option-item.currentVersion {
+  color: #333;
+}
