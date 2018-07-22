@@ -6,15 +6,12 @@
   "repository": "https://github.com/gaeulbyul/MirrorOfBlock",
   "author": "Gaeulbyul <aeiou256@gmail.com>",
   "license": "MIT",
-  "standard": {
-    "parser": "typescript-eslint-parser",
-    "plugins": [
-      "typescript"
-    ]
-  },
   "devDependencies": {
+    "@types/jquery": "^3.3.5",
     "eslint-plugin-typescript": "^0.12.0",
     "standard": "^10.0.3",
+    "tslint": "^5.11.0",
+    "tslint-config-standard": "^7.1.0",
     "typescript": "^2.9.2",
     "typescript-eslint-parser": "^16.0.1",
     "web-ext-types": "^2.1.0"

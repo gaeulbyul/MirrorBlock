@@ -8,6 +8,19 @@
   ExtOption,
 */
 
+interface User {
+  userId: string,
+  userName: string,
+  userNickName: string,
+  blocksYou: boolean,
+  alreadyBlocked: boolean,
+  muted: boolean,
+  bio?: string,
+  shouldSkip?: boolean
+}
+
+type FollowType = 'followers' | 'following'
+
 const CHAINBLOCK_UI_HTML = `
   <div class="mobcb-bg modal-container block-dialog" style="display:flex">
     <div class="mobcb-dialog modal modal-content is-autoPosition">
@@ -37,7 +50,7 @@ const CHAINBLOCK_UI_HTML = `
   </div>
 `
 
-function sleep (time) {
+function sleep (time: number) {
   return new Promise(resolve => {
     window.setTimeout(() => {
       resolve()
@@ -46,25 +59,32 @@ function sleep (time) {
 }
 
 class EventEmitter {
-  constructor () {
-    this.events = {}
-  }
-  on (eventname, handler) {
+  private events: {[key: string]: Function[]} = {} // 으음...
+  on (eventname: string, handler: Function) {
     if (!(eventname in this.events)) {
       this.events[eventname] = []
     }
     this.events[eventname].push(handler)
     return this
   }
-  emit (eventname, eparameter) {
+  emit (eventname: string, eparameter?: any) {
     const handlers = this.events[eventname] || []
     handlers.forEach(handler => handler(eparameter))
     return this
   }
 }
 
+interface FollowerGathererOptions {
+  delay: number,
+  delayOnLimitation: number,
+  stopOnLimit: boolean,
+  filter: (user: User) => boolean
+}
+
 class FollwerGatherer extends EventEmitter {
-  constructor (options) {
+  private options: FollowerGathererOptions
+  private stopped: boolean = false
+  constructor (options?: object) {
     super()
     this.options = Object.assign({}, {
       // default options
@@ -73,10 +93,10 @@ class FollwerGatherer extends EventEmitter {
       stopOnLimit: true,
       filter: () => true
     }, options)
-    this.stopped = false
   }
-  static _parseUserProfileCard (card_) {
-    const $card = $(card_)
+  // @ts-ignore
+  static _parseUserProfileCard (card) {
+    const $card = $(card)
     const blocksYou = $card.find('.blocks-you').length > 0
     const actions = $($card.find('.user-actions'))
     const userId = String(actions.data('user-id'))
@@ -98,7 +118,7 @@ class FollwerGatherer extends EventEmitter {
   stop () {
     this.stopped = true
   }
-  async start (username, followtype) {
+  async start (username: string, followtype: FollowType) {
     const {
       delay,
       delayOnLimitation,
@@ -106,11 +126,8 @@ class FollwerGatherer extends EventEmitter {
       stopOnLimit
     } = this.options
     this.stopped = false
-    if (followtype !== 'followers' && followtype !== 'following') {
-      throw new Error(`followtype ${followtype} is invalid!`)
-    }
     let gatheredCount = 0
-    let nextPosition = null
+    let nextPosition: string | null = null
     // 이미 화면상에 렌더링된 프로필이 있으면 이를 먼저 사용한다.
     const renderedTimeline = document.querySelector('.GridTimeline .GridTimeline-items')
     if (renderedTimeline) {
@@ -165,7 +182,7 @@ class FollwerGatherer extends EventEmitter {
       const json = await response.json()
       const templ = document.createElement('template')
       templ.innerHTML = json.items_html
-      const node = templ.content.cloneNode(true)
+      const node = templ.content.cloneNode(true) as Element
       const cards = node.querySelectorAll('.ProfileCard')
       gatheredCount += cards.length
       let users = Array.from(cards || [], FollwerGatherer._parseUserProfileCard)
@@ -189,13 +206,20 @@ class FollwerGatherer extends EventEmitter {
   }
 }
 
+type UIUpdateOption = {
+  users: User[],
+  gatheredCount: number
+}
+
 class ChainBlockUI {
-  constructor (options) {
-    this.targets = []
-    this.skipped = []
-    this.immBlocked = new Set()
-    this.followersCount = 0
-    this.originalTitle = document.title
+  private targets: User[] = []
+  private skipped: User[] = []
+  private immBlocked: Set<string> = new Set()
+  private followersCount: number = 0
+  private originalTitle: string = document.title
+  private options: MirrorOfBlockOption
+  public progressUI: JQuery
+  constructor (options: MirrorOfBlockOption) {
     this.options = options
     const ui = this.progressUI = $('<div>')
     ui.html(CHAINBLOCK_UI_HTML)
@@ -208,13 +232,15 @@ class ChainBlockUI {
       this.close()
     })
   }
-
+  setInitialFollowsCount (count: number) {
+    this.followersCount = count
+  }
   async blockTargets () {
-    const {targets} = this
+    const { targets } = this
     const promises = targets
       .filter(user => !this.immBlocked.has(user.userId))
       .map(async user => {
-        const {userId} = user
+        const { userId } = user
         return sendBlockRequest(userId)
           .then(() => {
             this.immBlocked.add(userId)
@@ -228,7 +254,7 @@ class ChainBlockUI {
       })
     return Promise.all(promises)
   }
-  update ({ users, gatheredCount }) {
+  update ({ users, gatheredCount }: UIUpdateOption) {
     for (const user of users) {
       const muteSkip = user.muted && !this.options.blockMutedUser
       if (user.alreadyBlocked || muteSkip) {
@@ -245,7 +271,7 @@ class ChainBlockUI {
     }
     this.updateUI({ users, gatheredCount })
   }
-  updateUI ({ users, gatheredCount }) {
+  updateUI ({ users, gatheredCount }: UIUpdateOption) {
     const { targets,
       originalTitle,
       followersCount,
@@ -303,7 +329,7 @@ class ChainBlockUI {
     return `타겟 ${ts}명(${is}명 즉시차단), 스킵 ${ss}명`
   }
 
-  notifyLimitation (limited) {
+  notifyLimitation (limited: boolean) {
     const bottomMessage = this.progressUI.find('.mobcb-bottom-message')
     const message = (limited
       ? `팔로워를 너무 많이 가져와 일시적인 제한이 걸렸습니다. 약 20분 뒤에 다시 시도합니다.`
@@ -311,11 +337,11 @@ class ChainBlockUI {
     bottomMessage.text(message)
   }
 
-  finalize ({userStopped}) {
-    this.finalizeUI({userStopped})
+  finalize ({ userStopped }: { userStopped: boolean }) {
+    this.finalizeUI({ userStopped })
   }
 
-  finalizeUI ({userStopped}) {
+  finalizeUI ({ userStopped }: { userStopped: boolean }) {
     const {
       targets,
       skipped,
@@ -353,7 +379,7 @@ class ChainBlockUI {
         document.title = `체인맞블락 차단중\u2026 \u2013 ${originalTitle}`
         ui.find('.mobcb-title-status').text('(차단중)')
         const promises = targets.map(user => {
-          const {userId} = user
+          const { userId } = user
           const userItem = ui.find(`.mobcb-target-users a[data-user-id="${userId}"]`)
           if (this.immBlocked.has(userId)) {
             return Promise.resolve({
@@ -383,7 +409,7 @@ class ChainBlockUI {
           document.title = `체인맞블락 차단완료! \u2013 ${originalTitle}`
           ui.find('.mobcb-title-status').text('(차단완료)')
           for (const result of successes) {
-            const {userId} = result.user
+            const { userId } = result.user
             const profileCard = $(`.ProfileCard[data-user-id="${userId}"]`)
             profileCard.each((_, card) => changeButtonToBlocked(card))
           }
@@ -400,7 +426,9 @@ class ChainBlockUI {
   }
 }
 
-function isChainBlockablePage () {
+// already declared on popup.js
+// @ts-ignore: TS2393
+function isChainBlockablePage (): boolean {
   try {
     if (location.hostname !== 'twitter.com') {
       return false
@@ -411,7 +439,7 @@ function isChainBlockablePage () {
   }
 }
 
-function checkSelfChainBlock () {
+function checkSelfChainBlock (): boolean {
   if (location.pathname === '/followers' || location.pathname === '/following') {
     return true
   }
@@ -421,11 +449,11 @@ function checkSelfChainBlock () {
   return valid && (currentUserId === myUserId)
 }
 
-function alreadyRunning () {
+function alreadyRunning (): boolean {
   return $('.mobcb-bg').length > 0
 }
 
-function blockedUser () {
+function blockedUser (): boolean {
   return $('.BlocksYouTimeline').length > 0
 }
 
@@ -451,16 +479,19 @@ async function chainBlock () {
       }
     })(location.pathname)
     const ui = new ChainBlockUI(options)
-    ui.followersCount = Number($(`.ProfileNav-item--${currentList} [data-count]`).eq(0).data('count'))
+    {
+      const selector = `.ProfileNav-item--${currentList} [data-count]`
+      ui.setInitialFollowsCount(Number($(selector).eq(0).data('count')))
+    }
     const gatherer = new FollwerGatherer({
-      filter: user => user.blocksYou,
+      filter: (user: User) => user.blocksYou,
       stopOnLimit: false,
       delay: options.chainBlockOver10KMode ? 2500 : 250
     })
     ui.progressUI.on('click', '.mobcb-close', () => {
       gatherer.stop()
     })
-    gatherer.on('progress', ({ users, gatheredCount }) => {
+    gatherer.on('progress', ({ users, gatheredCount }: UIUpdateOption) => {
       console.log('progress', users)
       ui.update({ users, gatheredCount })
     })
@@ -471,15 +502,15 @@ async function chainBlock () {
       window.alert('사용자 목록을 가져오는 도중 오류가 발생했습니다. 체인맞블락을 중단합니다.')
       gatherer.stop()
     })
-    gatherer.on('end', ({userStopped}) => {
-      ui.finalize({userStopped})
+    gatherer.on('end', ({ userStopped }: { userStopped: boolean }) => {
+      ui.finalize({ userStopped })
     })
     const profileUsername = $('.ProfileHeaderCard .username b').text()
     void gatherer.start(profileUsername, currentList)
   }
 }
 
-browser.runtime.onMessage.addListener(msg => {
+browser.runtime.onMessage.addListener((msg: any) => {
   if (msg.action === 'MirrorOfBlock/start-chainblock') {
     chainBlock()
   }
