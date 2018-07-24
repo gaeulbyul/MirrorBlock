@@ -83,10 +83,10 @@ hr.mobcb-hr {
   line-height: 150%;
 }
 .mobcb-user-blocked:before {
-  content: '\u2714';
+  content: '\2714';
 }
 .mobcb-user-blockfailed:before {
-  content: '\u274C';
+  content: '\274C';
 }
 .mobcb-extra-options {
   padding: 10px 0;
