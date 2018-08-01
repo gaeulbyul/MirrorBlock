@@ -54,3 +54,9 @@ kbd {
   background-color: #fe0;
   color: #000;
 }
+
+.warning {
+  padding: 1em;
+  background-color: #ffc;
+  color: #330;
+}
