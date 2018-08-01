@@ -12,7 +12,7 @@
     "standard": "^10.0.3",
     "tslint": "^5.11.0",
     "tslint-config-standard": "^7.1.0",
-    "typescript": "^2.9.2",
+    "typescript": "^3.0.1",
     "typescript-eslint-parser": "^16.0.1",
     "web-ext-types": "^2.1.0"
   }
