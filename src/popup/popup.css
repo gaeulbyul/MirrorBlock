@@ -27,7 +27,7 @@ hr {
 }
 
 .menu {
-  width: 200px;
+  width: 250px;
 }
 
 .menu-item {
@@ -62,4 +62,10 @@ hr {
 
 .option-item.currentVersion {
   color: #333;
+}
+
+.warning {
+  padding: .25em 1em;
+
+  font-size: 14px;
 }

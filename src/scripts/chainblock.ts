@@ -37,68 +37,47 @@ const CHAINBLOCK_UI_HTML = `
   </div>
 `
 
-function sleep (time) {
-  return new Promise(resolve => {
-    window.setTimeout(() => {
-      resolve()
-    }, time)
-  })
+interface FollowerScraperOptions {
+  delay: number,
+  delayOnLimitation: number,
+  stopOnLimit: boolean,
+  filter: (user: TwitterAPIUser) => boolean
 }
 
-class EventEmitter {
-  constructor () {
-    this.events = {}
-  }
-  on (eventname, handler) {
-    if (!(eventname in this.events)) {
-      this.events[eventname] = []
-    }
-    this.events[eventname].push(handler)
-    return this
-  }
-  emit (eventname, eparameter) {
-    const handlers = this.events[eventname] || []
-    handlers.forEach(handler => handler(eparameter))
-    return this
-  }
+interface FollowerScraperOptionsInput {
+  delay?: number,
+  delayOnLimitation?: number,
+  stopOnLimit?: boolean,
+  filter?: (user: TwitterAPIUser) => boolean
 }
 
-class FollwerGatherer extends EventEmitter {
-  constructor (options) {
+interface UIUpdateOption {
+  users: TwitterAPIUser[],
+  gatheredCount: number
+}
+
+interface UserStopped {
+  userStopped: boolean
+}
+
+class FollowsScraper extends EventEmitter {
+  private readonly options: FollowerScraperOptions
+  private stopped: boolean = false
+  constructor (options?: FollowerScraperOptionsInput) {
     super()
-    this.options = Object.assign({}, {
+    this.options = {
       // default options
       delay: 500,
       delayOnLimitation: 1000 * 60 * 2,
       stopOnLimit: true,
       filter: () => true
-    }, options)
-    this.stopped = false
-  }
-  static _parseUserProfileCard (card_) {
-    const $card = $(card_)
-    const blocksYou = $card.find('.blocks-you').length > 0
-    const actions = $($card.find('.user-actions'))
-    const userId = String(actions.data('user-id'))
-    const userName = actions.data('screen-name')
-    const userNickName = $card.find('.fullname').text().trim()
-    const alreadyBlocked = $card.find('.blocked').length > 0
-    const muted = $card.find('.muting').length > 0
-    const bio = $card.find('.ProfileCard-bio').text().trim()
-    return {
-      userId,
-      userName,
-      userNickName,
-      blocksYou,
-      alreadyBlocked,
-      muted,
-      bio
     }
+    Object.assign(this.options, options)
   }
   stop () {
     this.stopped = true
   }
-  async start (username, followtype) {
+  async start (followType: FollowType, userName: string) {
     const {
       delay,
       delayOnLimitation,
@@ -106,81 +85,47 @@ class FollwerGatherer extends EventEmitter {
       stopOnLimit
     } = this.options
     this.stopped = false
-    if (followtype !== 'followers' && followtype !== 'following') {
-      throw new Error(`followtype ${followtype} is invalid!`)
-    }
     let gatheredCount = 0
-    let nextPosition = null
-    // 이미 화면상에 렌더링된 프로필이 있으면 이를 먼저 사용한다.
-    const renderedTimeline = document.querySelector('.GridTimeline .GridTimeline-items')
-    if (renderedTimeline) {
-      nextPosition = renderedTimeline.getAttribute('data-min-position')
-      const cards = renderedTimeline.querySelectorAll('.ProfileCard')
-      gatheredCount += cards.length
-      let users = Array.from(cards || [], FollwerGatherer._parseUserProfileCard)
-      if (typeof filter === 'function') {
-        users = users.filter(filter)
-      }
-      this.emit('progress', {
-        users,
-        gatheredCount
-      })
-    }
+    let cursor: string = '-1'
     while (true) {
       if (this.stopped) {
-        this.emit('end', {
+        this.emit<UserStopped>('end', {
           userStopped: true
         })
         break
       }
-      const maxPosition = nextPosition ? `&max_position=${nextPosition}` : ''
-      const url = `https://twitter.com/${username}/${followtype}/users?
-      include_available_features=1&
-      include_entities=1&
-      reset_error_state=true
-      ${maxPosition}`.replace(/\s+/g, '')
-      let response
+      let response: FollowsListResponse
       while (true) {
-        response = await fetch(url, {
-          method: 'GET',
-          credentials: 'include',
-          referrer: location.href
-        })
-        if (response.ok) {
+        try {
+          response = await getFollowsList(followType, userName, cursor)
           break
-        }
-        if (response.status === 429) {
-          this.emit('limit')
-          console.info('FollowerGather: limited!')
-          if (stopOnLimit) {
-            throw new Error('LimitError!')
+        } catch (ex) {
+          if (ex instanceof RateLimitError) {
+            this.emit<void>('limit')
+            console.info('FollowerGather: limited!')
+            if (stopOnLimit) {
+              throw ex
+            } else {
+              await sleep(delayOnLimitation)
+              // continue
+            }
           } else {
-            await sleep(delayOnLimitation)
+            this.emit('error')
+            throw ex
           }
-        } else {
-          this.emit('error', response)
-          throw new Error('HTTPError!')
         }
       }
-      const json = await response.json()
-      const templ = document.createElement('template')
-      templ.innerHTML = json.items_html
-      const node = templ.content.cloneNode(true)
-      const cards = node.querySelectorAll('.ProfileCard')
-      gatheredCount += cards.length
-      let users = Array.from(cards || [], FollwerGatherer._parseUserProfileCard)
-      if (typeof filter === 'function') {
-        users = users.filter(filter)
-      }
-      this.emit('progress', {
+      gatheredCount += response.users.length
+      const users: TwitterAPIUser[] = response.users.filter(filter)
+      this.emit<UIUpdateOption>('progress', {
         users,
         gatheredCount
       })
-      if (json.has_more_items) {
-        nextPosition = json.min_position
+      if (response.next_cursor_str !== '0') {
+        cursor = response.next_cursor_str
         await sleep(delay)
       } else {
-        this.emit('end', {
+        this.emit<UserStopped>('end', {
           userStopped: false
         })
         break
@@ -190,12 +135,14 @@ class FollwerGatherer extends EventEmitter {
 }
 
 class ChainBlockUI {
-  constructor (options) {
-    this.targets = []
-    this.skipped = []
-    this.immBlocked = new Set()
-    this.followersCount = 0
-    this.originalTitle = document.title
+  private targets: TwitterAPIUser[] = []
+  private skipped: TwitterAPIUser[] = []
+  private immBlocked: Set<string> = new Set()
+  private followersCount: number = 0
+  private originalTitle: string = document.title
+  private options: MirrorOfBlockOption
+  public progressUI: JQuery
+  constructor (options: MirrorOfBlockOption) {
     this.options = options
     const ui = this.progressUI = $('<div>')
     ui.html(CHAINBLOCK_UI_HTML)
@@ -208,13 +155,15 @@ class ChainBlockUI {
       this.close()
     })
   }
-
+  setInitialFollowsCount (count: number) {
+    this.followersCount = count
+  }
   async blockTargets () {
-    const {targets} = this
+    const { targets } = this
     const promises = targets
-      .filter(user => !this.immBlocked.has(user.userId))
+      .filter(user => !this.immBlocked.has(user.id_str))
       .map(async user => {
-        const {userId} = user
+        const { id_str: userId } = user
         return sendBlockRequest(userId)
           .then(() => {
             this.immBlocked.add(userId)
@@ -228,14 +177,18 @@ class ChainBlockUI {
       })
     return Promise.all(promises)
   }
-  update ({ users, gatheredCount }) {
+  shouldSkipUser (user: TwitterAPIUser): boolean {
+    const { blockMutedUser } = this.options
+    const { blocking } = user
+    const muteSkip = user.muting && !blockMutedUser
+    return blocking || muteSkip
+  }
+  update ({ users, gatheredCount }: UIUpdateOption) {
     for (const user of users) {
-      const muteSkip = user.muted && !this.options.blockMutedUser
-      if (user.alreadyBlocked || muteSkip) {
-        user.shouldSkip = true
+      const shouldSkip = this.shouldSkipUser(user)
+      if (shouldSkip) {
         this.skipped.push(user)
       } else {
-        user.shouldSkip = false
         this.targets.push(user)
       }
     }
@@ -245,8 +198,9 @@ class ChainBlockUI {
     }
     this.updateUI({ users, gatheredCount })
   }
-  updateUI ({ users, gatheredCount }) {
-    const { targets,
+  updateUI ({ users, gatheredCount }: UIUpdateOption) {
+    const {
+      targets,
       originalTitle,
       followersCount,
       progressUI: ui
@@ -256,13 +210,13 @@ class ChainBlockUI {
     this.notifyLimitation(false)
     for (const user of users) {
       const {
-        userId,
-        userName,
-        userNickName,
-        alreadyBlocked,
-        muted,
-        shouldSkip
+        id_str: userId,
+        screen_name: userName,
+        name: userNickName,
+        blocking: alreadyBlocked,
+        muting: muted
       } = user
+      const shouldSkip = this.shouldSkipUser(user)
       const muteSkip = muted && !this.options.blockMutedUser
       let userPrefix = ''
       if (alreadyBlocked) {
@@ -276,7 +230,7 @@ class ChainBlockUI {
         .attr('href', `https://twitter.com/${userName}`)
         .attr('target', '_blank')
         .attr('title', `@${userName} (${userNickName})
-프로필: ${user.bio}`)
+프로필: ${user.description}`)
         .text(`${userPrefix} @${userName}: ${userNickName}`)
       item.append(link)
       if (shouldSkip) {
@@ -298,12 +252,12 @@ class ChainBlockUI {
     )
   }
 
-  count () {
+  count (): string {
     const [ts, is, ss] = [this.targets.length, this.immBlocked.size, this.skipped.length]
     return `타겟 ${ts}명(${is}명 즉시차단), 스킵 ${ss}명`
   }
 
-  notifyLimitation (limited) {
+  notifyLimitation (limited: boolean) {
     const bottomMessage = this.progressUI.find('.mobcb-bottom-message')
     const message = (limited
       ? `팔로워를 너무 많이 가져와 일시적인 제한이 걸렸습니다. 약 20분 뒤에 다시 시도합니다.`
@@ -311,11 +265,11 @@ class ChainBlockUI {
     bottomMessage.text(message)
   }
 
-  finalize ({userStopped}) {
-    this.finalizeUI({userStopped})
+  finalize ({ userStopped }: UserStopped) {
+    this.finalizeUI({ userStopped })
   }
 
-  finalizeUI ({userStopped}) {
+  finalizeUI ({ userStopped }: UserStopped) {
     const {
       targets,
       skipped,
@@ -323,7 +277,7 @@ class ChainBlockUI {
       followersCount,
       progressUI: ui
     } = this
-    const blockableTargets = targets.filter(user => !this.immBlocked.has(user.userId))
+    const blockableTargets = targets.filter((user: TwitterAPIUser) => !this.immBlocked.has(user.id_str))
     if (!userStopped) {
       document.title = `체인맞블락 수집완료! \u2013 ${originalTitle}`
     } else {
@@ -343,7 +297,7 @@ class ChainBlockUI {
     } else if (blockableTargets.length === 0) {
       ui.find('.mobcb-bottom-message').text('맞차단할 사용자가 없거나 이미 맞차단을 했습니다.')
     }
-    ui.find('.mobcb-execute').click(event => {
+    ui.find('.mobcb-execute').on('click', event => {
       event.preventDefault()
       if (blockableTargets.length === 0) {
         window.alert('맞차단할 사용자가 없습니다.')
@@ -353,7 +307,7 @@ class ChainBlockUI {
         document.title = `체인맞블락 차단중\u2026 \u2013 ${originalTitle}`
         ui.find('.mobcb-title-status').text('(차단중)')
         const promises = targets.map(user => {
-          const {userId} = user
+          const { id_str: userId } = user
           const userItem = ui.find(`.mobcb-target-users a[data-user-id="${userId}"]`)
           if (this.immBlocked.has(userId)) {
             return Promise.resolve({
@@ -383,7 +337,7 @@ class ChainBlockUI {
           document.title = `체인맞블락 차단완료! \u2013 ${originalTitle}`
           ui.find('.mobcb-title-status').text('(차단완료)')
           for (const result of successes) {
-            const {userId} = result.user
+            const { id_str: userId } = result.user
             const profileCard = $(`.ProfileCard[data-user-id="${userId}"]`)
             profileCard.each((_, card) => changeButtonToBlocked(card))
           }
@@ -400,7 +354,9 @@ class ChainBlockUI {
   }
 }
 
-function isChainBlockablePage () {
+// already declared on popup.js
+// @ts-ignore (ignore TS2393)
+function isChainBlockablePage (): boolean {
   try {
     if (location.hostname !== 'twitter.com') {
       return false
@@ -411,7 +367,7 @@ function isChainBlockablePage () {
   }
 }
 
-function checkSelfChainBlock () {
+function checkSelfChainBlock (): boolean {
   if (location.pathname === '/followers' || location.pathname === '/following') {
     return true
   }
@@ -421,12 +377,8 @@ function checkSelfChainBlock () {
   return valid && (currentUserId === myUserId)
 }
 
-function alreadyRunning () {
+function alreadyRunning (): boolean {
   return $('.mobcb-bg').length > 0
-}
-
-function blockedUser () {
-  return $('.BlocksYouTimeline').length > 0
 }
 
 async function chainBlock () {
@@ -436,8 +388,6 @@ async function chainBlock () {
     window.alert('자기 자신에게 체인맞블락을 할 순 없습니다.')
   } else if (alreadyRunning()) {
     window.alert('현재 체인맞블락이 가동중입니다. 잠시만 기다려주세요.')
-  } else if (blockedUser()) {
-    window.alert('이미 나를 차단한 사용자의 팔로잉/팔로워가 누군지 알 수 없습니다.')
   } else if (window.confirm('체인맞블락을 위해 나를 차단한 사용자를 찾습니다. 계속하시겠습니까?')) {
     const options = await ExtOption.load()
     Object.freeze(options)
@@ -451,16 +401,19 @@ async function chainBlock () {
       }
     })(location.pathname)
     const ui = new ChainBlockUI(options)
-    ui.followersCount = Number($(`.ProfileNav-item--${currentList} [data-count]`).eq(0).data('count'))
-    const gatherer = new FollwerGatherer({
-      filter: user => user.blocksYou,
+    {
+      const selector = `.ProfileNav-item--${currentList} [data-count]`
+      ui.setInitialFollowsCount(Number($(selector).eq(0).data('count')))
+    }
+    const gatherer = new FollowsScraper({
+      filter: (user: TwitterAPIUser) => user.blocked_by,
       stopOnLimit: false,
       delay: options.chainBlockOver10KMode ? 2500 : 250
     })
     ui.progressUI.on('click', '.mobcb-close', () => {
       gatherer.stop()
     })
-    gatherer.on('progress', ({ users, gatheredCount }) => {
+    gatherer.on<UIUpdateOption>('progress', ({ users, gatheredCount }: UIUpdateOption) => {
       console.log('progress', users)
       ui.update({ users, gatheredCount })
     })
@@ -471,15 +424,15 @@ async function chainBlock () {
       window.alert('사용자 목록을 가져오는 도중 오류가 발생했습니다. 체인맞블락을 중단합니다.')
       gatherer.stop()
     })
-    gatherer.on('end', ({userStopped}) => {
-      ui.finalize({userStopped})
+    gatherer.on('end', ({ userStopped }: { userStopped: boolean }) => {
+      ui.finalize({ userStopped })
     })
     const profileUsername = $('.ProfileHeaderCard .username b').text()
-    void gatherer.start(profileUsername, currentList)
+    gatherer.start(currentList, profileUsername)
   }
 }
 
-browser.runtime.onMessage.addListener(msg => {
+browser.runtime.onMessage.addListener((msg: any) => {
   if (msg.action === 'MirrorOfBlock/start-chainblock') {
     chainBlock()
   }

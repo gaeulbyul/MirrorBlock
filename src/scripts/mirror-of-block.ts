@@ -1,4 +1,12 @@
-/* globals MutationObserver, sendBlockRequest, changeButtonToBlocked, ExtOption, browser */
+/* globals
+  Element,
+  HTMLLinkElement,
+  MutationObserver,
+  sendBlockRequest,
+  changeButtonToBlocked,
+  ExtOption,
+  browser
+*/
 
 const BLOCKS_YOU = '<span class="mob-BlockStatus">나를 차단함</span>'
 const BLOCK_REFLECTED = '<span class="mob-BlockReflectedStatus">차단반사 발동!</span>'
@@ -13,7 +21,7 @@ ExtOption.load().then(option => {
 })
 
 // 딱지 붙일 요소 찾기
-function getPlaceForBadge (user) {
+function getPlaceForBadge (user: Element): Element | null {
   // 팔로잉/팔로워 페이지
   const pcScreenName = user.querySelector('.ProfileCard-screenname')
   if (pcScreenName) {
@@ -32,7 +40,7 @@ function getPlaceForBadge (user) {
 }
 
 // 사용자 옆에 "나를 차단함" 또는 "차단반사" 딱지 붙이기
-function indicateBlockToUser (user, badge) {
+function indicateBlockToUser (user: Element, badge: string): void {
   const alreadyBadged = badge === BLOCKS_YOU && user.querySelector('.mob-BlockStatus')
   const alreadyBadged2 = badge === BLOCK_REFLECTED && user.querySelector('.mob-BlockReflectedStatus')
   if (alreadyBadged || alreadyBadged2) {
@@ -45,7 +53,7 @@ function indicateBlockToUser (user, badge) {
 }
 
 // 나를 차단한 사용자가 눈에 잘 띄도록 테두리 표시
-function outlineToBlockedUser (user) {
+function outlineToBlockedUser (user: Element): void {
   if (user.matches('.js-actionable-user')) {
     user.classList.add('mob-blocks-you-outline')
   } else if (user.classList.contains('ProfileNav')) {
@@ -57,17 +65,22 @@ function outlineToBlockedUser (user) {
 }
 
 // 차단반사
-function reflectBlock (user) {
+function reflectBlock (user: Element) {
   const actions = user.querySelector('.user-actions')
+  if (!actions) {
+    throw new Error('Failed to find actions element')
+  }
   const userId = actions.getAttribute('data-user-id')
-  const userName = actions.getAttribute('data-screen-name')
+  if (!userId) {
+    throw new Error('Failed to find user id from actions element')
+  }
   return sendBlockRequest(userId).then(() => {
     changeButtonToBlocked(user)
     indicateBlockToUser(user, BLOCK_REFLECTED)
   })
 }
 
-function userHandler (user) {
+function userHandler (user: Element) {
   if (!user) {
     return
   }
@@ -105,14 +118,14 @@ function applyToRendered () {
   elementsToHandle.forEach(userHandler)
 }
 
-function toggleNightMode (mode) {
+function toggleNightMode (mode: boolean): void {
   document.documentElement.classList.toggle('mob-nightmode', mode)
 }
 
 const observer = new MutationObserver(mutations => {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
-      if (!('querySelector' in node)) {
+      if (!(node instanceof Element)) {
         continue
       }
       const elementsToHandle = [
@@ -133,11 +146,12 @@ const observer = new MutationObserver(mutations => {
 const nightModeObserver = new MutationObserver(mutations => {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
-      if (!node.matches) {
-        return
+      if (!(node instanceof Element)) {
+        continue
       }
       if (node.matches('link.coreCSSBundles')) {
-        const nightMode = /nightmode/.test(node.href)
+        const css = node as HTMLLinkElement
+        const nightMode = /nightmode/.test(css.href)
         toggleNightMode(nightMode)
       }
     }

@@ -30,6 +30,8 @@
         "vendor/browser-polyfill.min.js",
         "vendor/jquery.js",
         "/extoption.js",
+        "scripts/common.js",
+        "scripts/twitter-api.js",
         "scripts/block.js",
         "scripts/mirror-of-block.js",
         "scripts/chainblock.js"
