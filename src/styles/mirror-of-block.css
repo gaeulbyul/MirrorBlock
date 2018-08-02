@@ -65,14 +65,14 @@ hr.mobcb-hr {
   margin-bottom: 5px;
 }
 .mobcb-title {
-  font-size: 16px;
+  font-size: 1.25em;
   font-weight: bold;
 }
 .mobcb-title-extra {
-  font-size: 14px;
+  font-size: 1em;
 }
 .mobcb-title-status {
-  font-size: 14px;
+  font-size: 1em;
 }
 .mobcb-users {
   min-width: 60px;
@@ -108,4 +108,79 @@ hr.mobcb-hr {
 }
 .mobcb-controls .btn ~ .btn {
   margin: 0 5px;
+}
+
+/* ---------- 모바일 ---------- */
+.mob-mobile .mobcb-bg {
+  background-color: rgba(0, 0, 0, .8);
+}
+.mob-mobile .mobcb-dialog {
+  border-radius: 10px;
+  min-width: 250px;
+  width: 90vw;
+  max-height: 95vh;
+  font-size: 16px;
+}
+.mob-mobile .mobcb-users > ul {
+  padding-left: 0;
+  margin: 0;
+  line-height: 200%;
+}
+.mob-mobile hr.mobcb-hr {
+  border-top: 1px solid;
+  border-bottom: 0;
+}
+.mob-mobile .mobcb-controls {
+  text-align: right;
+}
+.mob-mobile .btn {
+  padding: 10px 25px;
+  border: 1px solid;
+  font-size: 1.25em;
+}
+/* 버튼 순서가 차단-닫기 순이 되도록 */
+.block-dialog .btn {
+  float: right;
+}
+.mob-mobile .mobcb-controls .btn ~ .btn {
+  margin: 0 20px;
+}
+.mob-mobile .mobcb-controls .btn:disabled {
+  opacity: .4;
+}
+
+/* --- 야간모드 off --- */
+.mob-mobile-light .mobcb-dialog {
+  background-color: #fff;
+  color: #000;
+}
+.mob-mobile-light .btn {
+  background-color: #ccc;
+  border-color: #999;
+}
+.mob-mobile-light .mobcb-user {
+  color: crimson;
+  text-decoration: underline;
+}
+.mob-mobile-light .btn.caution-btn {
+  background-color: crimson;
+  color: white;
+}
+
+/* --- 야간모드 on --- */
+.mob-mobile-dark .mobcb-dialog {
+  background-color: #141d26;
+  color: #fff;
+}
+.mob-mobile-dark .btn {
+  background-color: #1b2836;
+  border-color: #666;
+}
+.mob-mobile-dark .mobcb-user {
+  color: #f47189;
+  text-decoration: underline;
+}
+.mob-mobile-dark .btn.caution-btn {
+  background-color: crimson;
+  color: white;
 }

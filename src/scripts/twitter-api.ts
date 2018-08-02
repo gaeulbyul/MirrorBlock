@@ -61,7 +61,6 @@ interface FollowsListResponse {
 async function getFollowsList (followType: FollowType, userName: string, cursor: string = '-1'): Promise<FollowsListResponse> {
   const fetchOptions = generateTwitterAPIOptions()
   const path = followType === 'following' ? 'friends' : 'followers'
-
   const url = new URL(`https://api.twitter.com/1.1/${path}/list.json`)
   // url.searchParams.set('user_id', userId)
   url.searchParams.set('screen_name', userName)
@@ -78,12 +77,40 @@ async function getFollowsList (followType: FollowType, userName: string, cursor:
   url.searchParams.set('include_can_dm', '1')
   url.searchParams.set('cursor', cursor)
   const response = await fetch(url.toString(), fetchOptions)
-  if (!response.ok) {
+  if (response.ok) {
+    return response.json()
+  } else {
     if (response.status === 429) {
       throw new RateLimitError('LimitError!')
     } else {
       throw new HTTPError('HTTPError!')
     }
   }
-  return response.json()
+}
+
+async function getSingleUserByName (userName: string): Promise<TwitterAPIUser> {
+  const fetchOptions = generateTwitterAPIOptions()
+  const url = new URL('https://api.twitter.com/1.1/users/show.json')
+  // url.searchParams.set('user_id', userId)
+  url.searchParams.set('screen_name', userName)
+  url.searchParams.set('count', '200')
+  url.searchParams.set('skip_status', 'true')
+  url.searchParams.set('include_entities', 'false')
+  url.searchParams.set('include_profile_interstitial_type', '1')
+  url.searchParams.set('include_blocking', '1')
+  url.searchParams.set('include_blocked_by', '1')
+  url.searchParams.set('include_followed_by', '1')
+  url.searchParams.set('include_want_retweets', '1')
+  url.searchParams.set('include_mute_edge', '1')
+  url.searchParams.set('include_can_dm', '1')
+  const response = await fetch(url.toString(), fetchOptions)
+  if (response.ok) {
+    return response.json()
+  } else {
+    if (response.status === 429) {
+      throw new RateLimitError('LimitError!')
+    } else {
+      throw new HTTPError('HTTPError!')
+    }
+  }
 }

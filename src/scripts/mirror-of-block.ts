@@ -11,15 +11,6 @@
 const BLOCKS_YOU = '<span class="mob-BlockStatus">나를 차단함</span>'
 const BLOCK_REFLECTED = '<span class="mob-BlockReflectedStatus">차단반사 발동!</span>'
 
-browser.storage.onChanged.addListener(changes => {
-  const option = changes.option.newValue
-  document.documentElement.classList.toggle('mob-enable-outline', option.outlineBlockUser)
-})
-
-ExtOption.load().then(option => {
-  document.documentElement.classList.toggle('mob-enable-outline', option.outlineBlockUser)
-})
-
 // 딱지 붙일 요소 찾기
 function getPlaceForBadge (user: Element): Element | null {
   // 팔로잉/팔로워 페이지
@@ -158,17 +149,34 @@ const nightModeObserver = new MutationObserver(mutations => {
   }
 })
 
-observer.observe(document.body, {
-  childList: true,
-  characterData: true,
-  subtree: true
-})
+const isDarkMode = /\bnight_mode=1\b/.test(document.cookie)
 
-nightModeObserver.observe(document.head, {
-  childList: true,
-  subtree: true
-})
+if (document.getElementById('react-root')) {
+  console.info('차단반사 미지원 페이지!')
+  const colorThemeClass = isDarkMode ? 'mob-mobile-dark' : 'mob-mobile-light'
+  document.documentElement.classList.add('mob-mobile', colorThemeClass)
+} else {
+  observer.observe(document.body, {
+    childList: true,
+    characterData: true,
+    subtree: true
+  })
 
-toggleNightMode(/\bnight_mode=1\b/.test(document.cookie))
+  nightModeObserver.observe(document.head, {
+    childList: true,
+    subtree: true
+  })
 
-applyToRendered()
+  toggleNightMode(isDarkMode)
+
+  applyToRendered()
+
+  browser.storage.onChanged.addListener(changes => {
+    const option = changes.option.newValue
+    document.documentElement.classList.toggle('mob-enable-outline', option.outlineBlockUser)
+  })
+
+  ExtOption.load().then(option => {
+    document.documentElement.classList.toggle('mob-enable-outline', option.outlineBlockUser)
+  })
+}

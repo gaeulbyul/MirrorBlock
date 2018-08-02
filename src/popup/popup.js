@@ -3,10 +3,11 @@
 function isChainBlockablePage (urlstr) {
   try {
     const url = new URL(urlstr)
-    if (url.hostname !== 'twitter.com') {
+    const supportingHostname = ['twitter.com', 'mobile.twitter.com']
+    if (!supportingHostname.includes(url.hostname)) {
       return false
     }
-    return /^\/@?[\w\d_]+\/(?:followers|following)$/.test(url.pathname)
+    return /^\/([0-9A-Za-z_]+)\/(followers|following)$/.test(url.pathname)
   } catch (e) {
     return false
   }

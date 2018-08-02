@@ -7,6 +7,8 @@ interface TwitterAPIUser {
   blocked_by: boolean,
   blocking: boolean,
   muting: boolean,
+  friends_count: number,
+  followers_count: number,
   description: string
 }
 

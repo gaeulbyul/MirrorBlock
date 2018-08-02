@@ -231,6 +231,7 @@ class ChainBlockUI {
         .attr('target', '_blank')
         .attr('title', `@${userName} (${userNickName})
 프로필: ${user.description}`)
+        .addClass('mobcb-user')
         .text(`${userPrefix} @${userName}: ${userNickName}`)
       item.append(link)
       if (shouldSkip) {
@@ -358,10 +359,11 @@ class ChainBlockUI {
 // @ts-ignore (ignore TS2393)
 function isChainBlockablePage (): boolean {
   try {
-    if (location.hostname !== 'twitter.com') {
+    const supportingHostname = ['twitter.com', 'mobile.twitter.com']
+    if (!supportingHostname.includes(location.hostname)) {
       return false
     }
-    return /^\/@?[\w\d_]+\/(?:followers|following)$/.test(location.pathname)
+    return /^\/([0-9A-Za-z_]+)\/(followers|following)$/.test(location.pathname)
   } catch (e) {
     return false
   }
@@ -371,14 +373,29 @@ function checkSelfChainBlock (): boolean {
   if (location.pathname === '/followers' || location.pathname === '/following') {
     return true
   }
-  const currentUserId = String($('.ProfileNav').data('user-id'))
-  const myUserId = String($('#current-user-id').val())
-  const valid = /\d+/.test(currentUserId) && /\d+/.test(myUserId)
-  return valid && (currentUserId === myUserId)
+  if (document.getElementById('react-root')) {
+    // FIXME: 셀프-체인맞블락을 감지할 것
+    return false
+  } else {
+    const currentUserId = String($('.ProfileNav').data('user-id'))
+    const myUserId = String($('#current-user-id').val())
+    const valid = /\d+/.test(currentUserId) && /\d+/.test(myUserId)
+    return valid && (currentUserId === myUserId)
+  }
 }
 
 function alreadyRunning (): boolean {
   return $('.mobcb-bg').length > 0
+}
+
+function extractFromPathname (pathname: string): [string, FollowType] | null {
+  const pattern = /^\/([0-9A-Za-z_]+)\/(followers|following)$/
+  const pathMatch = pattern.exec(pathname)
+  if (!pathMatch) {
+    return null
+  }
+  const [/*ignore*/, userName, followType] = pathMatch
+  return [userName, followType as FollowType]
 }
 
 async function chainBlock () {
@@ -391,17 +408,22 @@ async function chainBlock () {
   } else if (window.confirm('체인맞블락을 위해 나를 차단한 사용자를 찾습니다. 계속하시겠습니까?')) {
     const options = await ExtOption.load()
     Object.freeze(options)
-    const currentList = (path => {
-      if (/\/followers$/.test(path)) {
-        return 'followers'
-      } else if (/\/following$/.test(path)) {
-        return 'following'
-      } else {
-        throw new Error('unsupported page')
-      }
-    })(location.pathname)
+    const pathMatch = extractFromPathname(location.pathname)
+    if (!pathMatch) {
+      throw new Error('unsupportable page')
+    }
+    const [currentUserName, currentList] = pathMatch
     const ui = new ChainBlockUI(options)
-    {
+    if (document.getElementById('react-root')) {
+      const currentUser = await getSingleUserByName(currentUserName)
+      let count = 0
+      if (currentList === 'following') {
+        count = currentUser.friends_count
+      } else if (currentList === 'followers') {
+        count = currentUser.followers_count
+      }
+      ui.setInitialFollowsCount(count)
+    } else {
       const selector = `.ProfileNav-item--${currentList} [data-count]`
       ui.setInitialFollowsCount(Number($(selector).eq(0).data('count')))
     }
@@ -427,8 +449,7 @@ async function chainBlock () {
     gatherer.on('end', ({ userStopped }: { userStopped: boolean }) => {
       ui.finalize({ userStopped })
     })
-    const profileUsername = $('.ProfileHeaderCard .username b').text()
-    gatherer.start(currentList, profileUsername)
+    gatherer.start(currentList, currentUserName)
   }
 }
 
