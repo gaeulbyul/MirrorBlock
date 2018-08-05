@@ -12,10 +12,6 @@ interface TwitterAPIUser {
   description: string
 }
 
-function sleep (time: number): Promise<void> {
-  return new Promise(resolve => window.setTimeout(resolve, time))
-}
-
 interface EventStore {
   [eventName: string]: Function[]
 }
@@ -34,6 +30,21 @@ class EventEmitter {
     // console.info('EventEmitter: emit "%s" with %o', eventName, eventHandlerParameter)
     handlers.forEach(handler => handler(eventHandlerParameter))
     return this
+  }
+}
+
+function sleep (time: number): Promise<void> {
+  return new Promise(resolve => window.setTimeout(resolve, time))
+}
+
+function validFollowType (str: string): FollowType {
+  if (str === 'following' || str === 'followers') {
+    return str
+  } else if (str === 'followings') {
+    console.warn('WARN: use "following" instead of "followingS"')
+    return 'following'
+  } else {
+    throw new Error(`invalid followType: ${str}`)
   }
 }
 

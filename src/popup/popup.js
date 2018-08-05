@@ -1,37 +1,75 @@
 /* globals URL, browser, ExtOption */
 
-function isChainBlockablePage (urlstr) {
-  try {
-    const url = new URL(urlstr)
-    const supportingHostname = ['twitter.com', 'mobile.twitter.com']
-    if (!supportingHostname.includes(url.hostname)) {
-      return false
-    }
-    return /^\/([0-9A-Za-z_]+)\/(followers|following)$/.test(url.pathname)
-  } catch (e) {
-    return false
+const userNameBlacklist = [
+  '1',
+  'about',
+  'account',
+  'blog',
+  'followers',
+  'followings',
+  'hashtag',
+  'i',
+  'lists',
+  'login',
+  'logout',
+  'oauth',
+  'privacy',
+  'search',
+  'tos',
+  'notifications',
+  'messages',
+  'explore',
+  'home'
+]
+
+function extractUserNameFromUrl (urlstr) {
+  const url = new URL(urlstr)
+  const supportingHostname = ['twitter.com', 'mobile.twitter.com']
+  if (!supportingHostname.includes(url.hostname)) {
+    return null
   }
+  const notUserPagePattern01 = /^\/\w\w\/(?:tos|privacy)/
+  if (notUserPagePattern01.test(url.pathname)) {
+    return null
+  }
+  const pattern = /^\/([0-9A-Za-z_]+)/
+  const match = pattern.exec(url.pathname)
+  if (!match) {
+    return null
+  }
+  const userName = match[1]
+  if (userNameBlacklist.includes(userName.toLowerCase())) {
+    return null
+  }
+  return userName
 }
 
-async function executeChainBlock () {
+async function executeChainBlock (followType) {
   const tabs = await browser.tabs.query({active: true, currentWindow: true})
   const currentTab = tabs[0]
-  if (!isChainBlockablePage(currentTab.url)) {
-    const message = String.raw`Mirror Of Block: PC용 트위터(twitter.com)의 팔로잉 혹은 팔로워 페이지에서만 작동합니다.\n(예: https://twitter.com/(UserName)/followers)`.replace(/'/g, '')
+  const userName = extractUserNameFromUrl(currentTab.url)
+  if (!userName) {
+    const message = String.raw`Mirror Of Block: 트위터(twitter.com)의 팔로잉 혹은 팔로워 페이지에서만 작동합니다.\n(예: https://twitter.com/(UserName)/followers)`.replace(/'/g, '')
     browser.tabs.executeScript(currentTab.id, {
       code: `window.alert('${message}')`
     })
     return
   }
   browser.tabs.sendMessage(currentTab.id, {
-    action: 'MirrorOfBlock/start-chainblock'
+    action: 'MirrorOfBlock/start-chainblock',
+    followType,
+    userName
   })
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.querySelector('.menu-item.chain-block').onclick = event => {
+  document.querySelector('.menu-item.chain-block-followers').onclick = event => {
     event.preventDefault()
-    executeChainBlock()
+    executeChainBlock('followers')
+  }
+  document.querySelector('.menu-item.chain-block-following').onclick = event => {
+    event.preventDefault()
+    executeChainBlock('following')
   }
   document.querySelector('.menu-item.open-option').onclick = event => {
     event.preventDefault()

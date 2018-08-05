@@ -9,6 +9,13 @@
     "48": "icons/icon.png"
   },
 
+  "applications": {
+    "gecko": {
+      "id": "mirror-of-block@gaeulbyul",
+      "strict_min_version": "58.0"
+    }
+  },
+
   "permissions": [
     "https://twitter.com/*",
     "https://api.twitter.com/*",
@@ -22,7 +29,10 @@
 
   "content_scripts": [
     {
-      "matches": ["*://twitter.com/*", "*://mobile.twitter.com/*"],
+      "matches": [
+        "*://twitter.com/*",
+        "*://mobile.twitter.com/*"
+      ],
       "css": [
         "styles/mirror-of-block.css"
       ],

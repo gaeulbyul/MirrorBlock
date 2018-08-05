@@ -140,7 +140,7 @@ class ChainBlockUI {
   private immBlocked: Set<string> = new Set()
   private followersCount: number = 0
   private originalTitle: string = document.title
-  private options: MirrorOfBlockOption
+  private readonly options: MirrorOfBlockOption
   public progressUI: JQuery
   constructor (options: MirrorOfBlockOption) {
     this.options = options
@@ -355,20 +355,6 @@ class ChainBlockUI {
   }
 }
 
-// already declared on popup.js
-// @ts-ignore (ignore TS2393)
-function isChainBlockablePage (): boolean {
-  try {
-    const supportingHostname = ['twitter.com', 'mobile.twitter.com']
-    if (!supportingHostname.includes(location.hostname)) {
-      return false
-    }
-    return /^\/([0-9A-Za-z_]+)\/(followers|following)$/.test(location.pathname)
-  } catch (e) {
-    return false
-  }
-}
-
 function checkSelfChainBlock (): boolean {
   if (location.pathname === '/followers' || location.pathname === '/following') {
     return true
@@ -388,44 +374,39 @@ function alreadyRunning (): boolean {
   return $('.mobcb-bg').length > 0
 }
 
-function extractFromPathname (pathname: string): [string, FollowType] | null {
-  const pattern = /^\/([0-9A-Za-z_]+)\/(followers|following)$/
-  const pathMatch = pattern.exec(pathname)
-  if (!pathMatch) {
-    return null
-  }
-  const [/*ignore*/, userName, followType] = pathMatch
-  return [userName, followType as FollowType]
+function formatConfirmMessage (followType: FollowType, userName: string) {
+  const krFollowType = followType === 'following' ? '팔로잉' : '팔로워'
+  return `체인맞블락을 위해 나를 차단한 사용자를 찾습니다. 계속하시겠습니까?
+(대상: @${userName}님의 ${krFollowType})`
 }
 
-async function chainBlock () {
-  if (!isChainBlockablePage()) {
-    window.alert('PC용 트위터(twitter.com)의 팔로잉 혹은 팔로워 페이지에서만 작동합니다.')
-  } else if (checkSelfChainBlock()) {
+async function chainBlock (followType: FollowType, userName: string) {
+  if (checkSelfChainBlock()) {
     window.alert('자기 자신에게 체인맞블락을 할 순 없습니다.')
   } else if (alreadyRunning()) {
     window.alert('현재 체인맞블락이 가동중입니다. 잠시만 기다려주세요.')
-  } else if (window.confirm('체인맞블락을 위해 나를 차단한 사용자를 찾습니다. 계속하시겠습니까?')) {
+  } else if (window.confirm(formatConfirmMessage(followType, userName))) {
     const options = await ExtOption.load()
     Object.freeze(options)
-    const pathMatch = extractFromPathname(location.pathname)
-    if (!pathMatch) {
-      throw new Error('unsupportable page')
-    }
-    const [currentUserName, currentList] = pathMatch
     const ui = new ChainBlockUI(options)
-    if (document.getElementById('react-root')) {
-      const currentUser = await getSingleUserByName(currentUserName)
-      let count = 0
-      if (currentList === 'following') {
-        count = currentUser.friends_count
-      } else if (currentList === 'followers') {
-        count = currentUser.followers_count
+    try {
+      if (document.getElementById('react-root')) {
+        const currentUser = await getSingleUserByName(userName)
+        let count = 0
+        if (followType === 'following') {
+          count = currentUser.friends_count
+        } else if (followType === 'followers') {
+          count = currentUser.followers_count
+        }
+        ui.setInitialFollowsCount(count)
+      } else {
+        const selector = `.ProfileNav-item--${followType} [data-count]`
+        ui.setInitialFollowsCount(Number($(selector).eq(0).data('count')))
       }
-      ui.setInitialFollowsCount(count)
-    } else {
-      const selector = `.ProfileNav-item--${currentList} [data-count]`
-      ui.setInitialFollowsCount(Number($(selector).eq(0).data('count')))
+    } catch (err) {
+      window.alert('사용자목록을 가져오지 못했습니다.')
+      // console.error(err)
+      throw err
     }
     const gatherer = new FollowsScraper({
       filter: (user: TwitterAPIUser) => user.blocked_by,
@@ -449,12 +430,12 @@ async function chainBlock () {
     gatherer.on('end', ({ userStopped }: { userStopped: boolean }) => {
       ui.finalize({ userStopped })
     })
-    gatherer.start(currentList, currentUserName)
+    void gatherer.start(followType, userName)
   }
 }
 
 browser.runtime.onMessage.addListener((msg: any) => {
   if (msg.action === 'MirrorOfBlock/start-chainblock') {
-    chainBlock()
+    void chainBlock(validFollowType(msg.followType), msg.userName)
   }
 })
