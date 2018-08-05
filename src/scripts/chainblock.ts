@@ -386,6 +386,9 @@ async function chainBlock (followType: FollowType, userName: string) {
   } else if (alreadyRunning()) {
     window.alert('현재 체인맞블락이 가동중입니다. 잠시만 기다려주세요.')
   } else if (window.confirm(formatConfirmMessage(followType, userName))) {
+    browser.runtime.sendMessage({
+      action: 'MirrorOfBlock/confirmed-chainblock'
+    })
     const options = await ExtOption.load()
     Object.freeze(options)
     const ui = new ChainBlockUI(options)
