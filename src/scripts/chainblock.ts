@@ -8,6 +8,29 @@
   ExtOption,
 */
 
+interface FollowerScraperOptions {
+  delay: number,
+  delayOnLimitation: number,
+  stopOnLimit: boolean,
+  filter: (user: TwitterAPIUser) => boolean
+}
+
+interface FollowerScraperOptionsInput {
+  delay?: number,
+  delayOnLimitation?: number,
+  stopOnLimit?: boolean,
+  filter?: (user: TwitterAPIUser) => boolean
+}
+
+interface UIUpdateOption {
+  users: TwitterAPIUser[],
+  gatheredCount: number
+}
+
+interface UserStopped {
+  userStopped: boolean
+}
+
 const CHAINBLOCK_UI_HTML = `
   <div class="mobcb-bg modal-container block-dialog" style="display:flex">
     <div class="mobcb-dialog modal modal-content is-autoPosition">
@@ -36,29 +59,6 @@ const CHAINBLOCK_UI_HTML = `
     </div>
   </div>
 `
-
-interface FollowerScraperOptions {
-  delay: number,
-  delayOnLimitation: number,
-  stopOnLimit: boolean,
-  filter: (user: TwitterAPIUser) => boolean
-}
-
-interface FollowerScraperOptionsInput {
-  delay?: number,
-  delayOnLimitation?: number,
-  stopOnLimit?: boolean,
-  filter?: (user: TwitterAPIUser) => boolean
-}
-
-interface UIUpdateOption {
-  users: TwitterAPIUser[],
-  gatheredCount: number
-}
-
-interface UserStopped {
-  userStopped: boolean
-}
 
 class FollowsScraper extends EventEmitter {
   private readonly options: FollowerScraperOptions
@@ -305,48 +305,56 @@ class ChainBlockUI {
         return
       }
       if (window.confirm('실제로 맞차단하시겠습니까?')) {
-        document.title = `체인맞블락 차단중\u2026 \u2013 ${originalTitle}`
-        ui.find('.mobcb-title-status').text('(차단중)')
-        const promises = targets.map(user => {
-          const { id_str: userId } = user
-          const userItem = ui.find(`.mobcb-target-users a[data-user-id="${userId}"]`)
-          if (this.immBlocked.has(userId)) {
-            return Promise.resolve({
-              user,
-              ok: true
-            })
-          } else {
-            return sendBlockRequest(userId)
-              .then(() => true, () => false)
-              .then(result => {
-                const prefix = 'mobcb-user-'
-                const className = prefix + (result ? 'blocked' : 'blockfailed')
-                userItem.addClass(className)
-                if (result) {
-                  userItem.removeClass('mobcb-user-target')
-                }
-                return {
-                  user,
-                  ok: result
-                }
-              })
-          }
-        })
-        Promise.all(promises).then(results => {
-          const successes = results.filter(x => x.ok)
-          ui.find('.mobcb-execute').prop('disabled', true)
-          document.title = `체인맞블락 차단완료! \u2013 ${originalTitle}`
-          ui.find('.mobcb-title-status').text('(차단완료)')
-          for (const result of successes) {
-            const { id_str: userId } = result.user
-            const profileCard = $(`.ProfileCard[data-user-id="${userId}"]`)
-            profileCard.each((_, card) => changeButtonToBlocked(card))
-          }
-          targets.length = 0
-        })
+        this.executeMutualBlock()
       }
     })
     console.dir({ targets, skipped })
+  }
+  executeMutualBlock () {
+    const {
+      originalTitle,
+      targets,
+      progressUI: ui
+    } = this
+    document.title = `체인맞블락 차단중\u2026 \u2013 ${originalTitle}`
+    ui.find('.mobcb-title-status').text('(차단중)')
+    const promises = targets.map(user => {
+      const { id_str: userId } = user
+      const userItem = ui.find(`.mobcb-target-users a[data-user-id="${userId}"]`)
+      if (this.immBlocked.has(userId)) {
+        return Promise.resolve({
+          user,
+          ok: true
+        })
+      } else {
+        return sendBlockRequest(userId)
+          .then(() => true, () => false)
+          .then(result => {
+            const prefix = 'mobcb-user-'
+            const className = prefix + (result ? 'blocked' : 'blockfailed')
+            userItem.addClass(className)
+            if (result) {
+              userItem.removeClass('mobcb-user-target')
+            }
+            return {
+              user,
+              ok: result
+            }
+          })
+      }
+    })
+    Promise.all(promises).then(results => {
+      const successes = results.filter(x => x.ok)
+      ui.find('.mobcb-execute').prop('disabled', true)
+      document.title = `체인맞블락 차단완료! \u2013 ${originalTitle}`
+      ui.find('.mobcb-title-status').text('(차단완료)')
+      for (const result of successes) {
+        const { id_str: userId } = result.user
+        const profileCard = $(`.ProfileCard[data-user-id="${userId}"]`)
+        profileCard.each((_, card) => changeButtonToBlocked(card))
+      }
+      targets.length = 0
+    })
   }
   close () {
     document.title = this.originalTitle
@@ -374,7 +382,7 @@ function alreadyRunning (): boolean {
   return $('.mobcb-bg').length > 0
 }
 
-function formatConfirmMessage (followType: FollowType, userName: string) {
+function formatConfirmMessage (followType: FollowType, userName: string): string {
   const krFollowType = followType === 'following' ? '팔로잉' : '팔로워'
   return `체인맞블락을 위해 나를 차단한 사용자를 찾습니다. 계속하시겠습니까?
 (대상: @${userName}님의 ${krFollowType})`
@@ -419,9 +427,9 @@ async function chainBlock (followType: FollowType, userName: string) {
     ui.progressUI.on('click', '.mobcb-close', () => {
       gatherer.stop()
     })
-    gatherer.on<UIUpdateOption>('progress', ({ users, gatheredCount }: UIUpdateOption) => {
-      console.log('progress', users)
-      ui.update({ users, gatheredCount })
+    gatherer.on<UIUpdateOption>('progress', (update: UIUpdateOption) => {
+      console.log('progress', update.users)
+      ui.update(update)
     })
     gatherer.on('limit', () => {
       ui.notifyLimitation(true)
@@ -430,8 +438,8 @@ async function chainBlock (followType: FollowType, userName: string) {
       window.alert('사용자 목록을 가져오는 도중 오류가 발생했습니다. 체인맞블락을 중단합니다.')
       gatherer.stop()
     })
-    gatherer.on('end', ({ userStopped }: { userStopped: boolean }) => {
-      ui.finalize({ userStopped })
+    gatherer.on<UserStopped>('end', (userStopped: UserStopped) => {
+      ui.finalize(userStopped)
     })
     void gatherer.start(followType, userName)
   }
