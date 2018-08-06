@@ -397,7 +397,7 @@ async function chainBlock (followType: FollowType, userName: string) {
   } else if (window.confirm(formatConfirmMessage(followType, userName))) {
     void browser.runtime.sendMessage({
       action: 'MirrorOfBlock/confirmed-chainblock'
-    })
+    }).catch(() => {/* 오류 무시 */})
     const options = await ExtOption.load()
     Object.freeze(options)
     const ui = new ChainBlockUI(options)
