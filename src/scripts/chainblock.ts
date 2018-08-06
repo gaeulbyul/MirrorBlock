@@ -8,6 +8,8 @@
   ExtOption,
 */
 
+const CHAINBLOCK_DELAY = 990
+
 interface FollowerScraperOptions {
   delay: number,
   delayOnLimitation: number,
@@ -67,7 +69,7 @@ class FollowsScraper extends EventEmitter {
     super()
     this.options = {
       // default options
-      delay: 500,
+      delay: CHAINBLOCK_DELAY,
       delayOnLimitation: 1000 * 60 * 2,
       stopOnLimit: true,
       filter: () => true
@@ -148,9 +150,6 @@ class ChainBlockUI {
     const ui = this.progressUI = $('<div>')
     ui.html(CHAINBLOCK_UI_HTML)
     ui.appendTo(document.body)
-    if (options.chainBlockOver10KMode) {
-      ui.find('.mobcb-title-extra').text('(슬로우 모드)')
-    }
     ui.on('click', '.mobcb-close', event => {
       event.preventDefault()
       this.close()
@@ -419,7 +418,7 @@ async function chainBlock (followType: FollowType, userName: string) {
     const gatherer = new FollowsScraper({
       filter: (user: TwitterAPIUser) => user.blocked_by,
       stopOnLimit: false,
-      delay: options.chainBlockOver10KMode ? 2500 : 250
+      delay: CHAINBLOCK_DELAY
     })
     ui.progressUI.on('click', '.mobcb-close', () => {
       gatherer.stop()

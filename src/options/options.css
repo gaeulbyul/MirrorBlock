@@ -55,6 +55,10 @@ kbd {
   color: #000;
 }
 
+.info-option s {
+  opacity: .5;
+}
+
 .warning {
   padding: 1em;
   background-color: #ffc;

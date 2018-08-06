@@ -3,7 +3,6 @@
 const elements = {
   outlineBlockUser: document.getElementById('outlineBlockUser'),
   enableBlockReflection: document.getElementById('enableBlockReflection'),
-  chainBlockOver10KMode: document.getElementById('chainBlockOver10KMode'),
   blockMutedUser: document.getElementById('blockMutedUser')
 }
 

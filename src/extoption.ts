@@ -3,7 +3,6 @@
 interface MirrorOfBlockOption {
   outlineBlockUser: boolean,
   enableBlockReflection: boolean,
-  chainBlockOver10KMode: boolean,
   blockMutedUser: boolean
 }
 
@@ -11,7 +10,6 @@ const ExtOption = { // eslint-disable-line no-unused-vars
   defaults: Object.freeze({
     outlineBlockUser: false,
     enableBlockReflection: false,
-    chainBlockOver10KMode: false,
     blockMutedUser: false
   }),
   async save (newOption: MirrorOfBlockOption) {
