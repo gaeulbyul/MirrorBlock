@@ -11,7 +11,7 @@
 
   "applications": {
     "gecko": {
-      "id": "mirror-of-block@gaeulbyul",
+      "id": "{85e5d0a4-fc52-4d60-8634-7c67239276de}",
       "strict_min_version": "58.0"
     }
   },
