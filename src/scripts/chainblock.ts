@@ -277,7 +277,7 @@ class ChainBlockUI {
       targets,
       skipped,
       originalTitle,
-      gatheredCount,
+      totalFollowsCount,
       progressUI: ui
     } = this
     const blockableTargets = targets.filter((user: TwitterAPIUser) => !this.immBlocked.has(user.id_str))
@@ -289,7 +289,7 @@ class ChainBlockUI {
     }
     ui.find('.mobcb-title-status').text('(수집완료)')
     ui.find('.mobcb-progress').text(
-      `결과 보고: ${gatheredCount}명 중 ${this.count()}`
+      `결과 보고: ${totalFollowsCount}명 중 ${this.count()}`
     )
     if (targets.length === 0 && skipped.length === 0) {
       window.alert('여기에선 아무도 나를 차단하지 않았습니다.')
@@ -396,7 +396,7 @@ async function chainBlock (followType: FollowType, userName: string) {
   } else if (alreadyRunning()) {
     window.alert('현재 체인맞블락이 가동중입니다. 잠시만 기다려주세요.')
   } else if (window.confirm(formatConfirmMessage(followType, userName))) {
-    browser.runtime.sendMessage({
+    void browser.runtime.sendMessage({
       action: 'MirrorOfBlock/confirmed-chainblock'
     })
     const options = await ExtOption.load()
