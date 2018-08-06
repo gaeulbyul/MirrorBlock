@@ -138,7 +138,8 @@ class ChainBlockUI {
   private targets: TwitterAPIUser[] = []
   private skipped: TwitterAPIUser[] = []
   private immBlocked: Set<string> = new Set()
-  private followersCount: number = 0
+  private totalFollowsCount: number = 0
+  private gatheredCount: number = 0
   private originalTitle: string = document.title
   private readonly options: MirrorOfBlockOption
   public progressUI: JQuery
@@ -156,7 +157,7 @@ class ChainBlockUI {
     })
   }
   setInitialFollowsCount (count: number) {
-    this.followersCount = count
+    this.totalFollowsCount = count
   }
   async blockTargets () {
     const { targets } = this
@@ -196,16 +197,17 @@ class ChainBlockUI {
     if (shouldImmBlock) {
       void this.blockTargets()
     }
+    this.gatheredCount = gatheredCount
     this.updateUI({ users, gatheredCount })
   }
   updateUI ({ users, gatheredCount }: UIUpdateOption) {
     const {
       targets,
       originalTitle,
-      followersCount,
+      totalFollowsCount,
       progressUI: ui
     } = this
-    const percentage = Math.round(gatheredCount / followersCount * 100)
+    const percentage = Math.round(gatheredCount / totalFollowsCount * 100)
     document.title = `(${percentage}% | ${targets.length}명) 체인맞블락 사용자 수집중\u2026 \u2013 ${originalTitle}`
     this.notifyLimitation(false)
     for (const user of users) {
@@ -275,7 +277,7 @@ class ChainBlockUI {
       targets,
       skipped,
       originalTitle,
-      followersCount,
+      gatheredCount,
       progressUI: ui
     } = this
     const blockableTargets = targets.filter((user: TwitterAPIUser) => !this.immBlocked.has(user.id_str))
@@ -287,7 +289,7 @@ class ChainBlockUI {
     }
     ui.find('.mobcb-title-status').text('(수집완료)')
     ui.find('.mobcb-progress').text(
-      `결과 보고: ${followersCount}명 중 ${this.count()}`
+      `결과 보고: ${gatheredCount}명 중 ${this.count()}`
     )
     if (targets.length === 0 && skipped.length === 0) {
       window.alert('여기에선 아무도 나를 차단하지 않았습니다.')
@@ -401,19 +403,14 @@ async function chainBlock (followType: FollowType, userName: string) {
     Object.freeze(options)
     const ui = new ChainBlockUI(options)
     try {
-      if (document.getElementById('react-root')) {
-        const currentUser = await getSingleUserByName(userName)
-        let count = 0
-        if (followType === 'following') {
-          count = currentUser.friends_count
-        } else if (followType === 'followers') {
-          count = currentUser.followers_count
-        }
-        ui.setInitialFollowsCount(count)
-      } else {
-        const selector = `.ProfileNav-item--${followType} [data-count]`
-        ui.setInitialFollowsCount(Number($(selector).eq(0).data('count')))
+      let count = 0
+      const currentUser = await getSingleUserByName(userName)
+      if (followType === 'following') {
+        count = currentUser.friends_count
+      } else if (followType === 'followers') {
+        count = currentUser.followers_count
       }
+      ui.setInitialFollowsCount(count)
     } catch (err) {
       window.alert('사용자목록을 가져오지 못했습니다.')
       // console.error(err)
