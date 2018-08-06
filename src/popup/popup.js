@@ -85,8 +85,9 @@ document.addEventListener('DOMContentLoaded', () => {
     {
       const blockReflection = document.querySelector('.blockReflection')
       const val = option.enableBlockReflection
+      // const warningEmoji = '\u{26a0}\u{fe0f}'
       blockReflection.classList.toggle('on', val)
-      blockReflection.textContent = `차단반사\u{26a0}\u{fe0f}: ${val ? 'On \u2714' : 'Off'}`
+      blockReflection.textContent = `차단반사: ${val ? 'On \u2714' : 'Off'}`
     }
     {
       const over10KMode = document.querySelector('.chainBlockOver10KMode')
