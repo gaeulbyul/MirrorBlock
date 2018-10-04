@@ -1,13 +1,3 @@
-/* globals
-  browser,
-  fetch,
-  location,
-  $,
-  sendBlockRequest,
-  changeButtonToBlocked,
-  ExtOption,
-*/
-
 const CHAINBLOCK_DELAY = 990
 
 interface FollowerScraperOptions {
@@ -195,7 +185,6 @@ class ChainBlockUI {
     if (shouldImmBlock) {
       void this.blockTargets()
     }
-    this.gatheredCount = gatheredCount
     this.updateUI({ users, gatheredCount })
   }
   updateUI ({ users, gatheredCount }: UIUpdateOption) {

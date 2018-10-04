@@ -1,13 +1,3 @@
-/* globals
-  Element,
-  HTMLLinkElement,
-  MutationObserver,
-  sendBlockRequest,
-  changeButtonToBlocked,
-  ExtOption,
-  browser
-*/
-
 const BLOCKS_YOU = '<span class="mob-BlockStatus">나를 차단함</span>'
 const BLOCK_REFLECTED = '<span class="mob-BlockReflectedStatus">차단반사 발동!</span>'
 

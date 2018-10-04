@@ -1,5 +1,3 @@
-/* globals browser */
-
 interface MirrorOfBlockOption {
   outlineBlockUser: boolean,
   enableBlockReflection: boolean,

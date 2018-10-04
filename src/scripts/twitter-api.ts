@@ -1,11 +1,3 @@
-/* globals
-  fetch,
-  location,
-  URLSearchParams,
-  Headers,
-  URL,
-*/
-
 // 모바일 트위터웹의 main.{hash}.js에 하드코딩되어있는 값
 const BEARER_TOKEN = `AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA`
 
