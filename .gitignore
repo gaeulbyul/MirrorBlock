@@ -1,6 +1,8 @@
 *.log
 /_ignore_/
 /.idea/
+/.vs/
 /node_modules/
 /dist/
 /MirrorOfBlock/
+/build/

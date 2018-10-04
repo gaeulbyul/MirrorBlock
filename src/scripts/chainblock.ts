@@ -141,7 +141,6 @@ class ChainBlockUI {
   private skipped: TwitterAPIUser[] = []
   private immBlocked: Set<string> = new Set()
   private totalFollowsCount: number = 0
-  private gatheredCount: number = 0
   private originalTitle: string = document.title
   private readonly options: MirrorOfBlockOption
   public progressUI: JQuery
