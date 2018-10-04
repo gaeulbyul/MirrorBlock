@@ -285,7 +285,7 @@ class ChainBlockUI {
     } else if (blockableTargets.length > 0) {
       ui.find('.mobcb-controls .btn').prop('disabled', false)
     } else if (blockableTargets.length === 0) {
-      ui.find('.mobcb-bottom-message').text('맞차단할 사용자가 없거나 이미 맞차단을 했습니다.')
+      ui.find('.mobcb-bottom-message').text('더 이상 맞차단할 사용자가 없습니다.')
     }
     ui.find('.mobcb-execute').on('click', event => {
       event.preventDefault()
