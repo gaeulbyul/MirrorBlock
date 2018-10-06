@@ -7,13 +7,6 @@ interface FollowerScraperOptions {
   filter: (user: TwitterAPIUser) => boolean
 }
 
-interface FollowerScraperOptionsInput {
-  delay?: number,
-  delayOnLimitation?: number,
-  stopOnLimit?: boolean,
-  filter?: (user: TwitterAPIUser) => boolean
-}
-
 interface UIUpdateOption {
   users: TwitterAPIUser[],
   gatheredCount: number
@@ -55,10 +48,9 @@ const CHAINBLOCK_UI_HTML = `
 class FollowsScraper extends EventEmitter {
   private readonly options: FollowerScraperOptions
   private stopped: boolean = false
-  constructor (options?: FollowerScraperOptionsInput) {
+  constructor (options?: Partial<FollowerScraperOptions>) {
     super()
     this.options = {
-      // default options
       delay: CHAINBLOCK_DELAY,
       delayOnLimitation: 1000 * 60 * 2,
       stopOnLimit: true,
@@ -99,7 +91,6 @@ class FollowsScraper extends EventEmitter {
               throw ex
             } else {
               await sleep(delayOnLimitation)
-              // continue
             }
           } else {
             this.emit('error')
@@ -147,7 +138,7 @@ class ChainBlockUI {
   setInitialFollowsCount (count: number) {
     this.totalFollowsCount = count
   }
-  async blockTargets () {
+  private async blockTargets () {
     const { targets } = this
     const promises = targets
       .filter(user => !this.immBlocked.has(user.id_str))
@@ -166,7 +157,7 @@ class ChainBlockUI {
       })
     return Promise.all(promises)
   }
-  shouldSkipUser (user: TwitterAPIUser): boolean {
+  private shouldSkipUser (user: TwitterAPIUser): boolean {
     const { blockMutedUser } = this.options
     const { blocking } = user
     const muteSkip = user.muting && !blockMutedUser
@@ -187,7 +178,7 @@ class ChainBlockUI {
     }
     this.updateUI({ users, gatheredCount })
   }
-  updateUI ({ users, gatheredCount }: UIUpdateOption) {
+  private updateUI ({ users, gatheredCount }: UIUpdateOption) {
     const {
       targets,
       originalTitle,
@@ -259,7 +250,7 @@ class ChainBlockUI {
     this.finalizeUI({ userStopped })
   }
 
-  finalizeUI ({ userStopped }: UserStopped) {
+  private finalizeUI ({ userStopped }: UserStopped) {
     const {
       targets,
       skipped,
@@ -372,7 +363,7 @@ function alreadyRunning (): boolean {
 }
 
 function formatConfirmMessage (followType: FollowType, userName: string): string {
-  const krFollowType = followType === 'following' ? '팔로잉' : '팔로워'
+  const krFollowType = followType === FollowType.following ? '팔로잉' : '팔로워'
   return `체인맞블락을 위해 나를 차단한 사용자를 찾습니다. 계속하시겠습니까?
 (대상: @${userName}님의 ${krFollowType})`
 }
@@ -392,9 +383,9 @@ async function chainBlock (followType: FollowType, userName: string) {
     try {
       let count = 0
       const currentUser = await getSingleUserByName(userName)
-      if (followType === 'following') {
+      if (followType === FollowType.following) {
         count = currentUser.friends_count
-      } else if (followType === 'followers') {
+      } else if (followType === FollowType.followers) {
         count = currentUser.followers_count
       }
       ui.setInitialFollowsCount(count)
@@ -429,8 +420,9 @@ async function chainBlock (followType: FollowType, userName: string) {
   }
 }
 
-browser.runtime.onMessage.addListener((msg: any) => {
-  if (msg.action === 'MirrorOfBlock/start-chainblock') {
-    void chainBlock(validFollowType(msg.followType), msg.userName)
+browser.runtime.onMessage.addListener((msg: object) => {
+  const message = msg as Message
+  if (message.action === Action.StartChainBlock) {
+    void chainBlock(message.followType, message.userName)
   }
 })

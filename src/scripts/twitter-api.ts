@@ -4,7 +4,6 @@ const BEARER_TOKEN = `AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puT
 class RateLimitError extends Error {}
 class HTTPError extends Error {}
 
-// eslint-disable-next-line no-unused-vars
 function generateTwitterAPIOptions (obj?: RequestInit): RequestInit {
   let csrfToken: string
   const match = /\bct0=([0-9a-f]{32})\b/.exec(document.cookie)
@@ -30,7 +29,6 @@ function generateTwitterAPIOptions (obj?: RequestInit): RequestInit {
 }
 
 // 트위터의 API를 통해 사용자차단을 요청
-// eslint-disable-next-line no-unused-vars
 async function sendBlockRequest (userId: string): Promise<string> {
   const fetchOptions = generateTwitterAPIOptions({
     method: 'post'
@@ -52,7 +50,7 @@ interface FollowsListResponse {
 
 async function getFollowsList (followType: FollowType, userName: string, cursor: string = '-1'): Promise<FollowsListResponse> {
   const fetchOptions = generateTwitterAPIOptions()
-  const path = followType === 'following' ? 'friends' : 'followers'
+  const path = followType === FollowType.following ? 'friends' : 'followers'
   const url = new URL(`https://api.twitter.com/1.1/${path}/list.json`)
   // url.searchParams.set('user_id', userId)
   url.searchParams.set('screen_name', userName)

@@ -100,7 +100,7 @@ function applyToRendered () {
 }
 
 function toggleNightMode (mode: boolean): void {
-  document.documentElement.classList.toggle('mob-nightmode', mode)
+  document.documentElement!.classList.toggle('mob-nightmode', mode)
 }
 
 const observer = new MutationObserver(mutations => {
@@ -144,7 +144,7 @@ const isDarkMode = /\bnight_mode=1\b/.test(document.cookie)
 if (document.getElementById('react-root')) {
   console.info('차단반사 미지원 페이지!')
   const colorThemeClass = isDarkMode ? 'mob-mobile-dark' : 'mob-mobile-light'
-  document.documentElement.classList.add('mob-mobile', colorThemeClass)
+  document.documentElement!.classList.add('mob-mobile', colorThemeClass)
 } else {
   observer.observe(document.body, {
     childList: true,
@@ -152,7 +152,7 @@ if (document.getElementById('react-root')) {
     subtree: true
   })
 
-  nightModeObserver.observe(document.head, {
+  nightModeObserver.observe(document.head!, {
     childList: true,
     subtree: true
   })
@@ -163,10 +163,10 @@ if (document.getElementById('react-root')) {
 
   browser.storage.onChanged.addListener(changes => {
     const option = changes.option.newValue
-    document.documentElement.classList.toggle('mob-enable-outline', option.outlineBlockUser)
+    document.documentElement!.classList.toggle('mob-enable-outline', option.outlineBlockUser)
   })
 
   ExtOption.load().then(option => {
-    document.documentElement.classList.toggle('mob-enable-outline', option.outlineBlockUser)
+    document.documentElement!.classList.toggle('mob-enable-outline', option.outlineBlockUser)
   })
 }
