@@ -24,7 +24,7 @@ interface MOBConfirmedChainBlockMessage {
 }
 
 type Message = MOBStartChainBlockMessage
-  | MOBStartChainBlockMessage
+  | MOBStopChainBlockMessage
   | MOBConfirmedChainBlockMessage
 
 interface TwitterAPIUser {

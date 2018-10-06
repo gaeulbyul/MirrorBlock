@@ -339,7 +339,7 @@ class ChainBlockUI {
   close () {
     document.title = this.originalTitle
     this.progressUI.remove()
-    // TODO: prevent use-after-close?
+  // TODO: prevent use-after-close?
   }
 }
 
@@ -374,9 +374,9 @@ async function chainBlock (followType: FollowType, userName: string) {
   } else if (alreadyRunning()) {
     window.alert('현재 체인맞블락이 가동중입니다. 잠시만 기다려주세요.')
   } else if (window.confirm(formatConfirmMessage(followType, userName))) {
-    void browser.runtime.sendMessage({
-      action: 'MirrorOfBlock/confirmed-chainblock'
-    }).catch(() => {/* 오류 무시 */})
+    browser.runtime.sendMessage<Message>({
+      action: Action.ConfirmedChainBlock
+    }).catch(() => { /* 오류 무시 */ })
     const options = await ExtOption.load()
     Object.freeze(options)
     const ui = new ChainBlockUI(options)
@@ -416,13 +416,13 @@ async function chainBlock (followType: FollowType, userName: string) {
     gatherer.on<UserStopped>('end', (userStopped: UserStopped) => {
       ui.finalize(userStopped)
     })
-    void gatherer.start(followType, userName)
+    gatherer.start(followType, userName)
   }
 }
 
 browser.runtime.onMessage.addListener((msg: object) => {
   const message = msg as Message
   if (message.action === Action.StartChainBlock) {
-    void chainBlock(message.followType, message.userName)
+    chainBlock(message.followType, message.userName)
   }
 })

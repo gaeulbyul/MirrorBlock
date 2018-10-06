@@ -43,7 +43,7 @@ function extractUserNameFromUrl (urlstr: string): string | null {
 }
 
 async function executeChainBlock (followType: FollowType) {
-  const tabs = await browser.tabs.query({active: true, currentWindow: true})
+  const tabs = await browser.tabs.query({ active: true, currentWindow: true })
   const currentTab = tabs[0]
   if (!currentTab.url || !currentTab.id) {
     return
@@ -56,8 +56,8 @@ async function executeChainBlock (followType: FollowType) {
     })
     return
   }
-  browser.tabs.sendMessage(currentTab.id, {
-    action: 'MirrorOfBlock/start-chainblock',
+  browser.tabs.sendMessage<Message>(currentTab.id, {
+    action: Action.StartChainBlock,
     followType,
     userName
   })
