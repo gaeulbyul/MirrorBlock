@@ -48,6 +48,13 @@ async function executeChainBlock (followType: FollowType) {
   if (!currentTab.url || !currentTab.id) {
     return
   }
+  if (currentTab.url.includes('//tweetdeck.twitter.com/')) {
+    const message = String.raw`Mirror Of Block: 트윗덱에선 작동하지 않습니다. 트위터(https://twitter.com)에서 실행해주세요.`.replace(/'/g, '')
+    browser.tabs.executeScript(currentTab.id, {
+      code: `window.alert('${message}')`
+    })
+    return
+  }
   const userName = extractUserNameFromUrl(currentTab.url)
   if (!userName) {
     const message = String.raw`Mirror Of Block: 트위터(twitter.com)의 팔로잉 혹은 팔로워 페이지에서만 작동합니다.\n(예: https://twitter.com/(UserName)/followers)`.replace(/'/g, '')
