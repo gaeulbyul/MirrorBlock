@@ -37,7 +37,10 @@ const CHAINBLOCK_UI_HTML = `
         </label>
       </div>
       <div class="mobcb-controls">
-        <div class="mobcb-bottom-message"></div>
+        <div class="mobcb-message-container">
+          <div class="mobcb-bottom-message"></div>
+          <div class="mobcb-limit-status"></div>
+        </div>
         <button class="mobcb-close btn normal-btn">닫기</button>
         <button disabled class="mobcb-execute btn caution-btn">차단</button>
       </div>
@@ -238,12 +241,41 @@ class ChainBlockUI {
     return `타겟 ${ts}명(${is}명 즉시차단), 스킵 ${ss}명`
   }
 
-  notifyLimitation (limited: boolean) {
-    const bottomMessage = this.progressUI.find('.mobcb-bottom-message')
-    const message = (limited
-      ? `팔로워를 너무 많이 가져와 일시적인 제한이 걸렸습니다. 약 20분 뒤에 다시 시도합니다.`
-      : '')
-    bottomMessage.text(message)
+  notifyLimitation (limited: boolean, followType?: FollowType) {
+    if (!limited) {
+      this.progressUI.find('.mobcb-bottom-message').text('')
+      this.progressUI.find('.mobcb-limit-status').text('')
+      return
+    }
+    if (limited && !followType) {
+      return
+    }
+    getLimitStatus().then((limits: LimitStatus): string => {
+      // const path = followType === FollowType.following ? 'friends' : 'followers'
+      // const limit = limits.resources[path][`/${path}/list`].reset
+      let limit: Limit
+      if (followType === FollowType.following) {
+        limit = limits.resources.friends['/friends/list']
+      } else if (followType === FollowType.followers) {
+        limit = limits.resources.followers['/followers/list']
+      } else {
+        throw new Error('unreachable')
+      }
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+      const formatter = new Intl.DateTimeFormat('ko-KR', {
+        timeZone,
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+      // 120000 = 1000 * 60 * 2 = 리밋상태에서 체인블락의 delay간격
+      const datetime = new Date((limit.reset * 1000) + 120000)
+      return formatter.format(datetime)
+    }, () => null).then((datetime: string | null) => {
+      this.progressUI.find('.mobcb-bottom-message').text('팔로워를 너무 많이 가져와 일시적인 제한이 걸렸습니다.')
+      if (datetime) {
+        this.progressUI.find('.mobcb-limit-status').text(`예상 제한해제 시간 (±5분): ${datetime}`)
+      }
+    })
   }
 
   finalize ({ userStopped }: UserStopped) {
@@ -407,7 +439,7 @@ async function chainBlock (followType: FollowType, userName: string) {
       ui.update(update)
     })
     gatherer.on('limit', () => {
-      ui.notifyLimitation(true)
+      ui.notifyLimitation(true, followType)
     })
     gatherer.on('error', () => {
       window.alert('사용자 목록을 가져오는 도중 오류가 발생했습니다. 체인맞블락을 중단합니다.')

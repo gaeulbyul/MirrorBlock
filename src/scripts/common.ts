@@ -27,18 +27,6 @@ type Message = MOBStartChainBlockMessage
   | MOBStopChainBlockMessage
   | MOBConfirmedChainBlockMessage
 
-interface TwitterAPIUser {
-  id_str: string,
-  screen_name: string,
-  name: string,
-  blocked_by: boolean,
-  blocking: boolean,
-  muting: boolean,
-  friends_count: number,
-  followers_count: number,
-  description: string
-}
-
 interface EventStore {
   [eventName: string]: Function[]
 }

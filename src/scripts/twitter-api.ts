@@ -43,11 +43,6 @@ async function sendBlockRequest (userId: string): Promise<boolean> {
   return response.ok
 }
 
-interface FollowsListResponse {
-  users: TwitterAPIUser[],
-  next_cursor_str: string
-}
-
 async function getFollowsList (followType: FollowType, userName: string, cursor: string = '-1'): Promise<FollowsListResponse> {
   const fetchOptions = generateTwitterAPIOptions()
   const path = followType === FollowType.following ? 'friends' : 'followers'
@@ -103,4 +98,11 @@ async function getSingleUserByName (userName: string): Promise<TwitterAPIUser> {
       throw new HTTPError('HTTPError!')
     }
   }
+}
+
+async function getLimitStatus (): Promise<LimitStatus> {
+  const fetchOptions = generateTwitterAPIOptions()
+  const url = 'https://api.twitter.com/1.1/application/rate_limit_status.json'
+  const response = await fetch(url, fetchOptions)
+  return response.json()
 }

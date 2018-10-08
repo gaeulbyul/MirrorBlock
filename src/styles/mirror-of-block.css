@@ -95,10 +95,14 @@ hr.mobcb-hr {
   margin-right: .5em;
   vertical-align: middle;
 }
-.mobcb-bottom-message {
+.mobcb-message-container {
   float: left;
   padding: 10px 0;
   width: 100%;
+}
+.mobcb-limit-status {
+  margin: 5px 0;
+  font-size: small;
 }
 .mobcb-controls .normal-btn {
   color: inherit;
