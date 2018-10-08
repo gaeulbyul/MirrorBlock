@@ -63,6 +63,13 @@ function sleep (time: number): Promise<void> {
   return new Promise(resolve => window.setTimeout(resolve, time))
 }
 
+function injectScript (path: string) {
+  const script = document.createElement('script')
+  script.src = browser.runtime.getURL(path)
+  const appendTarget = document.head || document.documentElement
+  appendTarget!.appendChild(script)
+}
+
 // 내가 차단한 사용자의 프로필에 "차단됨" 표시
 function changeButtonToBlocked (profile: Element) {
   const actions = profile.querySelector('.user-actions')

@@ -1,0 +1,38 @@
+/* 차단표시/반사 */
+.mob-BlockStatus,
+.mob-BlockReflectedStatus {
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: normal;
+  margin-left: 2px;
+  padding: 2px 4px;
+}
+.mob-BlockStatus {
+  background-color: #f9f2f4;
+  color: #c7254e;
+}
+.mob-BlockReflectedStatus {
+  background-color: #fcf8e3;
+  color: #8a6d3b;
+}
+.prf-header .mob-BlockStatus,
+.prf-header .mob-BlockReflectedStatus {
+  text-transform: uppercase;
+  font-size: 11px;
+  margin: 5px;
+}
+.prf-header .mob-BlockStatus {
+  background-color: #cc6666cc;
+  color: #fff;
+}
+.prf-header .mob-BlockReflectedStatus {
+  background-color: #999966cc;
+  color: #fff;
+}
+.mob-nightmode .mob-BlockStatus {
+  background-color: #141d26;
+}
+.mob-nightmode .mob-BlockReflectedStatus {
+  background-color: #141d26;
+  color: #fce8b3;
+}

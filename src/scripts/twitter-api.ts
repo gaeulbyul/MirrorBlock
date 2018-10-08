@@ -29,7 +29,7 @@ function generateTwitterAPIOptions (obj?: RequestInit): RequestInit {
 }
 
 // 트위터의 API를 통해 사용자차단을 요청
-async function sendBlockRequest (userId: string): Promise<string> {
+async function sendBlockRequest (userId: string): Promise<boolean> {
   const fetchOptions = generateTwitterAPIOptions({
     method: 'post'
   })
@@ -40,7 +40,7 @@ async function sendBlockRequest (userId: string): Promise<string> {
   fetchOptions.body = body
   const url = 'https://api.twitter.com/1.1/blocks/create.json'
   const response = await fetch(url, fetchOptions)
-  return response.text()
+  return response.ok
 }
 
 interface FollowsListResponse {
