@@ -1,50 +1,53 @@
-<!doctype html><html lang="ko"><head>
+<!doctype html>
+<html lang="ko">
+<head>
   <meta charset="utf-8">
   <link rel="stylesheet" href="options.css">
   <title>Mirror Of Block</title>
-</head><body>
-<div class="whole">
-  <fieldset>
-    <legend>옵션</legend>
-    <div class="option-item">
-      <label class="field">
-        <input type="checkbox" id="outlineBlockUser" disabled>
-        <span>
-          &#9888;&#65039; 나를 차단한 사용자가 더욱 잘 보이게 빨간 테두리 표시하기
-        </span>
-      </label>
-    </div>
-    <div class="option-item">
-      <label class="field">
-        <input type="checkbox" id="enableBlockReflection" disabled>
-        <span>&#9888;&#65039; 차단반사 기능 활성화</span>
-      </label>
-      <div class="info-option">
-        <p>차단반사가 켜져있으면 트위터 사용 중 차단한 사용자를 발견할 때 그 사용자를 맞차단합니다.</p>
+</head>
+<body>
+  <div class="whole">
+    <fieldset>
+      <legend>옵션</legend>
+      <div class="option-item">
+        <label class="field">
+          <input type="checkbox" id="outlineBlockUser" disabled>
+          <span>
+            &#9888;&#65039; 나를 차단한 사용자가 더욱 잘 보이게 빨간 테두리 표시하기
+          </span>
+        </label>
       </div>
-    </div>
-    <div class="option-item">
-      <label class="field">
-        <input type="checkbox" id="blockMutedUser" disabled>
-        <span>내가 뮤트한 사용자도 맞차단하기</span>
-      </label>
-      <div class="info-option">
-        <p>이 옵션을 끄면 뮤트를 건 사용자에겐 맞차단을 하지 않고, 옵션을 키면 뮤트여부과 상관없이 맞차단을 합니다.</p>
+      <div class="option-item">
+        <label class="field">
+          <input type="checkbox" id="enableBlockReflection" disabled>
+          <span>&#9888;&#65039; 차단반사 기능 활성화</span>
+        </label>
+        <div class="info-option">
+          <p>차단반사가 켜져있으면 트위터 사용 중 차단한 사용자를 발견할 때 그 사용자를 맞차단합니다.</p>
+        </div>
       </div>
+      <div class="option-item">
+        <label class="field">
+          <input type="checkbox" id="blockMutedUser" disabled>
+          <span>내가 뮤트한 사용자도 맞차단하기</span>
+        </label>
+        <div class="info-option">
+          <p>이 옵션을 끄면 뮤트를 건 사용자에겐 맞차단을 하지 않고, 옵션을 키면 뮤트여부과 상관없이 맞차단을 합니다.</p>
+        </div>
+      </div>
+    </fieldset>
+    <div class="warning">
+      <b>&#9888;&#65039; 알림:</b>
+      <p>트위터의 사이트 개편(모바일 웹 mobile.twitter.com과 통합)으로 인하여 웹사이트 구조가 크게 바뀌어 차단표시 및 차단반사 기능이 더 이상 작동하지 않을 수 있습니다. &#128546;</p>
     </div>
-  </fieldset>
-  <div class="warning">
-    <b>&#9888;&#65039; 알림:</b>
-    <p>트위터의 사이트 개편(모바일 웹 mobile.twitter.com과 통합)으로 인하여 웹사이트 구조가 크게 바뀌어 차단표시 및 차단반사 기능이 더 이상 작동하지 않을 수 있습니다. &#128546;</p>
+    <hr>
+    <a href="https://github.com/gaeulbyul/MirrorOfBlock" rel="noopener noreferrer">Mirror Of Block</a>
+    <small>
+      &lt;by <a href="https://twitter.com/gaeulbyul" rel="noopener noreferrer">@gaeulbyul</a>&gt;
+      / 버전 <span id="version"></span>
+    </small>
   </div>
-  <hr>
-  <a href="https://github.com/gaeulbyul/MirrorOfBlock" rel="noopener noreferrer">Mirror Of Block</a>
-  <small>
-    &lt;by <a href="https://twitter.com/gaeulbyul" rel="noopener noreferrer">@gaeulbyul</a>&gt;
-    / 버전 <span id="version"></span>
-  </small>
-</div>
-<script src="../vendor/browser-polyfill.min.js"></script>
-<script src="../extoption.js"></script>
-<script src="options.js"></script>
+  <script src="../vendor/browser-polyfill.min.js"></script>
+  <script src="../extoption.js"></script>
+  <script src="options.js"></script>
 </body></html>
