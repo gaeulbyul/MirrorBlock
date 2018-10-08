@@ -1,11 +1,27 @@
+@keyframes Pop {
+  0% {
+    transform: scale(.75);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
 /* 차단표시/반사 */
 .mob-BlockStatus,
 .mob-BlockReflectedStatus {
+  display: inline-block;
   border-radius: 4px;
   font-size: 12px;
   font-weight: normal;
   margin-left: 2px;
-  padding: 2px 4px;
+  padding: 0 4px;
+}
+.mob-BlockReflectedStatus {
+  animation: Pop .2s;
+  will-change: transform;
 }
 .account .mob-BlockStatus,
 .account .mob-BlockReflectedStatus {
