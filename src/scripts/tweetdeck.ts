@@ -52,9 +52,18 @@ function makeBlockReflectedBadge (): HTMLElement {
   return badge
 }
 
+function changeFollowButtonToBlocked (elem: Element) {
+  const btn = elem.querySelector('.prf-actions .js-action-follow')
+  if (!btn) {
+    return
+  }
+  btn.classList.remove('s-not-following')
+  btn.classList.add('s-blocking')
+}
+
 function findBadgeTarget (elem: HTMLElement): HTMLElement | null {
   let result: (HTMLElement | null)
-  const profileElem = elem.closest('.s-profile.prf') as (HTMLElement | null)
+  const profileElem = elem.closest('.s-profile.prf')
   if (profileElem) {
     result = profileElem.querySelector('.prf-header p.username')
     if (result) {
@@ -95,11 +104,14 @@ function userDataHandler (userDataElem: HTMLElement) {
     if (shouldBlock) {
       sendBlockRequest(userData.id).then(result => {
         if (result) {
+          const profileElem = userDataElem.closest('.s-profile.prf')
+          if (profileElem) {
+            changeFollowButtonToBlocked(profileElem)
+          }
           const reflectedBadge = makeBlockReflectedBadge()
           badgeTarget!.appendChild(reflectedBadge)
         }
       })
-      // reflectBlock(user)
     }
   })
 }
