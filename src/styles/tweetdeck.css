@@ -19,14 +19,14 @@
 .prf-header .mob-BlockReflectedStatus {
   text-transform: uppercase;
   font-size: 11px;
-  margin: 5px;
+  margin-left: 5px;
 }
 .prf-header .mob-BlockStatus {
-  background-color: #cc6666cc;
+  background-color: #c66c;
   color: #fff;
 }
 .prf-header .mob-BlockReflectedStatus {
-  background-color: #999966cc;
+  background-color: #996c;
   color: #fff;
 }
 .mob-nightmode .mob-BlockStatus {
