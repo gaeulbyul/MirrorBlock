@@ -19,13 +19,9 @@ interface MOBStopChainBlockMessage {
   action: Action.StopChainBlock
 }
 
-interface MOBConfirmedChainBlockMessage {
-  action: Action.ConfirmedChainBlock
-}
-
-type Message = MOBStartChainBlockMessage
+type Message =
+  | MOBStartChainBlockMessage
   | MOBStopChainBlockMessage
-  | MOBConfirmedChainBlockMessage
 
 interface EventStore {
   [eventName: string]: Function[]

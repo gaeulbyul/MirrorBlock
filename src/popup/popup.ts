@@ -20,6 +20,10 @@ const userNameBlacklist = [
   'home'
 ]
 
+function closePopup () {
+  window.close()
+}
+
 function extractUserNameFromUrl (urlstr: string): string | null {
   const url = new URL(urlstr)
   const supportingHostname = ['twitter.com', 'mobile.twitter.com']
@@ -52,7 +56,7 @@ async function executeChainBlock (followType: FollowType) {
     const message = String.raw`Mirror Of Block: 트윗덱에선 작동하지 않습니다. 트위터(https://twitter.com)에서 실행해주세요.`.replace(/'/g, '')
     browser.tabs.executeScript(currentTab.id, {
       code: `window.alert('${message}')`
-    })
+    }).then(closePopup)
     return
   }
   const userName = extractUserNameFromUrl(currentTab.url)
@@ -60,7 +64,7 @@ async function executeChainBlock (followType: FollowType) {
     const message = String.raw`Mirror Of Block: 트위터(twitter.com)의 팔로잉 혹은 팔로워 페이지에서만 작동합니다.\n(예: https://twitter.com/(UserName)/followers)`.replace(/'/g, '')
     browser.tabs.executeScript(currentTab.id, {
       code: `window.alert('${message}')`
-    })
+    }).then(closePopup)
     return
   }
   browser.tabs.sendMessage<Message>(currentTab.id, {
@@ -98,15 +102,4 @@ document.addEventListener('DOMContentLoaded', () => {
       blockReflection.textContent = `차단반사: ${val ? 'On \u2714' : 'Off'}`
     }
   })
-})
-
-// Yandex 브라우저의 경우, 버튼을 누르고 나서도 팝업창이 닫히지 않는다.
-// 따라서, Chainblock 함수를 실행할 때 confirmed-chainblock메시지를 보내고,
-// 팝업창은 이를 감지하면 창을 닫도록 한다.
-browser.runtime.onMessage.addListener((msg: object) => {
-  const message = msg as Message
-  // console.info('message received from popup: %j', message)
-  if (message.action === Action.ConfirmedChainBlock) {
-    window.close()
-  }
 })
