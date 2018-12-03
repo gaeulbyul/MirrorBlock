@@ -27,32 +27,31 @@
     "page": "options/options.html"
   },
 
+  "background": {
+    "scripts": [
+      "vendor/browser-polyfill.min.js",
+      "extoption.js",
+      "scripts-bg/background.js"
+    ]
+  },
+
   "content_scripts": [
     {
-      "matches": [
-        "*://twitter.com/*",
-        "*://mobile.twitter.com/*"
-      ],
-      "css": [
-        "styles/mirror-of-block.css"
-      ],
+      "matches": ["*://twitter.com/*", "*://mobile.twitter.com/*"],
+      "css": ["styles/mirror-of-block.css"],
       "js": [
         "vendor/browser-polyfill.min.js",
-        "vendor/jquery.js",
         "/extoption.js",
         "scripts/common.js",
         "scripts/twitter-api.js",
         "scripts/mirror-of-block.js",
+        "scripts/chainblock-ui.js",
         "scripts/chainblock.js"
       ]
     },
     {
-      "matches": [
-        "*://tweetdeck.twitter.com/*"
-      ],
-      "css": [
-        "styles/tweetdeck.css"
-      ],
+      "matches": ["*://tweetdeck.twitter.com/*"],
+      "css": ["styles/tweetdeck.css"],
       "js": [
         "vendor/browser-polyfill.min.js",
         "vendor/jquery.js",
@@ -64,9 +63,7 @@
     }
   ],
 
-  "web_accessible_resources": [
-    "scripts/tweetdeck-inject.js"
-  ],
+  "web_accessible_resources": ["scripts/tweetdeck-inject.js"],
 
   "browser_action": {
     "default_icon": "icons/icon.png",

@@ -17,14 +17,14 @@ const userNameBlacklist = [
   'notifications',
   'messages',
   'explore',
-  'home'
+  'home',
 ]
 
-function closePopup () {
+function closePopup() {
   window.close()
 }
 
-function extractUserNameFromUrl (urlstr: string): string | null {
+function extractUserNameFromUrl(urlstr: string): string | null {
   const url = new URL(urlstr)
   const supportingHostname = ['twitter.com', 'mobile.twitter.com']
   if (!supportingHostname.includes(url.hostname)) {
@@ -46,56 +46,80 @@ function extractUserNameFromUrl (urlstr: string): string | null {
   return userName
 }
 
-async function executeChainBlock (followType: FollowType) {
+async function executeChainBlock(followType: FollowType) {
   const tabs = await browser.tabs.query({ active: true, currentWindow: true })
   const currentTab = tabs[0]
   if (!currentTab.url || !currentTab.id) {
     return
   }
   if (currentTab.url.includes('//tweetdeck.twitter.com/')) {
-    const message = String.raw`Mirror Of Block: 트윗덱에선 작동하지 않습니다. 트위터(https://twitter.com)에서 실행해주세요.`.replace(/'/g, '')
-    browser.tabs.executeScript(currentTab.id, {
-      code: `window.alert('${message}')`
-    }).then(closePopup)
+    const message = String.raw`Mirror Of Block: 트윗덱에선 작동하지 않습니다. 트위터(https://twitter.com)에서 실행해주세요.`.replace(
+      /'/g,
+      ''
+    )
+    browser.tabs
+      .executeScript(currentTab.id, {
+        code: `window.alert('${message}')`,
+      })
+      .then(closePopup)
     return
   }
   const userName = extractUserNameFromUrl(currentTab.url)
   if (!userName) {
-    const message = String.raw`Mirror Of Block: 트위터(twitter.com)의 팔로잉 혹은 팔로워 페이지에서만 작동합니다.\n(예: https://twitter.com/(UserName)/followers)`.replace(/'/g, '')
-    browser.tabs.executeScript(currentTab.id, {
-      code: `window.alert('${message}')`
-    }).then(closePopup)
+    const message = String.raw`Mirror Of Block: 트위터(twitter.com)의 팔로잉 혹은 팔로워 페이지에서만 작동합니다.\n(예: https://twitter.com/(UserName)/followers)`.replace(
+      /'/g,
+      ''
+    )
+    browser.tabs
+      .executeScript(currentTab.id, {
+        code: `window.alert('${message}')`,
+      })
+      .then(closePopup)
     return
   }
-  browser.tabs.sendMessage<Message>(currentTab.id, {
-    action: Action.StartChainBlock,
-    followType,
-    userName
-  })
+  browser.tabs
+    .sendMessage<MOBMessage>(currentTab.id, {
+      action: Action.StartChainBlock,
+      followType,
+      userName,
+    })
+    .then(closePopup)
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.querySelector('.menu-item.chain-block-followers')!.addEventListener('click', event => {
-    event.preventDefault()
-    executeChainBlock(FollowType.followers)
-  })
-  document.querySelector('.menu-item.chain-block-following')!.addEventListener('click', event => {
-    event.preventDefault()
-    executeChainBlock(FollowType.following)
-  })
-  document.querySelector('.menu-item.open-option')!.addEventListener('click', event => {
-    event.preventDefault()
-    browser.runtime.openOptionsPage()
-  })
+  document
+    .querySelector('.menu-item.chain-block-followers')!
+    .addEventListener('click', event => {
+      event.preventDefault()
+      executeChainBlock(FollowType.followers)
+    })
+  document
+    .querySelector('.menu-item.chain-block-following')!
+    .addEventListener('click', event => {
+      event.preventDefault()
+      executeChainBlock(FollowType.following)
+    })
+  document
+    .querySelector('.menu-item.open-option')!
+    .addEventListener('click', event => {
+      event.preventDefault()
+      browser.runtime.openOptionsPage()
+    })
   {
     const manifest = browser.runtime.getManifest()
-    const currentVersion = document.querySelector('.currentVersion') as HTMLElement
+    const currentVersion = document.querySelector(
+      '.currentVersion'
+    ) as HTMLElement
     currentVersion.textContent = `버전: ${manifest.version}`
-    currentVersion.title = `Mirror Of Block 버전 ${manifest.version}을(를) 사용하고 있습니다.`
+    currentVersion.title = `Mirror Of Block 버전 ${
+      manifest.version
+    }을(를) 사용하고 있습니다.`
   }
   ExtOption.load().then(option => {
     {
-      const blockReflection = document.querySelector('.blockReflection') as HTMLElement
+      const blockReflection = document.querySelector(
+        '.blockReflection'
+      ) as HTMLElement
       const val = option.enableBlockReflection
       // const warningEmoji = '\u{26a0}\u{fe0f}'
       blockReflection.classList.toggle('on', val)

@@ -1,6 +1,4 @@
-type TDUserDataSet = DOMStringMap & {
-  [i in keyof TDUserData]: string
-}
+type TDUserDataSet = DOMStringMap & { [i in keyof TDUserData]: string }
 
 interface TDUserData {
   template: string
@@ -14,7 +12,7 @@ interface TDUserData {
   followedBy: boolean
 }
 
-function extractUserData (userDataElem: HTMLElement): TDUserData {
+function extractUserData(userDataElem: HTMLElement): TDUserData {
   const dataset = userDataElem.dataset as TDUserDataSet
   const toBoolean = (str: string) => str === 'true'
   const result: TDUserData = {
@@ -26,18 +24,18 @@ function extractUserData (userDataElem: HTMLElement): TDUserData {
     blockedBy: toBoolean(dataset.blockedBy),
     muting: toBoolean(dataset.muting),
     following: toBoolean(dataset.following),
-    followedBy: toBoolean(dataset.followedBy)
+    followedBy: toBoolean(dataset.followedBy),
   }
   return result
 }
 
-function getMyName (): string {
+function getMyName(): string {
   let myName = document.body.getAttribute('data-default-account-username')
-  myName = myName ? ('@' + myName) : 'You'
+  myName = myName ? '@' + myName : 'You'
   return myName
 }
 
-function makeBlockedBadge (): HTMLElement {
+function makeBlockedBadge(): HTMLElement {
   const myName = getMyName()
   const badge = document.createElement('span')
   badge.className = 'mob-BlockStatus'
@@ -45,14 +43,14 @@ function makeBlockedBadge (): HTMLElement {
   return badge
 }
 
-function makeBlockReflectedBadge (): HTMLElement {
+function makeBlockReflectedBadge(): HTMLElement {
   const badge = document.createElement('span')
   badge.className = 'mob-BlockReflectedStatus'
   badge.textContent = `Block Reflected!`
   return badge
 }
 
-function changeFollowButtonToBlocked (elem: Element) {
+function changeFollowButtonToBlocked(elem: Element) {
   const btn = elem.querySelector('.prf-actions .js-action-follow')
   if (!btn) {
     return
@@ -61,8 +59,8 @@ function changeFollowButtonToBlocked (elem: Element) {
   btn.classList.add('s-blocking')
 }
 
-function findBadgeTarget (elem: HTMLElement): HTMLElement | null {
-  let result: (HTMLElement | null)
+function findBadgeTarget(elem: HTMLElement): HTMLElement | null {
+  let result: HTMLElement | null
   const profileElem = elem.closest('.s-profile.prf')
   if (profileElem) {
     result = profileElem.querySelector('.prf-header p.username')
@@ -70,7 +68,7 @@ function findBadgeTarget (elem: HTMLElement): HTMLElement | null {
       return result
     }
   }
-  const previousElement = elem.previousElementSibling as (HTMLElement | null)
+  const previousElement = elem.previousElementSibling as HTMLElement | null
   if (previousElement) {
     if (previousElement.classList.contains('account-summary')) {
       const accElem = previousElement
@@ -83,7 +81,7 @@ function findBadgeTarget (elem: HTMLElement): HTMLElement | null {
   return null
 }
 
-function userDataHandler (userDataElem: HTMLElement) {
+function userDataHandler(userDataElem: HTMLElement) {
   if (userDataElem.classList.contains('mob-checked')) {
     return
   }
@@ -100,9 +98,10 @@ function userDataHandler (userDataElem: HTMLElement) {
   badgeTarget.appendChild(badge)
   ExtOption.load().then(option => {
     const muteSkip = userData.muting && !option.blockMutedUser
-    const shouldBlock = option.enableBlockReflection && !userData.blocking && !muteSkip
+    const shouldBlock =
+      option.enableBlockReflection && !userData.blocking && !muteSkip
     if (shouldBlock) {
-      sendBlockRequest(userData.id).then(result => {
+      TwitterAPI.blockUserById(userData.id).then(result => {
         if (result) {
           const profileElem = userDataElem.closest('.s-profile.prf')
           if (profileElem) {
@@ -116,7 +115,7 @@ function userDataHandler (userDataElem: HTMLElement) {
   })
 }
 
-function main () {
+function main() {
   injectScript('scripts/tweetdeck-inject.js')
   const observer = new MutationObserver(mutations => {
     for (const mutation of mutations) {
@@ -125,7 +124,7 @@ function main () {
           continue
         }
         const elementsToHandle = [
-          ...node.querySelectorAll<HTMLElement>('span.mob-user-data')
+          ...node.querySelectorAll<HTMLElement>('span.mob-user-data'),
         ]
         if (node.matches('span.mob-user-data')) {
           elementsToHandle.push(node)
@@ -136,7 +135,7 @@ function main () {
   })
   observer.observe(document.body, {
     subtree: true,
-    childList: true
+    childList: true,
   })
 }
 

@@ -1,6 +1,6 @@
 @keyframes Pop {
   0% {
-    transform: scale(.75);
+    transform: scale(0.75);
   }
   50% {
     transform: scale(1.25);
@@ -20,7 +20,7 @@
   padding: 0 4px;
 }
 .mob-BlockReflectedStatus {
-  animation: Pop .2s;
+  animation: Pop 0.2s;
   will-change: transform;
 }
 .account .mob-BlockStatus,
@@ -65,7 +65,7 @@
   bottom: 0;
   z-index: 9999;
   overflow: hidden;
-  background-color: rgba(0, 0, 0, .6);
+  background-color: rgba(0, 0, 0, 0.6);
 }
 hr.mobcb-hr {
   margin: 3px 0;
@@ -84,31 +84,35 @@ hr.mobcb-hr {
   font-size: 1.25em;
   font-weight: bold;
 }
-.mobcb-title-extra {
-  font-size: 1em;
-}
 .mobcb-title-status {
   font-size: 1em;
+}
+.mobcb-progress-bar {
+  width: 100%;
+}
+.mobcb-progress-text {
+  font-size: small;
+  opacity: 0.85;
 }
 .mobcb-users {
   min-width: 60px;
   overflow-y: scroll;
 }
-.mobcb-users > ul {
+.mobcb-userlist {
   list-style: none;
   line-height: 150%;
 }
-.mobcb-user-blocked:before {
+.mobcb-user.block-success:before {
   content: '\2714';
 }
-.mobcb-user-blockfailed:before {
+.mobcb-user.block-failed:before {
   content: '\274C';
 }
 .mobcb-extra-options {
   padding: 10px 0;
 }
-.mobcb-extra-options input[type="checkbox"] {
-  margin-right: .5em;
+.mobcb-extra-options input[type='checkbox'] {
+  margin-right: 0.5em;
   vertical-align: middle;
 }
 .mobcb-message-container {
@@ -132,7 +136,7 @@ hr.mobcb-hr {
 
 /* ---------- 모바일 ---------- */
 .mob-mobile .mobcb-bg {
-  background-color: rgba(0, 0, 0, .8);
+  background-color: rgba(0, 0, 0, 0.8);
 }
 .mob-mobile .mobcb-dialog {
   border-radius: 10px;
@@ -166,7 +170,7 @@ hr.mobcb-hr {
   margin: 0 20px;
 }
 .mob-mobile .mobcb-controls .btn:disabled {
-  opacity: .4;
+  opacity: 0.4;
 }
 
 /* --- 야간모드 off --- */
@@ -178,7 +182,7 @@ hr.mobcb-hr {
   background-color: #ccc;
   border-color: #999;
 }
-.mob-mobile-light .mobcb-user {
+.mob-mobile-light .mobcb-user a {
   color: crimson;
   text-decoration: underline;
 }
@@ -196,7 +200,7 @@ hr.mobcb-hr {
   background-color: #1b2836;
   border-color: #666;
 }
-.mob-mobile-dark .mobcb-user {
+.mob-mobile-dark .mobcb-user a {
   color: #f47189;
   text-decoration: underline;
 }

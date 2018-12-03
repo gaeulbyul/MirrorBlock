@@ -1,8 +1,9 @@
 const BLOCKS_YOU = '<span class="mob-BlockStatus">나를 차단함</span>'
-const BLOCK_REFLECTED = '<span class="mob-BlockReflectedStatus">차단반사 발동!</span>'
+const BLOCK_REFLECTED =
+  '<span class="mob-BlockReflectedStatus">차단반사 발동!</span>'
 
 // 딱지 붙일 요소 찾기
-function getPlaceForBadge (user: Element): Element | null {
+function getPlaceForBadge(user: Element): Element | null {
   // 팔로잉/팔로워 페이지
   const pcScreenName = user.querySelector('.ProfileCard-screenname')
   if (pcScreenName) {
@@ -21,9 +22,11 @@ function getPlaceForBadge (user: Element): Element | null {
 }
 
 // 사용자 옆에 "나를 차단함" 또는 "차단반사" 딱지 붙이기
-function indicateBlockToUser (user: Element, badge: string): void {
-  const alreadyBadged = badge === BLOCKS_YOU && user.querySelector('.mob-BlockStatus')
-  const alreadyBadged2 = badge === BLOCK_REFLECTED && user.querySelector('.mob-BlockReflectedStatus')
+function indicateBlockToUser(user: Element, badge: string): void {
+  const alreadyBadged =
+    badge === BLOCKS_YOU && user.querySelector('.mob-BlockStatus')
+  const alreadyBadged2 =
+    badge === BLOCK_REFLECTED && user.querySelector('.mob-BlockReflectedStatus')
   if (alreadyBadged || alreadyBadged2) {
     return
   }
@@ -34,7 +37,7 @@ function indicateBlockToUser (user: Element, badge: string): void {
 }
 
 // 나를 차단한 사용자가 눈에 잘 띄도록 테두리 표시
-function outlineToBlockedUser (user: Element): void {
+function outlineToBlockedUser(user: Element): void {
   if (user.matches('.js-actionable-user')) {
     user.classList.add('mob-blocks-you-outline')
   } else if (user.classList.contains('ProfileNav')) {
@@ -46,7 +49,7 @@ function outlineToBlockedUser (user: Element): void {
 }
 
 // 차단반사
-function reflectBlock (user: Element) {
+function reflectBlock(user: Element) {
   const actions = user.querySelector('.user-actions')
   if (!actions) {
     throw new Error('Failed to find actions element')
@@ -55,13 +58,15 @@ function reflectBlock (user: Element) {
   if (!userId) {
     throw new Error('Failed to find user id from actions element')
   }
-  return sendBlockRequest(userId).then(() => {
-    changeButtonToBlocked(user)
-    indicateBlockToUser(user, BLOCK_REFLECTED)
+  return TwitterAPI.blockUserById(userId).then(result => {
+    if (result) {
+      changeButtonToBlocked(user)
+      indicateBlockToUser(user, BLOCK_REFLECTED)
+    }
   })
 }
 
-function userHandler (user: Element) {
+function userHandler(user: Element) {
   if (!user) {
     return
   }
@@ -81,17 +86,16 @@ function userHandler (user: Element) {
   outlineToBlockedUser(user)
   ExtOption.load().then(option => {
     const muteSkip = muted && !option.blockMutedUser
-    const shouldBlock = option.enableBlockReflection && !alreadyBlocked && !muteSkip
+    const shouldBlock =
+      option.enableBlockReflection && !alreadyBlocked && !muteSkip
     if (shouldBlock) {
       reflectBlock(user)
     }
   })
 }
 
-function applyToRendered () {
-  const elementsToHandle = [
-    ...document.querySelectorAll('.js-actionable-user')
-  ]
+function applyToRendered() {
+  const elementsToHandle = [...document.querySelectorAll('.js-actionable-user')]
   const profileNav = document.querySelector('.ProfileNav')
   if (profileNav) {
     elementsToHandle.push(profileNav)
@@ -99,7 +103,7 @@ function applyToRendered () {
   elementsToHandle.forEach(userHandler)
 }
 
-function toggleNightMode (mode: boolean): void {
+function toggleNightMode(mode: boolean): void {
   document.documentElement!.classList.toggle('mob-nightmode', mode)
 }
 
@@ -109,9 +113,7 @@ const observer = new MutationObserver(mutations => {
       if (!(node instanceof Element)) {
         continue
       }
-      const elementsToHandle = [
-        ...node.querySelectorAll('.js-actionable-user')
-      ]
+      const elementsToHandle = [...node.querySelectorAll('.js-actionable-user')]
       if (node.matches('.js-actionable-user')) {
         elementsToHandle.push(node)
       }
@@ -149,12 +151,12 @@ if (document.getElementById('react-root')) {
   observer.observe(document.body, {
     childList: true,
     characterData: true,
-    subtree: true
+    subtree: true,
   })
 
   nightModeObserver.observe(document.head!, {
     childList: true,
-    subtree: true
+    subtree: true,
   })
 
   toggleNightMode(isDarkMode)
@@ -163,10 +165,16 @@ if (document.getElementById('react-root')) {
 
   browser.storage.onChanged.addListener(changes => {
     const option = changes.option.newValue
-    document.documentElement!.classList.toggle('mob-enable-outline', option.outlineBlockUser)
+    document.documentElement!.classList.toggle(
+      'mob-enable-outline',
+      option.outlineBlockUser
+    )
   })
 
   ExtOption.load().then(option => {
-    document.documentElement!.classList.toggle('mob-enable-outline', option.outlineBlockUser)
+    document.documentElement!.classList.toggle(
+      'mob-enable-outline',
+      option.outlineBlockUser
+    )
   })
 }

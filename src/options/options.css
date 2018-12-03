@@ -1,4 +1,6 @@
-*, *:before, *:after {
+*,
+*:before,
+*:after {
   box-sizing: border-box;
 }
 
@@ -11,7 +13,8 @@ body {
   font-family: 'NanumGothic', 'Malgun Gothic', sans-serif;
 }
 
-a, a:visited {
+a,
+a:visited {
   color: crimson;
 }
 
@@ -37,7 +40,7 @@ kbd {
   user-select: none;
 }
 
-.field input[type="checkbox"]:checked + span {
+.field input[type='checkbox']:checked + span {
   font-weight: bold;
 }
 
@@ -47,7 +50,7 @@ kbd {
 }
 
 .info-option > p {
-  margin: .5em 0;
+  margin: 0.5em 0;
 }
 
 .info-option mark {
@@ -56,7 +59,7 @@ kbd {
 }
 
 .info-option s {
-  opacity: .5;
+  opacity: 0.5;
 }
 
 .warning {

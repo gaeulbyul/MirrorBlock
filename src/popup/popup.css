@@ -1,4 +1,6 @@
-*, *:before, *:after {
+*,
+*:before,
+*:after {
   box-sizing: border-box;
 }
 
@@ -11,7 +13,8 @@ body {
   font-family: 'NanumGothic', 'Malgun Gothic', sans-serif;
 }
 
-a, a:visited {
+a,
+a:visited {
   color: crimson;
 }
 
@@ -23,7 +26,7 @@ hr {
 .whole .title {
   text-align: center;
   font-size: 14px;
-  user-select: none
+  user-select: none;
 }
 
 .menu {
@@ -40,7 +43,7 @@ hr {
   background-color: white;
   color: black;
   cursor: pointer;
-  transition: background-color .2s ease, color .2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .menu-item:hover {
@@ -51,7 +54,7 @@ hr {
 
 .option-item {
   margin: 5px 0;
-  font-size: .8rem;
+  font-size: 0.8rem;
   color: #666;
 }
 
@@ -65,7 +68,7 @@ hr {
 }
 
 .warning {
-  padding: .25em 1em;
+  padding: 0.25em 1em;
 
   font-size: 14px;
 }
