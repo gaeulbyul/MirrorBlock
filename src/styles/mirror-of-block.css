@@ -17,7 +17,7 @@
   font-size: 12px;
   font-weight: normal;
   margin-left: 2px;
-  padding: 0 4px;
+  padding: 4px;
 }
 .mob-BlockReflectedStatus {
   animation: Pop 0.2s;
@@ -46,11 +46,19 @@
   border-color: crimson !important;
 }
 .mob-nightmode .mob-BlockStatus {
-  background-color: #141d26;
+  background-color: #10171e;
 }
 .mob-nightmode .mob-BlockReflectedStatus {
-  background-color: #141d26;
+  background-color: #10171e;
   color: #fce8b3;
+}
+.ProfileHeaderCard .mob-BlockStatus,
+.ProfileHeaderCard .mob-BlockReflectedStatus {
+  padding: 0 4px;
+}
+.mob-nightmode .ProfileHeaderCard .mob-BlockStatus,
+.mob-nightmode .ProfileHeaderCard .mob-BlockReflectedStatus {
+  background-color: #141d26;
 }
 
 /* 체인맞블락 관련 */

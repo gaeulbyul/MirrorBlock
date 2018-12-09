@@ -1,7 +1,14 @@
 namespace TwitterAPI {
   const BEARER_TOKEN = `AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA`
 
-  export class RateLimitError extends Error {
+  export class APIError extends Error {
+    constructor(public readonly response: Response) {
+      super('Received non-OK response from Twitter API')
+      Object.setPrototypeOf(this, new.target.prototype)
+    }
+  }
+
+  export class RateLimitError extends APIError {
     public async getLimitStatus(): Promise<LimitStatus> {
       return getRateLimitStatus()
     }
@@ -67,7 +74,7 @@ namespace TwitterAPI {
     }
     const response = await fetch(url.toString(), fetchOptions)
     if (rateLimited(response)) {
-      throw new RateLimitError('rate limited')
+      throw new RateLimitError(response)
     }
     return response
   }
@@ -85,7 +92,6 @@ namespace TwitterAPI {
       const fatalErrorMessage = `!!!!! FATAL!!!!!: attempted to block user that should NOT block!!
 (user: ${user.screen_name})`
       console.error(fatalErrorMessage)
-      debugger
       throw new Error(fatalErrorMessage)
     }
     return blockUserById(user.id_str)
@@ -115,7 +121,7 @@ namespace TwitterAPI {
     if (response.ok) {
       return response.json() as Promise<FollowsListResponse>
     } else {
-      throw new Error('response is not ok')
+      throw new APIError(response)
     }
   }
 
@@ -134,7 +140,7 @@ namespace TwitterAPI {
     if (response.ok) {
       return response.json() as Promise<FollowsListResponse>
     } else {
-      throw new Error('response is not ok')
+      throw new APIError(response)
     }
   }
 
@@ -195,7 +201,7 @@ namespace TwitterAPI {
     if (response.ok) {
       return response.json() as Promise<TwitterUser>
     } else {
-      throw new Error('response is not ok')
+      throw new APIError(response)
     }
   }
 
@@ -204,7 +210,7 @@ namespace TwitterAPI {
     if (response.ok) {
       return response.json() as Promise<TwitterUser>
     } else {
-      throw new Error('response is not ok')
+      throw new APIError(response)
     }
   }
 

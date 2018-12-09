@@ -40,12 +40,3 @@ function injectScript(path: string) {
 function copyFrozenObject<T extends object>(obj: T): Readonly<T> {
   return Object.freeze(Object.assign({}, obj))
 }
-
-// 내가 차단한 사용자의 프로필에 "차단됨" 표시
-function changeButtonToBlocked(profile: Element) {
-  const actions = profile.querySelector('.user-actions')
-  if (actions) {
-    actions.classList.remove('not-following')
-    actions.classList.add('blocked')
-  }
-}

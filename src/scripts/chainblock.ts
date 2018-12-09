@@ -3,12 +3,12 @@
 /// <reference path="../extoption.ts" />
 
 class ChainMirrorBlock {
-  private ui = new ChainMirrorBlockUI()
+  private readonly ui = new ChainMirrorBlockUI()
   private get immediatelyBlockMode(): boolean {
     return this.ui.immediatelyBlockModeChecked
   }
-  private blockResults: Map<string, BlockResult> = new Map()
-  private progress: ChainMirrorBlockProgress = {
+  private readonly blockResults: Map<string, BlockResult> = new Map()
+  private readonly progress: ChainMirrorBlockProgress = {
     scraped: 0,
     foundUsers: [],
   }
@@ -209,8 +209,44 @@ function getTotalFollows(user: TwitterUser, followType: FollowType): number {
   }
 }
 
+function checkLogin(): boolean {
+  // legacy(jquery-based) desktop site
+  if (document.body.classList.contains('logged-in')) {
+    return true
+  }
+  if (document.body.classList.contains('logged-out')) {
+    return false
+  }
+  // react-based mobile(responsive) site
+  // const isMobile = document.getElementById('react-root') !== null
+  const loggedInUserLink =
+    document.querySelector('[data-testid="loggedInUserLink"]') !== null
+  if (loggedInUserLink) {
+    return true
+  }
+  return false
+}
+
 async function doChainBlock(targetUserName: string, followType: FollowType) {
-  const targetUser = await TwitterAPI.getSingleUserByName(targetUserName)
+  if (!checkLogin()) {
+    window.alert('로그인을 해주세요')
+    return
+  }
+  const targetUser = await TwitterAPI.getSingleUserByName(targetUserName).catch(
+    async err => {
+      if (err instanceof TwitterAPI.APIError) {
+        const json = await err.response.json()
+        const jsonstr = JSON.stringify(json, null, 2)
+        window.alert(`트위터 서버에서 오류가 발생했습니다:\n${jsonstr}`)
+      } else if (err instanceof Error) {
+        window.alert(`오류가 발생했습니다:\n${err.message}`)
+      }
+      return null
+    }
+  )
+  if (!targetUser) {
+    return
+  }
   const followsCount = getTotalFollows(targetUser, followType)
   if (followsCount <= 0) {
     window.alert('팔로워가 0명입니다.')

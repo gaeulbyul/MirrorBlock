@@ -10,7 +10,9 @@ const elements = {
 function saveOption() {
   const option = {}
   for (const key of Object.keys(elements)) {
-    option[key] = elements[key].checked
+    if (elements[key] !== null) {
+      option[key] = elements[key].checked
+    }
   }
   return ExtOption.save(option)
 }

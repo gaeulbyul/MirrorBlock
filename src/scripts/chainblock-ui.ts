@@ -62,7 +62,7 @@ function getLimitResetTime(limit: Limit): string {
 }
 
 class UserList {
-  private items: Map<string, HTMLElement> = new Map()
+  private readonly items: Map<string, HTMLElement> = new Map()
   constructor(private rootElem: HTMLElement) {}
   public get size(): number {
     return this.items.size
