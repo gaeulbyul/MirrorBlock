@@ -22,6 +22,16 @@ class ChainMirrorBlock {
     this.progress.foundUsers.length = 0
   }
   private handleUIEvents() {
+    window.addEventListener('beforeunload', event => {
+      if (!this.isRunning) {
+        return
+      }
+      event.preventDefault()
+      const message =
+        '[Mirror Of Block] 페이지를 닫거나 다른 페이지로 이동하면 현재 작동중인 체인맞블락은 멈추게 됩니다. 계속 하시겠습니까?'
+      event.returnValue = message
+      return message
+    })
     this.ui.on('ui:close', () => {
       const confirmMessage =
         '체인맞블락이 아직 진행중입니다. 그래도 닫으시겠습니까?'
