@@ -45,6 +45,9 @@
 .mob-enable-outline .ProfileAvatar.mob-blocks-you-outline {
   border-color: crimson !important;
 }
+.mob-enable-outline .Tombstone.mob-blocks-you-outline {
+  outline: 3px solid crimson;
+}
 .mob-nightmode .mob-BlockStatus {
   background-color: #10171e;
 }

@@ -1,16 +1,9 @@
 /// <reference path="./twitter-api.ts" />
 
-// reflect on:
-// - profile
-// - follower/follwing user list
-// - userlist
-// - dm
-// - (maybe) user hover popup?
-
-function generateBlocksYouBadge(): HTMLElement {
+function generateBlocksYouBadge(afterText: string = ''): HTMLElement {
   const badge = document.createElement('span')
   badge.className = 'mob-badge mob-BlockStatus'
-  badge.textContent = '나를 차단함'
+  badge.textContent = `나를 차단함 ${afterText}`.trim()
   return badge
 }
 function generateBlockReflectedBadge(): HTMLElement {
@@ -123,6 +116,42 @@ function generateBlockReflectedBadge(): HTMLElement {
       }
     }
   }
+  // 보이지 않는 인용트윗은 트위터에서 내부적으로 Tombstone이란 클래스네임이 붙는다.
+  async function tombstoneHandler(ts: HTMLElement): Promise<void> {
+    const parent = ts.parentElement
+    if (!parent) {
+      return
+    }
+    const options = await ExtOption.load()
+    const links = parent.querySelectorAll<HTMLAnchorElement>(
+      'a[data-expanded-url^="https://twitter.com/"]'
+    )
+    for (const link of links) {
+      const realUrl = new URL(link.getAttribute('data-expanded-url')!)
+      const userName = realUrl.pathname.split('/')[1]
+      console.log('found tombstone with username %s', userName)
+      const targetUser = await TwitterAPI.getSingleUserByName(userName).catch(
+        () => null
+      )
+      if (!targetUser) {
+        return
+      }
+      if (!targetUser.blocked_by) {
+        return
+      }
+      ts.appendChild(generateBlocksYouBadge(`(@${targetUser.screen_name})`))
+      ts.classList.add('mob-blocks-you-outline')
+      const muteSkip = targetUser.muting && !options.blockMutedUser
+      const shouldBlock =
+        options.enableBlockReflection && !targetUser.blocking && !muteSkip
+      if (shouldBlock) {
+        const result = await TwitterAPI.blockUser(targetUser)
+        if (result) {
+          ts.appendChild(generateBlockReflectedBadge())
+        }
+      }
+    }
+  }
 
   async function foundTargetHandler(ft: FoundTarget): Promise<void> {
     ft.addOutlineClassName()
@@ -165,7 +194,11 @@ function generateBlockReflectedBadge(): HTMLElement {
 
   function applyToRendered() {
     extractTargetElems(document).forEach(foundTargetHandler)
+    document
+      .querySelectorAll<HTMLElement>('.Tombstone')
+      .forEach(tombstoneHandler)
   }
+
   const observer = new MutationObserver(mutations => {
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
@@ -173,6 +206,9 @@ function generateBlockReflectedBadge(): HTMLElement {
           continue
         }
         extractTargetElems(node).forEach(foundTargetHandler)
+        node
+          .querySelectorAll<HTMLElement>('.Tombstone')
+          .forEach(tombstoneHandler)
       }
     }
   })
