@@ -1,64 +1,42 @@
 enum FollowType {
   followers = 'followers',
-  following = 'following'
+  following = 'following',
 }
 
 enum Action {
   StartChainBlock = 'MirrorOfBlock/Start',
   StopChainBlock = 'MirrorOfBlock/Stop',
-  ConfirmedChainBlock = 'MirrorOfBlock/Confirmed'
-}
-
-interface MOBStartChainBlockMessage {
-  action: Action.StartChainBlock,
-  userName: string,
-  followType: FollowType
-}
-
-interface MOBStopChainBlockMessage {
-  action: Action.StopChainBlock
-}
-
-type Message =
-  | MOBStartChainBlockMessage
-  | MOBStopChainBlockMessage
-
-interface EventStore {
-  [eventName: string]: Function[]
 }
 
 abstract class EventEmitter {
   protected events: EventStore = {}
-  on<T> (eventName: string, handler: (t: T) => any) {
+  on<T>(eventName: string, handler: (t: T) => any) {
+    console.debug('handle %s event', eventName)
     if (!(eventName in this.events)) {
       this.events[eventName] = []
     }
     this.events[eventName].push(handler)
     return this
   }
-  emit<T> (eventName: string, eventHandlerParameter?: T) {
+  emit<T>(eventName: string, eventHandlerParameter?: T) {
+    console.debug('emit %s event with %o', eventName, eventHandlerParameter)
     const handlers = this.events[eventName] || []
     handlers.forEach(handler => handler(eventHandlerParameter))
     return this
   }
 }
 
-function sleep (time: number): Promise<void> {
+function sleep(time: number): Promise<void> {
   return new Promise(resolve => window.setTimeout(resolve, time))
 }
 
-function injectScript (path: string) {
+function injectScript(path: string) {
   const script = document.createElement('script')
   script.src = browser.runtime.getURL(path)
   const appendTarget = document.head || document.documentElement
   appendTarget!.appendChild(script)
 }
 
-// 내가 차단한 사용자의 프로필에 "차단됨" 표시
-function changeButtonToBlocked (profile: Element) {
-  const actions = profile.querySelector('.user-actions')
-  if (actions) {
-    actions.classList.remove('not-following')
-    actions.classList.add('blocked')
-  }
+function copyFrozenObject<T extends object>(obj: T): Readonly<T> {
+  return Object.freeze(Object.assign({}, obj))
 }
