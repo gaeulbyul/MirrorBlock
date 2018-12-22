@@ -37,6 +37,10 @@
       }
       const targetElem = mutation.target as HTMLElement
       const isReadonly = targetElem.classList.contains('is-readonly')
+      if (targetElem.classList.contains('mob-checked')) {
+        return
+      }
+      targetElem.classList.add('mob-checked')
       if (isReadonly) {
         handleDM(targetElem)
       }

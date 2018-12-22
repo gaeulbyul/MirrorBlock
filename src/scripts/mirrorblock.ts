@@ -122,6 +122,10 @@ function generateBlockReflectedBadge(): HTMLElement {
     if (!parent) {
       return
     }
+    if (ts.classList.contains('mob-checked')) {
+      return
+    }
+    ts.classList.add('mob-checked')
     const options = await ExtOption.load()
     const links = parent.querySelectorAll<HTMLAnchorElement>(
       'a[data-expanded-url^="https://twitter.com/"]'
