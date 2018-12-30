@@ -7,14 +7,6 @@
   margin-left: 2px;
   padding: 2px 4px;
 }
-.mob-BlockStatus {
-  background-color: #f9f2f4;
-  color: #c7254e;
-}
-.mob-BlockReflectedStatus {
-  background-color: #fcf8e3;
-  color: #8a6d3b;
-}
 .prf-header .mob-BlockStatus,
 .prf-header .mob-BlockReflectedStatus {
   text-transform: uppercase;
@@ -29,10 +21,18 @@
   background-color: #996c;
   color: #fff;
 }
-.mob-nightmode .mob-BlockStatus {
-  background-color: #141d26;
+.account-summary .mob-BlockStatus {
+  background-color: #f9f2f4;
+  color: #c7254e;
 }
-.mob-nightmode .mob-BlockReflectedStatus {
-  background-color: #141d26;
+.account-summary .mob-BlockReflectedStatus {
+  background-color: #fcf8e3;
+  color: #8a6d3b;
+}
+html.dark .account-summary .mob-BlockStatus {
+  background-color: #10171e;
+}
+html.dark .account-summary .mob-BlockReflectedStatus {
+  background-color: #10171e;
   color: #fce8b3;
 }
