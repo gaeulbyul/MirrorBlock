@@ -189,6 +189,21 @@ namespace TwitterAPI {
     }
   }
 
+  export async function getSingleUserById(
+    userId: string
+  ): Promise<TwitterUser> {
+    const response = await requestAPI('get', '/users/show.json', {
+      user_id: userId,
+      skip_status: true,
+      include_entities: false,
+    })
+    if (response.ok) {
+      return response.json() as Promise<TwitterUser>
+    } else {
+      throw new APIError(response)
+    }
+  }
+
   export async function getSingleUserByName(
     userName: string
   ): Promise<TwitterUser> {

@@ -55,6 +55,13 @@
   background-color: #10171e;
   color: #fce8b3;
 }
+.js-user-profile-link .mob-BlockStatus,
+.js-user-profile-link .mob-BlockReflectedStatus {
+  padding: 0 4px;
+}
+.mob-enable-outline .js-user-profile-link.mob-blocks-you-outline {
+  outline: 2px solid crimson;
+}
 .ProfileHeaderCard .mob-BlockStatus,
 .ProfileHeaderCard .mob-BlockReflectedStatus {
   padding: 0 4px;

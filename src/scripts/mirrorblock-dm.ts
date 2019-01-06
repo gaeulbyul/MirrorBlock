@@ -11,24 +11,16 @@
     )
     const userName = profileLink!.pathname.replace(/^\//, '')
     const targetUser = await TwitterAPI.getSingleUserByName(userName)
-    if (targetUser.blocked_by) {
-      const options = await ExtOption.load()
-      const userBadges = header.querySelector('.UserBadges')!
-      userBadges.appendChild(generateBlocksYouBadge())
-      const muteSkip = targetUser.muting && !options.blockMutedUser
-      const shouldBlock = options.enableBlockReflection && !muteSkip
-      if (shouldBlock) {
-        const blockResult = await TwitterAPI.blockUser(targetUser).catch(
-          err => {
-            console.error(err)
-            return false
-          }
-        )
-        if (blockResult) {
-          userBadges.appendChild(generateBlockReflectedBadge())
-        }
-      }
-    }
+    const userBadges = header.querySelector('.UserBadges')!
+    reflectBlock({
+      user: targetUser,
+      indicateBlock() {
+        userBadges.appendChild(generateBlocksYouBadge())
+      },
+      indicateReflection() {
+        userBadges.appendChild(generateBlockReflectedBadge())
+      },
+    })
   }
   const dmObserver = new MutationObserver(mutations => {
     for (const mutation of mutations) {
