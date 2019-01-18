@@ -1,31 +1,8 @@
-const userNameBlacklist = [
-  '1',
-  'about',
-  'account',
-  'blog',
-  'followers',
-  'followings',
-  'hashtag',
-  'i',
-  'lists',
-  'login',
-  'logout',
-  'oauth',
-  'privacy',
-  'search',
-  'tos',
-  'notifications',
-  'messages',
-  'explore',
-  'home',
-]
-
 function closePopup() {
   window.close()
 }
 
-function extractUserNameFromUrl(urlstr: string): string | null {
-  const url = new URL(urlstr)
+function extractUserNameFromUrl(url: URL): string | null {
   const supportingHostname = ['twitter.com', 'mobile.twitter.com']
   if (!supportingHostname.includes(url.hostname)) {
     return null
@@ -34,15 +11,12 @@ function extractUserNameFromUrl(urlstr: string): string | null {
   if (notUserPagePattern01.test(url.pathname)) {
     return null
   }
-  const pattern = /^\/([0-9A-Za-z_]+)/
+  const pattern = /^\/([0-9a-z_]+)/i
   const match = pattern.exec(url.pathname)
   if (!match) {
     return null
   }
   const userName = match[1]
-  if (userNameBlacklist.includes(userName.toLowerCase())) {
-    return null
-  }
   return userName
 }
 
@@ -52,7 +26,8 @@ async function executeChainBlock(followType: FollowType) {
   if (!currentTab.url || !currentTab.id) {
     return
   }
-  if (currentTab.url.includes('//tweetdeck.twitter.com/')) {
+  const parsedUrl = new URL(currentTab.url)
+  if (parsedUrl.hostname === 'tweetdeck.twitter.com') {
     const message = String.raw`Mirror Of Block: 트윗덱에선 작동하지 않습니다. 트위터(https://twitter.com)에서 실행해주세요.`.replace(
       /'/g,
       ''
@@ -64,7 +39,7 @@ async function executeChainBlock(followType: FollowType) {
       .then(closePopup)
     return
   }
-  const userName = extractUserNameFromUrl(currentTab.url)
+  const userName = extractUserNameFromUrl(parsedUrl)
   if (!userName) {
     const message = String.raw`Mirror Of Block: 트위터(twitter.com)의 팔로잉 혹은 팔로워 페이지에서만 작동합니다.\n(예: https://twitter.com/(UserName)/followers)`.replace(
       /'/g,

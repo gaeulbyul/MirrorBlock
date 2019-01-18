@@ -3,7 +3,11 @@
 
   if (document.getElementById('react-root')) {
     const colorThemeClass = isDarkMode ? 'mob-mobile-dark' : 'mob-mobile-light'
-    document.documentElement!.classList.add('mob-mobile', colorThemeClass)
+    document.documentElement!.classList.add(
+      'mob-mobile',
+      'mob-nightmode',
+      colorThemeClass
+    )
   } else {
     function toggleNightMode(mode: boolean): void {
       document.documentElement!.classList.toggle('mob-nightmode', mode)

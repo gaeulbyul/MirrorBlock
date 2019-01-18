@@ -66,9 +66,19 @@
 .ProfileHeaderCard .mob-BlockReflectedStatus {
   padding: 0 4px;
 }
+
 .mob-nightmode .ProfileHeaderCard .mob-BlockStatus,
 .mob-nightmode .ProfileHeaderCard .mob-BlockReflectedStatus {
   background-color: #141d26;
+}
+
+#react-root .mob-BlockStatus,
+#react-root .mob-BlockReflectedStatus {
+  font-size: 14px;
+}
+
+.mob-enable-outline #react-root .mob-blocks-you-outline {
+  border-color: crimson;
 }
 
 /* 체인맞블락 관련 */

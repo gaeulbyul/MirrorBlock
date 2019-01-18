@@ -10,7 +10,12 @@
       'a.js-user-profile-link'
     )
     const userName = profileLink!.pathname.replace(/^\//, '')
-    const targetUser = await TwitterAPI.getSingleUserByName(userName)
+    const targetUser = await TwitterAPI.getSingleUserByName(userName).catch(
+      () => null
+    )
+    if (!targetUser) {
+      return
+    }
     const userBadges = header.querySelector('.UserBadges')!
     reflectBlock({
       user: targetUser,

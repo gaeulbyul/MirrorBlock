@@ -1,5 +1,23 @@
 namespace TwitterAPI {
   const BEARER_TOKEN = `AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA`
+  const USER_NAME_BLACKLIST = [
+    '1',
+    'about',
+    'account',
+    'followers',
+    'followings',
+    'hashtag',
+    'i',
+    'lists',
+    'login',
+    'oauth',
+    'privacy',
+    'search',
+    'tos',
+    'notifications',
+    'messages',
+    'explore',
+  ]
 
   export class APIError extends Error {
     constructor(public readonly response: Response) {
@@ -207,6 +225,15 @@ namespace TwitterAPI {
   export async function getSingleUserByName(
     userName: string
   ): Promise<TwitterUser> {
+    const unl = userName.length
+    const userNameIsValidLength = 1 <= unl && unl <= 15
+    const lowerCasedUserName = userName.toLowerCase()
+    if (
+      !userNameIsValidLength ||
+      USER_NAME_BLACKLIST.includes(lowerCasedUserName)
+    ) {
+      throw new Error(`Invalid user name "${userName}"!`)
+    }
     const response = await requestAPI('get', '/users/show.json', {
       // user_id: user.id_str,
       screen_name: userName,

@@ -3,8 +3,8 @@
 
 interface ReflectionOptions {
   user: TwitterUser
-  indicateBlock: () => any
-  indicateReflection: () => any
+  indicateBlock: () => void
+  indicateReflection: () => void
 }
 
 async function reflectBlock(reflOptions: ReflectionOptions): Promise<void> {

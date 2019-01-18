@@ -40,3 +40,15 @@ function injectScript(path: string) {
 function copyFrozenObject<T extends object>(obj: T): Readonly<T> {
   return Object.freeze(Object.assign({}, obj))
 }
+
+function* getAddedElementsFromMutations(
+  mutations: MutationRecord[]
+): IterableIterator<HTMLElement> {
+  for (const mut of mutations) {
+    for (const node of mut.addedNodes) {
+      if (node instanceof HTMLElement) {
+        yield node
+      }
+    }
+  }
+}

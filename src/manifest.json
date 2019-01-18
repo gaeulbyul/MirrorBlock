@@ -49,6 +49,7 @@
         "scripts/mirrorblock-r.js",
         "scripts/mirrorblock-a.js",
         "scripts/mirrorblock-dm.js",
+        "scripts/mirrorblock-mobile.js",
         "scripts/chainblock-ui.js",
         "scripts/chainblock.js"
       ]
