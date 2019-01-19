@@ -81,10 +81,16 @@
   border-color: crimson;
 }
 
-.mob-enable-outline #react-root div[date-testid='tweet'].mob-blocks-you-outline,
+.mob-enable-outline #react-root [data-testid='tweet'] .mob-blocks-you-outline,
 .mob-enable-outline
   #react-root
-  div[date-testid='tweetDetail'].mob-blocks-you-outline {
+  [data-testid='tweetDetail']
+  .mob-blocks-you-outline {
+  /* inline-block:
+  빨간 테두리가 링크 위에도 묻는(?) 현상이 있다.
+  더 깔끔하게 표시하기 위해 inline-block으로 처리
+   */
+  display: inline-block;
   border: 3px solid crimson;
 }
 

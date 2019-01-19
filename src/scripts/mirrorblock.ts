@@ -176,20 +176,19 @@ function generateBlockReflectedBadge(): HTMLElement {
       subtree: true,
     })
     applyToRendered()
-
-    browser.storage.onChanged.addListener(changes => {
-      const option = changes.option.newValue
-      document.documentElement!.classList.toggle(
-        'mob-enable-outline',
-        option.outlineBlockUser
-      )
-    })
-
-    ExtOption.load().then(option => {
-      document.documentElement!.classList.toggle(
-        'mob-enable-outline',
-        option.outlineBlockUser
-      )
-    })
   }
+  browser.storage.onChanged.addListener(changes => {
+    const option = changes.option.newValue
+    document.documentElement!.classList.toggle(
+      'mob-enable-outline',
+      option.outlineBlockUser
+    )
+  })
+
+  ExtOption.load().then(option => {
+    document.documentElement!.classList.toggle(
+      'mob-enable-outline',
+      option.outlineBlockUser
+    )
+  })
 }

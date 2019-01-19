@@ -70,32 +70,39 @@ class CachedUserRetriever {
     const matches = /^\/([0-9a-z_]+)/i.exec(pathname)
     return matches ? matches[1] : null
   }
-  async function timelineTweetHandler(elem: HTMLElement) {
+  function getUserNameOfOriginalTweet(elem: HTMLElement): string | null {
+    let targetElem: HTMLAnchorElement | null = null
     const tweetTimeElem = elem.querySelector('time')
-    if (!tweetTimeElem) {
-      throw new Error('unreachable')
+    if (tweetTimeElem) {
+      targetElem = tweetTimeElem.closest('a')
+    } else {
+      const userCell = elem.querySelector<HTMLAnchorElement>(
+        '[data-testid="UserCell"] a[href^="https://twitter.com/"]'
+      )
+      targetElem = userCell
     }
-    const tweetPermalink = tweetTimeElem.closest('a')!
-    // 원 트윗 작성자의 유저네임과
-    const userNameOfPermalinkTweet = getUserNameFromTweetUrl(tweetPermalink)
-    if (!userNameOfPermalinkTweet) {
-      throw new Error('unreachable')
+    if (!targetElem) {
+      return null
     }
+    return getUserNameFromTweetUrl(targetElem)
+  }
+  async function tweetHandler(elem: HTMLElement) {
+    const originalTweetAuthorName = getUserNameOfOriginalTweet(elem)
     const tweetLinks = Array.from(
       elem.querySelectorAll<HTMLAnchorElement>('a[href*="/status/"]')
     )
       .filter(el => {
-        return (
-          el.hostname === 'twitter.com' || el.hostname === 'mobile.twitter.com'
-        )
+        const isTwitter = el.hostname === 'twitter.com'
+        const isMTwitter = el.hostname === 'mobile.twitter.com'
+        return isTwitter || isMTwitter
       })
       .filter(el => {
-        // 트윗 링크에서 작성자 유저네임을 가져왔는데
+        // 트윗내에 첨부된 트윗링크 URL에서 작성자 유저네임을 가져왔는데
         const userNameOfTargetTweet = getUserNameFromTweetUrl(el)!
-        // 그 이름이 서로 다를 경우
+        // 그 이름이 (원 작성자와 비교했을 때) 서로 다를 경우
         const isDifferentName =
-          userNameOfPermalinkTweet !== userNameOfTargetTweet
-        // (원 작성자가 아닌) 다른 사람이 작성한 트윗이라고 판단한다
+          originalTweetAuthorName !== userNameOfTargetTweet
+        // 다른 사람이 작성한 트윗이라고 판단한다
         return isDifferentName
       })
     const promises = tweetLinks.map(async tweetLink => {
@@ -103,30 +110,22 @@ class CachedUserRetriever {
       if (!userName) {
         return
       }
-      const user = await cachedRetriever
-        .getUserByName(userName)
-        .catch(() => null)
-      if (!user) {
-        return
-      }
-      return reflectBlock({
-        user,
-        indicateBlock() {
-          tweetLink.classList.add('mob-blocks-you-outline') // TODO: 클래스는 붙는데 테두리는 적용이 안 됨.
-          tweetLink.parentElement!.appendChild(
-            generateBlocksYouBadge(`(@${user.screen_name})`)
-          )
-        },
-        indicateReflection() {
-          tweetLink.parentElement!.appendChild(generateBlockReflectedBadge())
-        },
-      })
+      return cachedRetriever.getUserByName(userName).then(user =>
+        reflectBlock({
+          user,
+          indicateBlock() {
+            tweetLink.classList.add('mob-blocks-you-outline')
+            tweetLink.parentElement!.appendChild(
+              generateBlocksYouBadge(`(@${user.screen_name})`)
+            )
+          },
+          indicateReflection() {
+            tweetLink.parentElement!.appendChild(generateBlockReflectedBadge())
+          },
+        })
+      )
     })
     await Promise.all(promises)
-  }
-  async function detailTweetHandler(elem: HTMLElement) {
-    return timelineTweetHandler(elem)
-    //
   }
   async function reflectOnProfile(helpLink: Element) {
     const userName = getUserNameFromTweetUrl(location)
@@ -155,25 +154,33 @@ class CachedUserRetriever {
       },
     })
   }
+  function extractElems(elem: Document | HTMLElement): HTMLElement[] {
+    const blockedMeHelpLink = elem.querySelector(
+      'a[href="https://support.twitter.com/articles/20172060"]'
+    )
+    if (blockedMeHelpLink) {
+      reflectOnProfile(blockedMeHelpLink)
+    }
+    const tweetElem = elem.querySelectorAll<HTMLElement>(
+      '[data-testid="tweet"]'
+    )
+    const tweetDetailElem = elem.querySelectorAll<HTMLElement>(
+      '[data-testid="tweetDetail"]'
+    )
+    return [...tweetElem, ...tweetDetailElem]
+      .filter(elem => !elem.classList.contains('mob-checked'))
+      .map(elem => {
+        elem.classList.add('mob-checked')
+        return elem
+      })
+  }
   new MutationObserver(mutations => {
     for (const elem of getAddedElementsFromMutations(mutations)) {
-      const blockedMeHelpLink = elem.querySelector(
-        'a[href="https://support.twitter.com/articles/20172060"]'
-      )
-      if (blockedMeHelpLink) {
-        reflectOnProfile(blockedMeHelpLink)
-      }
-      const tweetElem = elem.querySelectorAll<HTMLElement>(
-        'div[data-testid="tweet"]'
-      )
-      tweetElem.forEach(timelineTweetHandler)
-      const tweetDetailElem = elem.querySelectorAll<HTMLElement>(
-        'div[data-testid="tweetDetail"]'
-      )
-      tweetDetailElem.forEach(detailTweetHandler)
+      extractElems(elem).forEach(tweetHandler)
     }
   }).observe(reactRoot, {
     subtree: true,
     childList: true,
   })
+  extractElems(document).forEach(tweetHandler)
 })()
