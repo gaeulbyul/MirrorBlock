@@ -3,14 +3,11 @@
 
   if (document.getElementById('react-root')) {
     const colorThemeClass = isDarkMode ? 'mob-mobile-dark' : 'mob-mobile-light'
-    document.documentElement!.classList.add(
-      'mob-mobile',
-      'mob-nightmode',
-      colorThemeClass
-    )
+    document.documentElement!.classList.add('mob-mobile', colorThemeClass)
+    document.documentElement.classList.toggle('mob-nightmode', isDarkMode)
   } else {
     function toggleNightMode(mode: boolean): void {
-      document.documentElement!.classList.toggle('mob-nightmode', mode)
+      document.documentElement.classList.toggle('mob-nightmode', mode)
     }
 
     const nightModeObserver = new MutationObserver(mutations => {

@@ -81,6 +81,13 @@
   border-color: crimson;
 }
 
+.mob-enable-outline #react-root div[date-testid='tweet'].mob-blocks-you-outline,
+.mob-enable-outline
+  #react-root
+  div[date-testid='tweetDetail'].mob-blocks-you-outline {
+  border: 3px solid crimson;
+}
+
 /* 체인맞블락 관련 */
 .mobcb-bg {
   position: fixed;
