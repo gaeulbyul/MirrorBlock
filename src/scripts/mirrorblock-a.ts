@@ -1,6 +1,3 @@
-/// <reference path="./twitter-api.ts" />
-/// <reference path="./mirrorblock-r.ts" />
-
 {
   // 보이지 않는 인용트윗은 트위터에서 내부적으로 Tombstone이란 클래스네임이 붙는다.
   async function tombstoneHandler(ts: HTMLElement): Promise<void> {

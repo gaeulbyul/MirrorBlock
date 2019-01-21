@@ -1,4 +1,3 @@
-/// <reference path="./twitter-api.ts" />
 interface CachedUserItem {
   user: TwitterUser
   timestamp: number

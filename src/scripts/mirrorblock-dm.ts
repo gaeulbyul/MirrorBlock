@@ -1,5 +1,3 @@
-/// <reference path="./twitter-api.ts" />
-
 {
   async function handleDM(elem: HTMLElement) {
     const header = elem.querySelector('#dm_dialog-header')

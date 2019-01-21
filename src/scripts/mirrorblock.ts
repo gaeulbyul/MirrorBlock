@@ -1,5 +1,3 @@
-/// <reference path="./twitter-api.ts" />
-
 function generateBlocksYouBadge(afterText: string = ''): HTMLElement {
   const badge = document.createElement('span')
   badge.className = 'mob-badge mob-BlockStatus'

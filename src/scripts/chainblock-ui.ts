@@ -1,5 +1,3 @@
-/// <reference path="./common.ts" />
-
 const CHAINBLOCK_UI_HTML = `
   <div class="mobcb-bg modal-container block-dialog" style="display:flex">
     <div class="mobcb-dialog modal modal-content is-autoPosition">

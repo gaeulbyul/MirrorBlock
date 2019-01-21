@@ -1,6 +1,3 @@
-/// <reference path="../extoption.ts" />
-/// <reference path="./twitter-api.ts" />
-
 interface ReflectionOptions {
   user: TwitterUser
   indicateBlock: () => void

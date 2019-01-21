@@ -1,5 +1,3 @@
-/// <reference path="../extoption.ts" />
-
 async function updateBadge(option: MirrorOfBlockOption) {
   const { enableBlockReflection } = option
   const manifest = browser.runtime.getManifest()

@@ -1,7 +1,3 @@
-/// <reference path="./twitter-api.ts" />
-/// <reference path="./common.ts" />
-/// <reference path="../extoption.ts" />
-
 class ChainMirrorBlock {
   private readonly ui = new ChainMirrorBlockUI()
   private get immediatelyBlockMode(): boolean {
