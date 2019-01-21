@@ -1,16 +1,3 @@
-function generateBlocksYouBadge(afterText: string = ''): HTMLElement {
-  const badge = document.createElement('span')
-  badge.className = 'mob-badge mob-BlockStatus'
-  badge.textContent = `나를 차단함 ${afterText}`.trim()
-  return badge
-}
-function generateBlockReflectedBadge(): HTMLElement {
-  const badge = document.createElement('span')
-  badge.className = 'mob-badge mob-BlockReflectedStatus'
-  badge.textContent = '차단반사 발동!'
-  return badge
-}
-
 {
   interface IFoundTarget {
     selector: string

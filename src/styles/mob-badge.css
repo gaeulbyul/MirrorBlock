@@ -1,0 +1,62 @@
+@keyframes Pop {
+  0% {
+    transform: scale(0.75);
+  }
+
+  50% {
+    transform: scale(1.25);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.badge {
+  display: inline-block;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: normal;
+  margin-left: 2px;
+  padding: 4px;
+}
+
+.blocks-you {
+  background-color: #f9f2f4;
+  color: #c7254e;
+}
+
+.block-reflected {
+  background-color: #fcf8e3;
+  color: #8a6d3b;
+  animation: Pop 0.2s;
+  will-change: transform;
+}
+
+:host-context(.account) .badge {
+  margin: 0;
+}
+
+:host-context(.mob-nightmode) .badge {
+  background-color: #10171e;
+}
+
+:host-context(.mob-nightmode) .block-reflected {
+  color: #fce8b3;
+}
+
+:host-context(.js-user-profile-link) .badge {
+  padding: 0 4px;
+}
+
+:host-context(.ProfileHeaderCard) .badge {
+  padding: 0 4px;
+}
+
+:host-context(.mob-nightmode .ProfileHeaderCard) .badge {
+  background-color: #141d26;
+}
+
+:host-context(#react-root) .badge {
+  font-size: 14px;
+}

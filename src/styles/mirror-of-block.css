@@ -1,40 +1,3 @@
-@keyframes Pop {
-  0% {
-    transform: scale(0.75);
-  }
-  50% {
-    transform: scale(1.25);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-/* 차단표시/반사 */
-.mob-BlockStatus,
-.mob-BlockReflectedStatus {
-  display: inline-block;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: normal;
-  margin-left: 2px;
-  padding: 4px;
-}
-.mob-BlockReflectedStatus {
-  animation: Pop 0.2s;
-  will-change: transform;
-}
-.account .mob-BlockStatus,
-.account .mob-BlockReflectedStatus {
-  margin: 0;
-}
-.mob-BlockStatus {
-  background-color: #f9f2f4;
-  color: #c7254e;
-}
-.mob-BlockReflectedStatus {
-  background-color: #fcf8e3;
-  color: #8a6d3b;
-}
 .mob-enable-outline .ProfileCard.mob-blocks-you-outline {
   outline: 3px solid crimson;
 }
@@ -48,33 +11,9 @@
 .mob-enable-outline .Tombstone.mob-blocks-you-outline {
   outline: 3px solid crimson;
 }
-.mob-nightmode .mob-BlockStatus {
-  background-color: #10171e;
-}
-.mob-nightmode .mob-BlockReflectedStatus {
-  background-color: #10171e;
-  color: #fce8b3;
-}
-.js-user-profile-link .mob-BlockStatus,
-.js-user-profile-link .mob-BlockReflectedStatus {
-  padding: 0 4px;
-}
+
 .mob-enable-outline .js-user-profile-link.mob-blocks-you-outline {
   outline: 2px solid crimson;
-}
-.ProfileHeaderCard .mob-BlockStatus,
-.ProfileHeaderCard .mob-BlockReflectedStatus {
-  padding: 0 4px;
-}
-
-.mob-nightmode .ProfileHeaderCard .mob-BlockStatus,
-.mob-nightmode .ProfileHeaderCard .mob-BlockReflectedStatus {
-  background-color: #141d26;
-}
-
-#react-root .mob-BlockStatus,
-#react-root .mob-BlockReflectedStatus {
-  font-size: 14px;
 }
 
 .mob-enable-outline #react-root .mob-blocks-you-outline {

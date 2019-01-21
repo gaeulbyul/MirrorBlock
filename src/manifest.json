@@ -45,6 +45,7 @@
         "scripts/common.js",
         "scripts/twitter-api.js",
         "scripts/nightmode.js",
+        "scripts/mirrorblock-styling.js",
         "scripts/mirrorblock.js",
         "scripts/mirrorblock-r.js",
         "scripts/mirrorblock-a.js",
@@ -67,7 +68,10 @@
     }
   ],
 
-  "web_accessible_resources": ["scripts/tweetdeck-inject.js"],
+  "web_accessible_resources": [
+    "styles/mob-badge.css",
+    "scripts/tweetdeck-inject.js"
+  ],
 
   "browser_action": {
     "default_icon": "icons/icon.png",
