@@ -1,17 +1,11 @@
-interface MirrorOfBlockOption {
-  outlineBlockUser: boolean
-  enableBlockReflection: boolean
-  blockMutedUser: boolean
-  prefetchChainMirrorBlock: boolean
-}
-
 const ExtOption = {
   // eslint-disable-line no-unused-vars
-  defaults: Object.freeze({
+  defaults: Object.freeze<MirrorOfBlockOption>({
     outlineBlockUser: false,
     enableBlockReflection: false,
     blockMutedUser: false,
     prefetchChainMirrorBlock: false,
+    alwaysImmediatelyBlockMode: false,
   }),
   async save(newOption: MirrorOfBlockOption) {
     const option = Object.assign<

@@ -11,13 +11,14 @@ class ChainMirrorBlock {
   private isRunning = false
   private shouldStop = false
   constructor(private options: MirrorOfBlockOption) {
-    this.handleUIEvents()
+    this.prepareUI()
   }
   private cleanup() {
     this.blockResults.clear()
     this.progress.foundUsers.length = 0
   }
-  private handleUIEvents() {
+  private prepareUI() {
+    this.ui.immediatelyBlockModeChecked = this.options.alwaysImmediatelyBlockMode
     window.addEventListener('beforeunload', event => {
       if (!this.isRunning) {
         return

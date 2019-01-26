@@ -173,6 +173,11 @@ class ChainMirrorBlockUI extends EventEmitter {
       '#mobcb-block-immediately'
     )!.checked
   }
+  public set immediatelyBlockModeChecked(value: boolean) {
+    this.rootElem.querySelector<HTMLInputElement>(
+      '#mobcb-block-immediately'
+    )!.checked = value
+  }
   public initProgress(total: number) {
     this.total = total
     const progressBar = this.rootElem.querySelector<HTMLProgressElement>(

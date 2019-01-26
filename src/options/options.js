@@ -5,6 +5,9 @@ const elements = {
   enableBlockReflection: document.getElementById('enableBlockReflection'),
   blockMutedUser: document.getElementById('blockMutedUser'),
   prefetchChainMirrorBlock: document.getElementById('prefetchChainMirrorBlock'),
+  alwaysImmediatelyBlockMode: document.getElementById(
+    'alwaysImmediatelyBlockMode'
+  ),
 }
 
 function saveOption() {

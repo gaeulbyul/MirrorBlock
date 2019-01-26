@@ -107,3 +107,11 @@ interface ChainMirrorBlockProgress {
   scraped: number
   foundUsers: FoundUser[]
 }
+
+interface MirrorOfBlockOption {
+  outlineBlockUser: boolean
+  enableBlockReflection: boolean
+  blockMutedUser: boolean
+  prefetchChainMirrorBlock: boolean
+  alwaysImmediatelyBlockMode: boolean
+}
