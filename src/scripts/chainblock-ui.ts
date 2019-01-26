@@ -217,14 +217,20 @@ class ChainMirrorBlockUI extends EventEmitter {
       '.mobcb-progress-text'
     )!.hidden = false
   }
-  private completeProgressUI() {
+  private completeProgressUI(progress: ChainMirrorBlockProgress) {
     this.rootElem.querySelector('.mobcb-title-status')!.textContent =
       '(수집 완료)'
-    this.rootElem
-      .querySelectorAll<HTMLButtonElement>('.mobcb-controls button')
-      .forEach(btn => {
-        btn.disabled = false
-      })
+    const shouldBlocks = progress.foundUsers.filter(
+      user => user.state === 'shouldBlock'
+    )
+    const executeButton = this.rootElem.querySelector<HTMLButtonElement>(
+      '.mobcb-execute'
+    )!
+    if (shouldBlocks.length > 0) {
+      executeButton.disabled = false
+    } else {
+      executeButton.title = `맞차단할 사용자가 없습니다.`
+    }
     this.rootElem.querySelector<HTMLInputElement>(
       '#mobcb-block-immediately'
     )!.disabled = true
@@ -239,7 +245,7 @@ class ChainMirrorBlockUI extends EventEmitter {
   }
   public complete(progress: ChainMirrorBlockProgress) {
     console.debug(progress)
-    this.completeProgressUI()
+    this.completeProgressUI(progress)
     if (progress.foundUsers.length <= 0) {
       // sleep: progress가 100%되기 전에 메시지가 뜨며 닫히는 현상 방지
       sleep(100).then(() => {

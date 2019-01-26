@@ -41,11 +41,18 @@ class ChainMirrorBlock {
       this.stopAndClose()
     })
     this.ui.on('ui:execute-mutual-block', () => {
-      const confirmMessage = '발견한 사용자를 맞차단하시겠습니까?'
-      if (!window.confirm(confirmMessage)) {
-        return
+      const shouldBlocks = this.progress.foundUsers.filter(
+        user => user.state === 'shouldBlock'
+      )
+      if (shouldBlocks.length > 0) {
+        const confirmMessage = '발견한 사용자를 맞차단하시겠습니까?'
+        if (!window.confirm(confirmMessage)) {
+          return
+        }
+        this.executeMutualBlock()
+      } else {
+        window.alert('맞차단할 사용자가 없습니다.')
       }
-      this.executeMutualBlock()
     })
   }
   public stopAndClose() {
