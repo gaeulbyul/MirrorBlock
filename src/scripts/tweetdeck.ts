@@ -118,19 +118,14 @@ function userDataHandler(userDataElem: HTMLElement) {
 function main() {
   injectScript('scripts/tweetdeck-inject.js')
   const observer = new MutationObserver(mutations => {
-    for (const mutation of mutations) {
-      for (const node of mutation.addedNodes) {
-        if (!(node instanceof HTMLElement)) {
-          continue
-        }
-        const elementsToHandle = [
-          ...node.querySelectorAll<HTMLElement>('span.mob-user-data'),
-        ]
-        if (node.matches('span.mob-user-data')) {
-          elementsToHandle.push(node)
-        }
-        elementsToHandle.forEach(userDataHandler)
+    for (const elem of getAddedElementsFromMutations(mutations)) {
+      const elementsToHandle = [
+        ...elem.querySelectorAll<HTMLElement>('span.mob-user-data'),
+      ]
+      if (elem.matches('span.mob-user-data')) {
+        elementsToHandle.push(elem)
       }
+      elementsToHandle.forEach(userDataHandler)
     }
   })
   observer.observe(document.body, {

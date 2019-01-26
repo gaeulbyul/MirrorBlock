@@ -11,16 +11,11 @@
     }
 
     const nightModeObserver = new MutationObserver(mutations => {
-      for (const mutation of mutations) {
-        for (const node of mutation.addedNodes) {
-          if (!(node instanceof Element)) {
-            continue
-          }
-          if (node.matches('link.coreCSSBundles')) {
-            const css = node as HTMLLinkElement
-            const nightMode = /nightmode/.test(css.href)
-            toggleNightMode(nightMode)
-          }
+      for (const elem of getAddedElementsFromMutations(mutations)) {
+        if (elem.matches('link.coreCSSBundles')) {
+          const css = elem as HTMLLinkElement
+          const nightMode = /nightmode/.test(css.href)
+          toggleNightMode(nightMode)
         }
       }
     })

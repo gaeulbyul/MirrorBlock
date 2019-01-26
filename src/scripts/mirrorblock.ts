@@ -65,7 +65,6 @@
       blocksYou: elem.querySelector('.blocks-you') !== null,
       userId: elem.getAttribute('data-user-id')!,
       appendBadge(badgeElem: HTMLElement) {
-        // elem.querySelector('.ProfileCard-screenname')!.appendChild(badgeElem)
         document
           .querySelector('.ProfileHeaderCard-screenname')!
           .appendChild(badgeElem)
@@ -146,14 +145,10 @@
   }
 
   const observer = new MutationObserver(mutations => {
-    for (const mutation of mutations) {
-      for (const node of mutation.addedNodes) {
-        if (!(node instanceof HTMLElement)) {
-          continue
-        }
-        extractTargetElems(node).forEach(foundTargetHandler)
-      }
-    }
+    Array.from(getAddedElementsFromMutations(mutations))
+      .map(elem => extractTargetElems(elem))
+      .flat()
+      .forEach(foundTargetHandler)
   })
   if (!document.getElementById('react-root')) {
     observer.observe(document.body, {
@@ -164,14 +159,14 @@
   }
   browser.storage.onChanged.addListener(changes => {
     const option = changes.option.newValue
-    document.documentElement!.classList.toggle(
+    document.documentElement.classList.toggle(
       'mob-enable-outline',
       option.outlineBlockUser
     )
   })
 
   ExtOption.load().then(option => {
-    document.documentElement!.classList.toggle(
+    document.documentElement.classList.toggle(
       'mob-enable-outline',
       option.outlineBlockUser
     )
