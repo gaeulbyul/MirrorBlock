@@ -154,37 +154,37 @@ hr.mobcb-hr {
 }
 
 /* --- 야간모드 off --- */
-.mob-mobile-light .mobcb-dialog {
+.mob-mobile .mobcb-dialog {
   background-color: #fff;
   color: #000;
 }
-.mob-mobile-light .btn {
+.mob-mobile .btn {
   background-color: #ccc;
   border-color: #999;
 }
-.mob-mobile-light .mobcb-user a {
+.mob-mobile .mobcb-user a {
   color: crimson;
   text-decoration: underline;
 }
-.mob-mobile-light .btn.caution-btn {
+.mob-mobile .btn.caution-btn {
   background-color: crimson;
   color: white;
 }
 
 /* --- 야간모드 on --- */
-.mob-mobile-dark .mobcb-dialog {
+.mob-mobile.mob-nightmode .mobcb-dialog {
   background-color: #141d26;
   color: #fff;
 }
-.mob-mobile-dark .btn {
+.mob-mobile.mob-nightmode .btn {
   background-color: #1b2836;
   border-color: #666;
 }
-.mob-mobile-dark .mobcb-user a {
+.mob-mobile.mob-nightmode .mobcb-user a {
   color: #f47189;
   text-decoration: underline;
 }
-.mob-mobile-dark .btn.caution-btn {
+.mob-mobile.mob-nightmode .btn.caution-btn {
   background-color: crimson;
   color: white;
 }
