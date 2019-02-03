@@ -45,7 +45,7 @@
         "scripts/common.js",
         "scripts/twitter-api.js",
         "scripts/nightmode.js",
-        "scripts/mirrorblock-styling.js",
+        "scripts/mirrorblock-badge.js",
         "scripts/mirrorblock.js",
         "scripts/mirrorblock-r.js",
         "scripts/mirrorblock-a.js",
