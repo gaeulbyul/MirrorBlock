@@ -32,6 +32,19 @@ namespace TwitterAPI {
     }
   }
 
+  function validateTwitterUserName(userName: string): boolean {
+    const unl = userName.length
+    const userNameIsValidLength = 1 <= unl && unl <= 15
+    if (!userNameIsValidLength) {
+      return false
+    }
+    const lowerCasedUserName = userName.toLowerCase()
+    if (USER_NAME_BLACKLIST.includes(lowerCasedUserName)) {
+      return false
+    }
+    return true
+  }
+
   function rateLimited(resp: Response): boolean {
     return resp.status === 429
   }
@@ -225,13 +238,8 @@ namespace TwitterAPI {
   export async function getSingleUserByName(
     userName: string
   ): Promise<TwitterUser> {
-    const unl = userName.length
-    const userNameIsValidLength = 1 <= unl && unl <= 15
-    const lowerCasedUserName = userName.toLowerCase()
-    if (
-      !userNameIsValidLength ||
-      USER_NAME_BLACKLIST.includes(lowerCasedUserName)
-    ) {
+    const isValidUserName = validateTwitterUserName(userName)
+    if (!isValidUserName) {
       throw new Error(`Invalid user name "${userName}"!`)
     }
     const response = await requestAPI('get', '/users/show.json', {
@@ -242,6 +250,32 @@ namespace TwitterAPI {
     })
     if (response.ok) {
       return response.json() as Promise<TwitterUser>
+    } else {
+      throw new APIError(response)
+    }
+  }
+
+  export async function getMultipleUsersByName(
+    userNames: string[]
+  ): Promise<TwitterUser[]> {
+    if (userNames.length === 0) {
+      return []
+    }
+    if (userNames.length > 100) {
+      throw new Error('too many users! (> 100)')
+    }
+    const joinedNames = Array.from(new Set(userNames)).join(',')
+    const everyNamesAreValid = userNames.every(validateTwitterUserName)
+    if (!everyNamesAreValid) {
+      throw new Error(`Someone's name is invalid! check:[${joinedNames}]`)
+    }
+    const response = await requestAPI('post', '/users/lookup.json', {
+      screen_name: joinedNames,
+      include_entities: false,
+      // user_id: ...
+    })
+    if (response.ok) {
+      return response.json() as Promise<TwitterUser[]>
     } else {
       throw new APIError(response)
     }

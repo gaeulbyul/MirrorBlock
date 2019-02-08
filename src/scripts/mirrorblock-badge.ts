@@ -1,11 +1,12 @@
 const enum BadgeType {
-  BlocksYou,
-  BlockReflected,
+  BlocksYou = 'blocks-you',
+  BlockReflected = 'block-reflected',
 }
 
 function blocksYouBadge(type: BadgeType, afterText = ''): HTMLElement {
   const badgeCss = browser.runtime.getURL('styles/mob-badge.css')
   const badge = document.createElement('span')
+  badge.className = `mob-badge mob-badge-${type}`
   let badgeClasses = ''
   let badgeText = ''
   switch (type) {

@@ -17,6 +17,9 @@ class CachedUserRetriever {
     this.cachedUsersMap.set(user.id_str, item)
     this.cachedUsersMap.set(nameKey, item)
   }
+  private isExpired(item: CachedUserItem): boolean {
+    return item.timestamp + this.expireSpan < Date.now()
+  }
   public async getUserById(
     userId: string,
     forceNew = false
@@ -27,11 +30,10 @@ class CachedUserRetriever {
       return freshUser
     }
     const item = this.cachedUsersMap.get(userId)!
-    const now = Date.now()
-    if (item.timestamp + this.expireSpan > now) {
-      return item.user
-    } else {
+    if (this.isExpired(item)) {
       return this.getUserById(userId, true)
+    } else {
+      return item.user
     }
   }
   public async getUserByName(
@@ -45,12 +47,37 @@ class CachedUserRetriever {
       return freshUser
     }
     const item = this.cachedUsersMap.get(nameKey)!
-    const now = Date.now()
-    if (item.timestamp + this.expireSpan > now) {
-      return item.user
-    } else {
+    if (this.isExpired(item)) {
       return this.getUserByName(userName, true)
+    } else {
+      return item.user
     }
+  }
+  public async getMultipleUsersByName(
+    userNames: string[],
+    forceNew = false
+  ): Promise<TwitterUser[]> {
+    const users: TwitterUser[] = []
+    const namesThatShouldFetch: string[] = []
+    for (const name of userNames) {
+      const namekey = this.nameAsKey(name)
+      if (this.cachedUsersMap.has(namekey)) {
+        const item = this.cachedUsersMap.get(namekey)!
+        if (forceNew || this.isExpired(item)) {
+          namesThatShouldFetch.push(name)
+        } else {
+          users.push(item.user)
+        }
+      } else {
+        namesThatShouldFetch.push(name)
+      }
+    }
+    const freshUsers = await TwitterAPI.getMultipleUsersByName(
+      namesThatShouldFetch
+    )
+    users.push(...freshUsers)
+    freshUsers.forEach(this.updateUser.bind(this))
+    return users
   }
   public clearCache(): void {
     this.cachedUsersMap.clear()
@@ -69,62 +96,38 @@ class CachedUserRetriever {
     const matches = /^\/([0-9a-z_]+)/i.exec(pathname)
     return matches ? matches[1] : null
   }
-  function getUserNameOfOriginalTweet(elem: HTMLElement): string | null {
-    let targetElem: HTMLAnchorElement | null = null
-    const tweetTimeElem = elem.querySelector('time')
-    if (tweetTimeElem) {
-      targetElem = tweetTimeElem.closest('a')
-    } else {
-      const userCell = elem.querySelector<HTMLAnchorElement>(
-        '[data-testid="UserCell"] a[href^="https://twitter.com/"]'
-      )
-      targetElem = userCell
-    }
-    if (!targetElem) {
-      return null
-    }
-    return getUserNameFromTweetUrl(targetElem)
-  }
-  async function tweetHandler(elem: HTMLElement) {
-    const originalTweetAuthorName = getUserNameOfOriginalTweet(elem)
+  async function tweetHandler(tweetElem: HTMLElement) {
     const tweetLinks = Array.from(
-      elem.querySelectorAll<HTMLAnchorElement>('a[href*="/status/"]')
-    )
-      .filter(el => {
-        const isTwitter = el.hostname === 'twitter.com'
-        const isMTwitter = el.hostname === 'mobile.twitter.com'
-        return isTwitter || isMTwitter
-      })
-      .filter(el => {
-        // 트윗내에 첨부된 트윗링크 URL에서 작성자 유저네임을 가져왔는데
-        const userNameOfTargetTweet = getUserNameFromTweetUrl(el)!
-        // 그 이름이 (원 작성자와 비교했을 때) 서로 다를 경우
-        const isDifferentName =
-          originalTweetAuthorName !== userNameOfTargetTweet
-        // 다른 사람이 작성한 트윗이라고 판단한다
-        return isDifferentName
-      })
-    const promises = tweetLinks.map(async tweetLink => {
-      const userName = getUserNameFromTweetUrl(tweetLink)
-      if (!userName) {
-        return
-      }
-      return cachedRetriever.getUserByName(userName).then(user =>
-        reflectBlock({
-          user,
-          indicateBlock() {
-            tweetLink.classList.add('mob-blocks-you-outline')
-            tweetLink.parentElement!.appendChild(
-              generateBlocksYouBadge(`(@${user.screen_name})`)
-            )
-          },
-          indicateReflection() {
-            tweetLink.parentElement!.appendChild(generateBlockReflectedBadge())
-          },
-        })
+      tweetElem.querySelectorAll<HTMLAnchorElement>(
+        'a[href^="/"][href*="/status/"]'
       )
-    })
-    await Promise.all(promises)
+    )
+    for (const link of tweetLinks) {
+      const tweetAuthorName = getUserNameFromTweetUrl(link)
+      if (!tweetAuthorName) {
+        continue
+      }
+      const tweetAuthor = await cachedRetriever.getUserByName(tweetAuthorName)
+      await reflectBlock({
+        user: tweetAuthor,
+        indicateBlock() {
+          link.classList.add('mob-blocks-you-outline')
+          const parentElem = link.parentElement!
+          if (!parentElem.querySelector('.mob-badge-blocks-you')) {
+            parentElem.appendChild(
+              generateBlocksYouBadge(`(@${tweetAuthor.screen_name})`)
+            )
+          }
+        },
+        indicateReflection() {
+          link.classList.add('mob-blocks-you-outline')
+          const parentElem = link.parentElement!
+          if (!parentElem.querySelector('.mob-badge-block-reflected')) {
+            parentElem.appendChild(generateBlockReflectedBadge())
+          }
+        },
+      })
+    }
   }
   async function reflectOnProfile(helpLink: Element) {
     const userName = getUserNameFromTweetUrl(location)
