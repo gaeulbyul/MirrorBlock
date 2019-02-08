@@ -113,18 +113,12 @@ class CachedUserRetriever {
         indicateBlock() {
           link.classList.add('mob-blocks-you-outline')
           const parentElem = link.parentElement!
-          if (!parentElem.querySelector('.mob-badge-blocks-you')) {
-            parentElem.appendChild(
-              generateBlocksYouBadge(`(@${tweetAuthor.screen_name})`)
-            )
-          }
+          MirrorBlock.Badge.appendBlocksYouBadge(parentElem)
         },
         indicateReflection() {
           link.classList.add('mob-blocks-you-outline')
           const parentElem = link.parentElement!
-          if (!parentElem.querySelector('.mob-badge-block-reflected')) {
-            parentElem.appendChild(generateBlockReflectedBadge())
-          }
+          MirrorBlock.Badge.appendBlockReflectedBadge(parentElem)
         },
       })
     }
@@ -141,7 +135,7 @@ class CachedUserRetriever {
     reflectBlock({
       user,
       indicateBlock() {
-        helpLink.parentElement!.appendChild(generateBlocksYouBadge())
+        MirrorBlock.Badge.appendBlocksYouBadge(helpLink.parentElement!)
         const profileImage = document.querySelector(
           `a[href$="/${user.screen_name}/photo"] img[src*="/profile_images/"]`
         )
@@ -152,7 +146,7 @@ class CachedUserRetriever {
         }
       },
       indicateReflection() {
-        helpLink.parentElement!.appendChild(generateBlockReflectedBadge())
+        MirrorBlock.Badge.appendBlockReflectedBadge(helpLink.parentElement!)
       },
     })
   }

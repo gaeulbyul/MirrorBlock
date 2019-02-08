@@ -24,11 +24,11 @@
       reflectBlock({
         user: targetUser,
         indicateBlock() {
-          ts.appendChild(generateBlocksYouBadge(`(@${targetUser.screen_name})`))
+          MirrorBlock.Badge.appendBlocksYouBadge(ts, targetUser.screen_name)
           ts.classList.add('mob-blocks-you-outline')
         },
         indicateReflection() {
-          ts.appendChild(generateBlockReflectedBadge())
+          MirrorBlock.Badge.appendBlockReflectedBadge(ts)
         },
       })
     }

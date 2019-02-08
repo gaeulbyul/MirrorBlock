@@ -18,10 +18,10 @@
     reflectBlock({
       user: targetUser,
       indicateBlock() {
-        userBadges.appendChild(generateBlocksYouBadge())
+        MirrorBlock.Badge.appendBlocksYouBadge(userBadges)
       },
       indicateReflection() {
-        userBadges.appendChild(generateBlockReflectedBadge())
+        MirrorBlock.Badge.appendBlockReflectedBadge(userBadges)
       },
     })
   }

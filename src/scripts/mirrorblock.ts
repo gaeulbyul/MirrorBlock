@@ -6,7 +6,7 @@
     blocksYou: boolean
     muted: boolean
     userId: string
-    appendBadge: (badgeElem: HTMLElement) => void
+    badgeElem: Element
     addOutlineClassName: () => void
     afterBlockReflect?: () => void
   }
@@ -22,6 +22,19 @@
   type FoundTarget = FoundTargetJAU | FoundTargetProfile
 
   function transformJAU(elem: HTMLElement): FoundTargetJAU {
+    // dummy elem
+    let badgeElem = document.createElement('div') as HTMLElement
+    const cardUserName = elem.querySelector<HTMLElement>(
+      '.ProfileCard-screenname'
+    )
+    // 리스트나 차단/뮤트목록의 항목
+    const itemContent = elem.querySelector<HTMLElement>('.content')
+    if (cardUserName) {
+      badgeElem = cardUserName
+    }
+    if (itemContent) {
+      badgeElem = itemContent
+    }
     return {
       selector: '.js-actionable-user',
       elem,
@@ -29,20 +42,7 @@
       muted: elem.querySelector('.muting') !== null,
       blocksYou: elem.querySelector('.blocks-you') !== null,
       userId: elem.getAttribute('data-user-id')!,
-      appendBadge(badgeElem: HTMLElement) {
-        // 팔로우 페이지의 프로필카드
-        const cardUserName = elem.querySelector<HTMLElement>(
-          '.ProfileCard-screenname'
-        )
-        // 리스트나 차단/뮤트목록의 항목
-        const itemContent = elem.querySelector<HTMLElement>('.content')
-        if (cardUserName) {
-          cardUserName.appendChild(badgeElem)
-        }
-        if (itemContent) {
-          itemContent.appendChild(badgeElem)
-        }
-      },
+      badgeElem,
       addOutlineClassName() {
         elem.classList.add('mob-blocks-you-outline')
       },
@@ -64,11 +64,7 @@
       muted: elem.querySelector('.muting') !== null,
       blocksYou: elem.querySelector('.blocks-you') !== null,
       userId: elem.getAttribute('data-user-id')!,
-      appendBadge(badgeElem: HTMLElement) {
-        document
-          .querySelector('.ProfileHeaderCard-screenname')!
-          .appendChild(badgeElem)
-      },
+      badgeElem: document.querySelector('.ProfileHeaderCard-screenname')!,
       addOutlineClassName() {
         const avatar = document.querySelector('.ProfileAvatar')
         if (avatar) {
@@ -94,7 +90,7 @@
   async function blockReflectionToFt(ft: FoundTarget) {
     const result = await TwitterAPI.blockUserById(ft.userId)
     if (result) {
-      ft.appendBadge(generateBlockReflectedBadge())
+      MirrorBlock.Badge.appendBlockReflectedBadge(ft.badgeElem)
       if (typeof ft.afterBlockReflect === 'function') {
         ft.afterBlockReflect()
       }
@@ -103,7 +99,7 @@
 
   async function foundTargetHandler(ft: FoundTarget): Promise<void> {
     ft.addOutlineClassName()
-    ft.appendBadge(generateBlocksYouBadge())
+    MirrorBlock.Badge.appendBlocksYouBadge(ft.badgeElem)
     const options = await ExtOption.load()
     const muteSkip = ft.muted && !options.blockMutedUser
     const shouldBlock =
