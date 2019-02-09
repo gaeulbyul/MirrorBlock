@@ -21,7 +21,7 @@
       if (!targetUser) {
         return
       }
-      reflectBlock({
+      MirrorBlock.Reflection.reflectBlock({
         user: targetUser,
         indicateBlock() {
           MirrorBlock.Badge.appendBlocksYouBadge(ts, targetUser.screen_name)

@@ -96,7 +96,7 @@ function userDataHandler(userDataElem: HTMLElement) {
   }
   const badge = makeBlockedBadge()
   badgeTarget.appendChild(badge)
-  ExtOption.load().then(option => {
+  MirrorBlock.Options.load().then(option => {
     const muteSkip = userData.muting && !option.blockMutedUser
     const shouldBlock =
       option.enableBlockReflection && !userData.blocking && !muteSkip

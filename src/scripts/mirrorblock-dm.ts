@@ -15,7 +15,7 @@
       return
     }
     const userBadges = header.querySelector('.UserBadges')!
-    reflectBlock({
+    MirrorBlock.Reflection.reflectBlock({
       user: targetUser,
       indicateBlock() {
         MirrorBlock.Badge.appendBlocksYouBadge(userBadges)

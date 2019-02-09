@@ -4,8 +4,8 @@ enum FollowType {
 }
 
 enum Action {
-  StartChainBlock = 'MirrorOfBlock/Start',
-  StopChainBlock = 'MirrorOfBlock/Stop',
+  StartChainBlock = 'MirrorBlock/Start',
+  StopChainBlock = 'MirrorBlock/Stop',
 }
 
 abstract class EventEmitter {

@@ -69,28 +69,23 @@ interface FollowsScraperOptions {
   includeCursor: boolean
 }
 
-interface PrefetchedFollows {
-  users: TwitterUser[]
-  cursor: string
-}
-
 type RateLimited<T> = T | 'RateLimitError'
 
 interface EventStore {
   [eventName: string]: Function[]
 }
 
-interface MOBStartChainBlockMessage {
+interface MBStartChainBlockMessage {
   action: Action.StartChainBlock
   userName: string
   followType: FollowType
 }
 
-interface MOBStopChainBlockMessage {
+interface MBStopChainBlockMessage {
   action: Action.StopChainBlock
 }
 
-type MOBMessage = MOBStartChainBlockMessage | MOBStopChainBlockMessage
+type MBMessage = MBStartChainBlockMessage | MBStopChainBlockMessage
 
 type UserState = 'shouldBlock' | 'alreadyBlocked' | 'muteSkip'
 
@@ -108,10 +103,9 @@ interface ChainMirrorBlockProgress {
   foundUsers: FoundUser[]
 }
 
-interface MirrorOfBlockOption {
+interface MirrorBlockOption {
   outlineBlockUser: boolean
   enableBlockReflection: boolean
   blockMutedUser: boolean
-  prefetchChainMirrorBlock: boolean
   alwaysImmediatelyBlockMode: boolean
 }

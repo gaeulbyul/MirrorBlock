@@ -28,7 +28,7 @@ async function executeChainBlock(followType: FollowType) {
   }
   const parsedUrl = new URL(currentTab.url)
   if (parsedUrl.hostname === 'tweetdeck.twitter.com') {
-    const message = String.raw`Mirror Of Block: 트윗덱에선 작동하지 않습니다. 트위터(https://twitter.com)에서 실행해주세요.`.replace(
+    const message = String.raw`Mirror Block: 트윗덱에선 작동하지 않습니다. 트위터(https://twitter.com)에서 실행해주세요.`.replace(
       /'/g,
       ''
     )
@@ -41,7 +41,7 @@ async function executeChainBlock(followType: FollowType) {
   }
   const userName = extractUserNameFromUrl(parsedUrl)
   if (!userName) {
-    const message = String.raw`Mirror Of Block: 트위터(twitter.com)의 팔로잉 혹은 팔로워 페이지에서만 작동합니다.\n(예: https://twitter.com/(UserName)/followers)`.replace(
+    const message = String.raw`Mirror Block: 트위터(twitter.com)의 팔로잉 혹은 팔로워 페이지에서만 작동합니다.\n(예: https://twitter.com/(UserName)/followers)`.replace(
       /'/g,
       ''
     )
@@ -53,7 +53,7 @@ async function executeChainBlock(followType: FollowType) {
     return
   }
   browser.tabs
-    .sendMessage<MOBMessage>(currentTab.id, {
+    .sendMessage<MBMessage>(currentTab.id, {
       action: Action.StartChainBlock,
       followType,
       userName,
@@ -86,11 +86,11 @@ document.addEventListener('DOMContentLoaded', () => {
       '.currentVersion'
     ) as HTMLElement
     currentVersion.textContent = `버전: ${manifest.version}`
-    currentVersion.title = `Mirror Of Block 버전 ${
+    currentVersion.title = `Mirror Block 버전 ${
       manifest.version
     }을(를) 사용하고 있습니다.`
   }
-  ExtOption.load().then(option => {
+  MirrorBlock.Options.load().then(option => {
     {
       const blockReflection = document.querySelector(
         '.blockReflection'

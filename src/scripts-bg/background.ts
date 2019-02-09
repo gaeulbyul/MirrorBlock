@@ -1,4 +1,4 @@
-async function updateBadge(option: MirrorOfBlockOption) {
+async function updateBadge(option: MirrorBlockOption) {
   const { enableBlockReflection } = option
   const manifest = browser.runtime.getManifest()
   browser.browserAction.setBadgeText({
@@ -9,19 +9,19 @@ async function updateBadge(option: MirrorOfBlockOption) {
   })
   browser.browserAction.setTitle({
     title: [
-      `Mirror Of Block v${manifest.version}`,
+      `Mirror Block v${manifest.version}`,
       `* 차단 반사: ${enableBlockReflection ? 'On' : 'Off'}`,
     ].join('\n'),
   })
 }
 
 browser.storage.onChanged.addListener(changes => {
-  const option = changes.option.newValue as MirrorOfBlockOption
+  const option = changes.option.newValue as MirrorBlockOption
   updateBadge(option)
 })
 
 async function initBadge() {
-  const option = await ExtOption.load()
+  const option = await MirrorBlock.Options.load()
   updateBadge(option)
 }
 

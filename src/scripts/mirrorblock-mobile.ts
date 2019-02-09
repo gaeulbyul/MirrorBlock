@@ -1,89 +1,89 @@
-interface CachedUserItem {
-  user: TwitterUser
-  timestamp: number
-}
-class CachedUserRetriever {
-  private cachedUsersMap = new Map<string, CachedUserItem>()
-  constructor(private expireSpan: number) {}
-  private nameAsKey(name: string): string {
-    return name.replace(/^@*/, '@')
+;(() => {
+  interface CachedUserItem {
+    user: TwitterUser
+    timestamp: number
   }
-  private updateUser(user: TwitterUser) {
-    const item = {
-      user,
-      timestamp: Date.now(),
+  class CachedUserRetriever {
+    private cachedUsersMap = new Map<string, CachedUserItem>()
+    constructor(private expireSpan: number) {}
+    private nameAsKey(name: string): string {
+      return name.replace(/^@*/, '@')
     }
-    const nameKey = this.nameAsKey(user.screen_name)
-    this.cachedUsersMap.set(user.id_str, item)
-    this.cachedUsersMap.set(nameKey, item)
-  }
-  private isExpired(item: CachedUserItem): boolean {
-    return item.timestamp + this.expireSpan < Date.now()
-  }
-  public async getUserById(
-    userId: string,
-    forceNew = false
-  ): Promise<TwitterUser> {
-    if (forceNew || !this.cachedUsersMap.has(userId)) {
-      const freshUser = await TwitterAPI.getSingleUserById(userId)
-      this.updateUser(freshUser)
-      return freshUser
+    private updateUser(user: TwitterUser) {
+      const item = {
+        user,
+        timestamp: Date.now(),
+      }
+      const nameKey = this.nameAsKey(user.screen_name)
+      this.cachedUsersMap.set(user.id_str, item)
+      this.cachedUsersMap.set(nameKey, item)
     }
-    const item = this.cachedUsersMap.get(userId)!
-    if (this.isExpired(item)) {
-      return this.getUserById(userId, true)
-    } else {
-      return item.user
+    private isExpired(item: CachedUserItem): boolean {
+      return item.timestamp + this.expireSpan < Date.now()
     }
-  }
-  public async getUserByName(
-    userName: string,
-    forceNew = false
-  ): Promise<TwitterUser> {
-    const nameKey = this.nameAsKey(userName)
-    if (forceNew || !this.cachedUsersMap.has(nameKey)) {
-      const freshUser = await TwitterAPI.getSingleUserByName(userName)
-      this.updateUser(freshUser)
-      return freshUser
-    }
-    const item = this.cachedUsersMap.get(nameKey)!
-    if (this.isExpired(item)) {
-      return this.getUserByName(userName, true)
-    } else {
-      return item.user
-    }
-  }
-  public async getMultipleUsersByName(
-    userNames: string[],
-    forceNew = false
-  ): Promise<TwitterUser[]> {
-    const users: TwitterUser[] = []
-    const namesThatShouldFetch: string[] = []
-    for (const name of userNames) {
-      const namekey = this.nameAsKey(name)
-      if (this.cachedUsersMap.has(namekey)) {
-        const item = this.cachedUsersMap.get(namekey)!
-        if (forceNew || this.isExpired(item)) {
-          namesThatShouldFetch.push(name)
-        } else {
-          users.push(item.user)
-        }
+    public async getUserById(
+      userId: string,
+      forceNew = false
+    ): Promise<TwitterUser> {
+      if (forceNew || !this.cachedUsersMap.has(userId)) {
+        const freshUser = await TwitterAPI.getSingleUserById(userId)
+        this.updateUser(freshUser)
+        return freshUser
+      }
+      const item = this.cachedUsersMap.get(userId)!
+      if (this.isExpired(item)) {
+        return this.getUserById(userId, true)
       } else {
-        namesThatShouldFetch.push(name)
+        return item.user
       }
     }
-    const freshUsers = await TwitterAPI.getMultipleUsersByName(
-      namesThatShouldFetch
-    )
-    users.push(...freshUsers)
-    freshUsers.forEach(this.updateUser.bind(this))
-    return users
+    public async getUserByName(
+      userName: string,
+      forceNew = false
+    ): Promise<TwitterUser> {
+      const nameKey = this.nameAsKey(userName)
+      if (forceNew || !this.cachedUsersMap.has(nameKey)) {
+        const freshUser = await TwitterAPI.getSingleUserByName(userName)
+        this.updateUser(freshUser)
+        return freshUser
+      }
+      const item = this.cachedUsersMap.get(nameKey)!
+      if (this.isExpired(item)) {
+        return this.getUserByName(userName, true)
+      } else {
+        return item.user
+      }
+    }
+    public async getMultipleUsersByName(
+      userNames: string[],
+      forceNew = false
+    ): Promise<TwitterUser[]> {
+      const users: TwitterUser[] = []
+      const namesThatShouldFetch: string[] = []
+      for (const name of userNames) {
+        const namekey = this.nameAsKey(name)
+        if (this.cachedUsersMap.has(namekey)) {
+          const item = this.cachedUsersMap.get(namekey)!
+          if (forceNew || this.isExpired(item)) {
+            namesThatShouldFetch.push(name)
+          } else {
+            users.push(item.user)
+          }
+        } else {
+          namesThatShouldFetch.push(name)
+        }
+      }
+      const freshUsers = await TwitterAPI.getMultipleUsersByName(
+        namesThatShouldFetch
+      )
+      users.push(...freshUsers)
+      freshUsers.forEach(this.updateUser.bind(this))
+      return users
+    }
+    public clearCache(): void {
+      this.cachedUsersMap.clear()
+    }
   }
-  public clearCache(): void {
-    this.cachedUsersMap.clear()
-  }
-}
-;(() => {
   const reactRoot = document.getElementById('react-root')
   if (!reactRoot) {
     return
@@ -108,7 +108,7 @@ class CachedUserRetriever {
         continue
       }
       const tweetAuthor = await cachedRetriever.getUserByName(tweetAuthorName)
-      await reflectBlock({
+      await MirrorBlock.Reflection.reflectBlock({
         user: tweetAuthor,
         indicateBlock() {
           link.classList.add('mob-blocks-you-outline')
@@ -132,7 +132,7 @@ class CachedUserRetriever {
     if (!user) {
       return
     }
-    reflectBlock({
+    MirrorBlock.Reflection.reflectBlock({
       user,
       indicateBlock() {
         MirrorBlock.Badge.appendBlocksYouBadge(helpLink.parentElement!)

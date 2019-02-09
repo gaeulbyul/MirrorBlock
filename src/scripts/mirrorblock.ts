@@ -100,7 +100,7 @@
   async function foundTargetHandler(ft: FoundTarget): Promise<void> {
     ft.addOutlineClassName()
     MirrorBlock.Badge.appendBlocksYouBadge(ft.badgeElem)
-    const options = await ExtOption.load()
+    const options = await MirrorBlock.Options.load()
     const muteSkip = ft.muted && !options.blockMutedUser
     const shouldBlock =
       options.enableBlockReflection && !ft.alreadyBlocked && !muteSkip
@@ -161,7 +161,7 @@
     )
   })
 
-  ExtOption.load().then(option => {
+  MirrorBlock.Options.load().then(option => {
     document.documentElement.classList.toggle(
       'mob-enable-outline',
       option.outlineBlockUser

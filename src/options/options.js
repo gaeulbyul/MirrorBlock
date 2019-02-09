@@ -4,7 +4,6 @@ const elements = {
   outlineBlockUser: document.getElementById('outlineBlockUser'),
   enableBlockReflection: document.getElementById('enableBlockReflection'),
   blockMutedUser: document.getElementById('blockMutedUser'),
-  prefetchChainMirrorBlock: document.getElementById('prefetchChainMirrorBlock'),
   alwaysImmediatelyBlockMode: document.getElementById(
     'alwaysImmediatelyBlockMode'
   ),
