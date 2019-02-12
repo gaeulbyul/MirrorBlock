@@ -123,7 +123,13 @@
       })
     }
   }
-  async function reflectOnProfile(helpLink: Element) {
+  async function reflectOnProfile() {
+    const helpLink = document.querySelector(
+      'a[href="https://support.twitter.com/articles/20172060"]'
+    )
+    if (!helpLink) {
+      return
+    }
     const userName = getUserNameFromTweetUrl(location)
     if (!userName) {
       return
@@ -151,12 +157,6 @@
     })
   }
   function extractElems(elem: Document | HTMLElement): HTMLElement[] {
-    const blockedMeHelpLink = elem.querySelector(
-      'a[href="https://support.twitter.com/articles/20172060"]'
-    )
-    if (blockedMeHelpLink) {
-      reflectOnProfile(blockedMeHelpLink)
-    }
     const tweetElem = elem.querySelectorAll<HTMLElement>(
       '[data-testid="tweet"]'
     )
@@ -172,11 +172,13 @@
   }
   new MutationObserver(mutations => {
     for (const elem of getAddedElementsFromMutations(mutations)) {
+      reflectOnProfile()
       extractElems(elem).forEach(tweetHandler)
     }
   }).observe(reactRoot, {
     subtree: true,
     childList: true,
   })
+  reflectOnProfile()
   extractElems(document).forEach(tweetHandler)
 })()
