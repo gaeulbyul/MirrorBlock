@@ -16,15 +16,18 @@
   outline: 2px solid crimson;
 }
 
-.mob-enable-outline #react-root .mob-blocks-you-outline {
+.mob-enable-outline #react-root [data-mirrorblock-blocks-you='1'] {
   border-color: crimson;
 }
 
-.mob-enable-outline #react-root [data-testid='tweet'] .mob-blocks-you-outline,
+.mob-enable-outline
+  #react-root
+  [data-testid='tweet']
+  [data-mirrorblock-blocks-you='1'],
 .mob-enable-outline
   #react-root
   [data-testid='tweetDetail']
-  .mob-blocks-you-outline {
+  [data-mirrorblock-blocks-you='1'] {
   /* inline-block:
   빨간 테두리가 링크 위에도 묻는(?) 현상이 있다.
   더 깔끔하게 표시하기 위해 inline-block으로 처리

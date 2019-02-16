@@ -63,7 +63,11 @@ declare function cloneInto<T>(detail: T, view: Window | null): T
       (await TwitterAPI.getSingleUserByName(userName))
     )
   }
-
+  function markOutline(elem: Element | null): void {
+    if (elem) {
+      elem.setAttribute('data-mirrorblock-blocks-you', '1')
+    }
+  }
   function getUserNameFromTweetUrl(
     extractMe: HTMLAnchorElement | URL | Location
   ): string | null {
@@ -86,12 +90,11 @@ declare function cloneInto<T>(detail: T, view: Window | null): T
       await MirrorBlock.Reflection.reflectBlock({
         user: tweetAuthor!,
         indicateBlock() {
-          link.classList.add('mob-blocks-you-outline')
+          markOutline(link)
           const parentElem = link.parentElement!
           MirrorBlock.Badge.appendBlocksYouBadge(parentElem)
         },
         indicateReflection() {
-          link.classList.add('mob-blocks-you-outline')
           const parentElem = link.parentElement!
           MirrorBlock.Badge.appendBlockReflectedBadge(parentElem)
         },
@@ -122,8 +125,8 @@ declare function cloneInto<T>(detail: T, view: Window | null): T
         )
         if (profileImage) {
           const shouldOutline = profileImage.closest('a[href$="photo"]')!
-            .firstElementChild!
-          shouldOutline.classList.add('mob-blocks-you-outline')
+            .firstElementChild
+          markOutline(shouldOutline)
         }
       },
       indicateReflection() {
