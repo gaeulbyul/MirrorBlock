@@ -1,94 +1,69 @@
+declare function cloneInto<T>(detail: T, view: Window | null): T
 ;(() => {
-  interface CachedUserItem {
-    user: TwitterUser
-    timestamp: number
-  }
-  class CachedUserRetriever {
-    private cachedUsersMap = new Map<string, CachedUserItem>()
-    constructor(private expireSpan: number) {}
-    private nameAsKey(name: string): string {
-      return name.replace(/^@*/, '@')
-    }
-    private updateUser(user: TwitterUser) {
-      const item = {
-        user,
-        timestamp: Date.now(),
-      }
-      const nameKey = this.nameAsKey(user.screen_name)
-      this.cachedUsersMap.set(user.id_str, item)
-      this.cachedUsersMap.set(nameKey, item)
-    }
-    private isExpired(item: CachedUserItem): boolean {
-      return item.timestamp + this.expireSpan < Date.now()
-    }
-    public async getUserById(
-      userId: string,
-      forceNew = false
-    ): Promise<TwitterUser> {
-      if (forceNew || !this.cachedUsersMap.has(userId)) {
-        const freshUser = await TwitterAPI.getSingleUserById(userId)
-        this.updateUser(freshUser)
-        return freshUser
-      }
-      const item = this.cachedUsersMap.get(userId)!
-      if (this.isExpired(item)) {
-        return this.getUserById(userId, true)
-      } else {
-        return item.user
-      }
-    }
-    public async getUserByName(
-      userName: string,
-      forceNew = false
-    ): Promise<TwitterUser> {
-      const nameKey = this.nameAsKey(userName)
-      if (forceNew || !this.cachedUsersMap.has(nameKey)) {
-        const freshUser = await TwitterAPI.getSingleUserByName(userName)
-        this.updateUser(freshUser)
-        return freshUser
-      }
-      const item = this.cachedUsersMap.get(nameKey)!
-      if (this.isExpired(item)) {
-        return this.getUserByName(userName, true)
-      } else {
-        return item.user
-      }
-    }
-    public async getMultipleUsersByName(
-      userNames: string[],
-      forceNew = false
-    ): Promise<TwitterUser[]> {
-      const users: TwitterUser[] = []
-      const namesThatShouldFetch: string[] = []
-      for (const name of userNames) {
-        const namekey = this.nameAsKey(name)
-        if (this.cachedUsersMap.has(namekey)) {
-          const item = this.cachedUsersMap.get(namekey)!
-          if (forceNew || this.isExpired(item)) {
-            namesThatShouldFetch.push(name)
-          } else {
-            users.push(item.user)
-          }
-        } else {
-          namesThatShouldFetch.push(name)
-        }
-      }
-      const freshUsers = await TwitterAPI.getMultipleUsersByName(
-        namesThatShouldFetch
-      )
-      users.push(...freshUsers)
-      freshUsers.forEach(this.updateUser.bind(this))
-      return users
-    }
-    public clearCache(): void {
-      this.cachedUsersMap.clear()
-    }
-  }
   const reactRoot = document.getElementById('react-root')
   if (!reactRoot) {
     return
   }
-  const cachedRetriever = new CachedUserRetriever(1000 * 60 * 5)
+  injectScript('scripts/twitter-inject.js')
+  class ReduxedStore {
+    private cloneDetail<T>(detail: T): T {
+      if (typeof detail !== 'object') {
+        return detail
+      }
+      if (typeof cloneInto === 'function') {
+        return cloneInto(detail, document.defaultView)
+      } else {
+        return detail
+      }
+    }
+    private async triggerPageEvent<T>(
+      eventName: string,
+      eventDetail?: object
+    ): Promise<T> {
+      const nonce = Math.random()
+      const detail = this.cloneDetail(
+        Object.assign({}, eventDetail, {
+          nonce,
+        })
+      )
+      const requestEvent = new CustomEvent(`MirrorBlock->${eventName}`, {
+        detail,
+      })
+      return new Promise((resolve, reject) => {
+        const timeout = window.setTimeout(() => {
+          reject('timeouted!')
+        }, 10000)
+        document.addEventListener(
+          `MirrorBlock<-${eventName}.${nonce}`,
+          event => {
+            window.clearTimeout(timeout)
+            const customEvent = event as CustomEvent
+            resolve(customEvent.detail)
+          },
+          { once: true }
+        )
+        document.dispatchEvent(requestEvent)
+      })
+    }
+    public async getWholeState(): Promise<any> {
+      // for debugging
+      return this.triggerPageEvent('getWholeState')
+    }
+    public async getUserByName(userName: string): Promise<TwitterUser | null> {
+      const result = await this.triggerPageEvent<TwitterUser>('getUserByName', {
+        userName,
+      })
+      return result || null
+    }
+  }
+  const reduxedStore = new ReduxedStore()
+  async function getUserByName(userName: string): Promise<TwitterUser> {
+    return (
+      (await reduxedStore.getUserByName(userName)) ||
+      (await TwitterAPI.getSingleUserByName(userName))
+    )
+  }
+
   function getUserNameFromTweetUrl(
     extractMe: HTMLAnchorElement | URL | Location
   ): string | null {
@@ -107,9 +82,9 @@
       if (!tweetAuthorName) {
         continue
       }
-      const tweetAuthor = await cachedRetriever.getUserByName(tweetAuthorName)
+      const tweetAuthor = await getUserByName(tweetAuthorName)
       await MirrorBlock.Reflection.reflectBlock({
-        user: tweetAuthor,
+        user: tweetAuthor!,
         indicateBlock() {
           link.classList.add('mob-blocks-you-outline')
           const parentElem = link.parentElement!
@@ -134,7 +109,7 @@
     if (!userName) {
       return
     }
-    const user = await cachedRetriever.getUserByName(userName)
+    const user = await getUserByName(userName)
     if (!user) {
       return
     }
