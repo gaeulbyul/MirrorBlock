@@ -1,10 +1,6 @@
 declare function cloneInto<T>(detail: T, view: Window | null): T
-;(() => {
-  const reactRoot = document.getElementById('react-root')
-  if (!reactRoot) {
-    return
-  }
-  injectScript('scripts/twitter-inject.js')
+const userNamePattern = /^@[0-9a-z_]{1,15}$/i
+namespace MirrorBlock.Mobile {
   class ReduxedStore {
     private cloneDetail<T>(detail: T): T {
       if (typeof detail !== 'object') {
@@ -55,13 +51,26 @@ declare function cloneInto<T>(detail: T, view: Window | null): T
       })
       return result || null
     }
+    public async insertUserIntoStore(user: TwitterUser): Promise<void> {
+      this.triggerPageEvent('inserUserIntoStore', {
+        user,
+      })
+    }
+    public async fetchAndInsertByName(userName: string): Promise<TwitterUser> {
+      const user = await TwitterAPI.getSingleUserByName(userName)
+      this.insertUserIntoStore(user)
+      return user
+    }
   }
   const reduxedStore = new ReduxedStore()
   async function getUserByName(userName: string): Promise<TwitterUser> {
-    return (
-      (await reduxedStore.getUserByName(userName)) ||
-      (await TwitterAPI.getSingleUserByName(userName))
-    )
+    const userFromStore = await reduxedStore.getUserByName(userName)
+    if (userFromStore) {
+      return userFromStore
+    } else {
+      console.debug('request api "@%s"', userName)
+      return reduxedStore.fetchAndInsertByName(userName)
+    }
   }
   function markOutline(elem: Element | null): void {
     if (elem) {
@@ -72,36 +81,87 @@ declare function cloneInto<T>(detail: T, view: Window | null): T
     extractMe: HTMLAnchorElement | URL | Location
   ): string | null {
     const pathname = extractMe.pathname
-    const matches = /^\/([0-9a-z_]+)/i.exec(pathname)
+    const matches = /^\/([0-9a-z_]{1,15})/i.exec(pathname)
     return matches ? matches[1] : null
   }
-  async function tweetHandler(tweetElem: HTMLElement) {
-    const tweetLinks = Array.from(
-      tweetElem.querySelectorAll<HTMLAnchorElement>(
-        'a[href^="/"][href*="/status/"]'
-      )
+  const tweetLinkObserver = new IntersectionObserver(
+    async (entries, observer) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) {
+          continue
+        }
+        const link = entry.target
+        observer.unobserve(link)
+        if (!(link instanceof HTMLAnchorElement)) {
+          continue
+        }
+        const tweetAuthorName = getUserNameFromTweetUrl(link)
+        if (!tweetAuthorName) {
+          continue
+        }
+        const tweetAuthor = await getUserByName(tweetAuthorName)
+        await MirrorBlock.Reflection.reflectBlock({
+          user: tweetAuthor!,
+          indicateBlock() {
+            markOutline(link)
+            MirrorBlock.Badge.insertBlocksYouBadgeAfter(link)
+          },
+          indicateReflection() {
+            MirrorBlock.Badge.insertBlockReflectedBadgeAfter(link)
+          },
+        })
+      }
+    },
+    {
+      rootMargin: '10px',
+    }
+  )
+  const userCellObserver = new IntersectionObserver(
+    async (entries, observer) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) {
+          continue
+        }
+        const cell = entry.target as HTMLElement
+        observer.unobserve(cell)
+        Array.from(cell.querySelectorAll('[dir="ltr"]'))
+          .filter(ltr => userNamePattern.test(ltr.textContent || ''))
+          .forEach(async ltr => {
+            const userName = ltr.textContent!.replace(/^@/, '')
+            const user = await getUserByName(userName)
+            MirrorBlock.Reflection.reflectBlock({
+              user,
+              indicateBlock() {
+                markOutline(cell)
+                MirrorBlock.Badge.insertBlocksYouBadgeAfter(ltr)
+              },
+              indicateReflection() {
+                MirrorBlock.Badge.insertBlockReflectedBadgeAfter(ltr)
+              },
+            })
+          })
+      }
+    }
+  )
+  function findLinks(tweetElem: HTMLElement): HTMLAnchorElement[] {
+    const result: HTMLAnchorElement[] = []
+    const internalLinks = Array.from(
+      tweetElem.querySelectorAll<HTMLAnchorElement>('a[href^="/"]')
     )
-    for (const link of tweetLinks) {
-      const tweetAuthorName = getUserNameFromTweetUrl(link)
-      if (!tweetAuthorName) {
+    for (const link of internalLinks) {
+      const { pathname, textContent } = link
+      if (/^\/[0-9a-z_]{1,15}\/status\/\d+/.test(pathname)) {
+        result.push(link)
         continue
       }
-      const tweetAuthor = await getUserByName(tweetAuthorName)
-      await MirrorBlock.Reflection.reflectBlock({
-        user: tweetAuthor!,
-        indicateBlock() {
-          markOutline(link)
-          const parentElem = link.parentElement!
-          MirrorBlock.Badge.appendBlocksYouBadge(parentElem)
-        },
-        indicateReflection() {
-          const parentElem = link.parentElement!
-          MirrorBlock.Badge.appendBlockReflectedBadge(parentElem)
-        },
-      })
+      if (textContent && userNamePattern.test(textContent)) {
+        result.push(link)
+        continue
+      }
     }
+    return result
   }
-  async function reflectOnProfile() {
+  async function detectProfile() {
     const helpLink = document.querySelector(
       'a[href="https://support.twitter.com/articles/20172060"]'
     )
@@ -120,43 +180,54 @@ declare function cloneInto<T>(detail: T, view: Window | null): T
       user,
       indicateBlock() {
         MirrorBlock.Badge.appendBlocksYouBadge(helpLink.parentElement!)
-        const profileImage = document.querySelector(
-          `a[href$="/${user.screen_name}/photo"] img[src*="/profile_images/"]`
-        )
-        if (profileImage) {
-          const shouldOutline = profileImage.closest('a[href$="photo"]')!
-            .firstElementChild
-          markOutline(shouldOutline)
-        }
       },
       indicateReflection() {
         MirrorBlock.Badge.appendBlockReflectedBadge(helpLink.parentElement!)
       },
     })
   }
-  function extractElems(elem: Document | HTMLElement): HTMLElement[] {
-    const tweetElem = elem.querySelectorAll<HTMLElement>(
-      '[data-testid="tweet"]'
+  function detectOnTweetLinks(rootElem: Document | HTMLElement): void {
+    const tweetElems = rootElem.querySelectorAll<HTMLElement>(
+      '[data-testid="tweet"], [data-testid="tweetDetail"]'
     )
-    const tweetDetailElem = elem.querySelectorAll<HTMLElement>(
-      '[data-testid="tweetDetail"]'
-    )
-    return [...tweetElem, ...tweetDetailElem]
-      .filter(elem => !elem.classList.contains('mob-checked'))
-      .map(elem => {
-        elem.classList.add('mob-checked')
-        return elem
-      })
-  }
-  new MutationObserver(mutations => {
-    for (const elem of getAddedElementsFromMutations(mutations)) {
-      reflectOnProfile()
-      extractElems(elem).forEach(tweetHandler)
+    const filteredTweetElems = filterElements(tweetElems)
+    for (const tweet of filteredTweetElems) {
+      for (const link of findLinks(tweet)) {
+        tweetLinkObserver.observe(link)
+      }
     }
-  }).observe(reactRoot, {
-    subtree: true,
-    childList: true,
-  })
-  reflectOnProfile()
-  extractElems(document).forEach(tweetHandler)
-})()
+  }
+  function detectOnUserCell(rootElem: Document | HTMLElement): void {
+    const userCellElems = rootElem.querySelectorAll<HTMLElement>(
+      '[data-testid="UserCell"]'
+    )
+    const filteredUserCellElems = filterElements(userCellElems)
+    for (const cell of filteredUserCellElems) {
+      userCellObserver.observe(cell)
+    }
+  }
+  function detect(rootElem: Document | HTMLElement): void {
+    detectOnTweetLinks(rootElem)
+    detectOnUserCell(rootElem)
+  }
+  export async function initialize() {
+    const reactRoot = document.getElementById('react-root')
+    if (!reactRoot) {
+      return
+    }
+    await injectScript('scripts/twitter-inject.js')
+    new MutationObserver(mutations => {
+      for (const elem of getAddedElementsFromMutations(mutations)) {
+        detectProfile()
+        detect(elem)
+      }
+    }).observe(reactRoot, {
+      subtree: true,
+      childList: true,
+    })
+    detectProfile()
+    detect(document)
+  }
+}
+
+MirrorBlock.Mobile.initialize()

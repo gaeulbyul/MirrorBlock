@@ -33,7 +33,7 @@
   더 깔끔하게 표시하기 위해 inline-block으로 처리
    */
   display: inline-block;
-  border: 3px solid crimson;
+  border: 2px solid crimson;
 }
 
 /* 체인맞블락 관련 */

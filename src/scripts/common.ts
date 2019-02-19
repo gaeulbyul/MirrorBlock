@@ -30,11 +30,16 @@ function sleep(time: number): Promise<void> {
   return new Promise(resolve => window.setTimeout(resolve, time))
 }
 
-function injectScript(path: string) {
-  const script = document.createElement('script')
-  script.src = browser.runtime.getURL(path)
-  const appendTarget = document.head || document.documentElement
-  appendTarget!.appendChild(script)
+function injectScript(path: string): Promise<void> {
+  return new Promise(resolve => {
+    const script = document.createElement('script')
+    script.addEventListener('load', () => {
+      resolve()
+    })
+    script.src = browser.runtime.getURL(path)
+    const appendTarget = document.head || document.documentElement
+    appendTarget!.appendChild(script)
+  })
 }
 
 function copyFrozenObject<T extends object>(obj: T): Readonly<T> {
@@ -51,4 +56,15 @@ function* getAddedElementsFromMutations(
       }
     }
   }
+}
+
+function filterElements<T extends HTMLElement>(
+  elems: Iterable<T> | ArrayLike<T>
+): T[] {
+  return Array.from(elems)
+    .filter(elem => !elem.classList.contains('mob-checked'))
+    .map(elem => {
+      elem.classList.add('mob-checked')
+      return elem
+    })
 }

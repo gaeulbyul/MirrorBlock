@@ -1,8 +1,3 @@
-/* globals
-  MutationObserver,
-  CustomEvent,
-*/
-
 console.log('tweetdeck-inject.js injected!')
 
 function applyMagicToTD(TD) {

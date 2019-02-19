@@ -49,4 +49,26 @@ namespace MirrorBlock.Badge {
     const badge = blocksYouBadge(BadgeType.BlockReflected)
     elem.appendChild(badge)
   }
+  export function insertBlocksYouBadgeAfter(
+    elem: Element,
+    userName = ''
+  ): void {
+    const nextElem = elem.nextElementSibling
+    if (nextElem && nextElem.matches('.mob-badge-blocks-you')) {
+      return
+    }
+    const badge = blocksYouBadge(BadgeType.BlocksYou, userName)
+    elem.after(badge)
+  }
+  export function insertBlockReflectedBadgeAfter(elem: Element): void {
+    const nextElem = elem.nextElementSibling
+    if (nextElem && nextElem.matches('.mob-badge-blocks-you')) {
+      const nnext = nextElem.nextElementSibling
+      if (nnext && nnext.matches('.mob-badge-block-reflected')) {
+        return
+      }
+      const badge = blocksYouBadge(BadgeType.BlockReflected)
+      nextElem.after(badge)
+    }
+  }
 }
