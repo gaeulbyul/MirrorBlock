@@ -10,22 +10,27 @@ namespace MirrorBlock.Badge {
     badge.className = `mob-badge mob-badge-${type}`
     let badgeClasses = ''
     let badgeText = ''
+    let badgeTooltip = ''
     switch (type) {
       case BadgeType.BlocksYou:
         badgeClasses = 'badge blocks-you'
         badgeText = '나를 차단함'
+        badgeTooltip = '나를 차단함: 이 사용자가 나를 차단하고 있습니다.'
         if (userName.length > 0) {
-          badgeText += ` @(${userName})`
+          badgeText += ` (@${userName})`
+          badgeTooltip = `나를 차단함: @${userName}님이 나를 차단하고 있습니다.`
         }
         break
       case BadgeType.BlockReflected:
         badgeClasses = 'badge block-reflected'
         badgeText = '차단반사 발동!'
+        badgeTooltip =
+          '차단반사 발동!: Mirror Block이 이 사용자에게 맞차단을 했습니다.'
         break
     }
     const shadowRoot = badge.attachShadow({ mode: 'closed' })
     shadowRoot.innerHTML = `\
-  <span class="${badgeClasses}">${badgeText}</span>
+  <span class="${badgeClasses}" title="${badgeTooltip}">${badgeText}</span>
   <link rel="stylesheet" href="${badgeCss}" />`
     return badge
   }
