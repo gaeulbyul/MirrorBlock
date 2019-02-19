@@ -1,5 +1,3 @@
-/* globals browser, ExtOption */
-
 const elements = {
   outlineBlockUser: document.getElementById('outlineBlockUser'),
   enableBlockReflection: document.getElementById('enableBlockReflection'),
@@ -16,11 +14,11 @@ function saveOption() {
       option[key] = elements[key].checked
     }
   }
-  return ExtOption.save(option)
+  return MirrorBlock.Options.save(option)
 }
 
 async function loadOption() {
-  const option = await ExtOption.load()
+  const option = await MirrorBlock.Options.load()
   for (const key of Object.keys(elements)) {
     const item = elements[key]
     if (item) {
