@@ -136,6 +136,8 @@ namespace MirrorBlock.Mobile {
         observer.unobserve(cell)
         Array.from(cell.querySelectorAll('[dir="ltr"]'))
           .filter(ltr => userNamePattern.test(ltr.textContent || ''))
+          // tagName이 a인 경우, 자기소개 속 닉네임 멘션으로 본다.
+          .filter(ltr => ltr.tagName === 'DIV')
           .forEach(async ltr => {
             const userName = ltr.textContent!.replace(/^@/, '')
             const user = await getUserByName(userName)
@@ -147,7 +149,7 @@ namespace MirrorBlock.Mobile {
               user,
               indicateBlock() {
                 markOutline(cell)
-                cell.after(badge.element)
+                ltr.after(badge.element)
               },
               indicateReflection() {
                 badge.blockReflected()
@@ -205,7 +207,7 @@ namespace MirrorBlock.Mobile {
     const tweetElems = rootElem.querySelectorAll<HTMLElement>(
       '[data-testid="tweet"], [data-testid="tweetDetail"]'
     )
-    const filteredTweetElems = filterElements(tweetElems)
+    const filteredTweetElems = MirrorBlock.Utils.filterElements(tweetElems)
     for (const tweet of filteredTweetElems) {
       for (const link of findLinks(tweet)) {
         tweetLinkObserver.observe(link)
@@ -213,10 +215,18 @@ namespace MirrorBlock.Mobile {
     }
   }
   function detectOnUserCell(rootElem: Document | HTMLElement): void {
-    const userCellElems = rootElem.querySelectorAll<HTMLElement>(
-      '[data-testid="UserCell"]'
+    const userCellElems = Array.from(
+      rootElem.querySelectorAll<HTMLElement>('[data-testid="UserCell"]')
     )
-    const filteredUserCellElems = filterElements(userCellElems)
+    const isUserCell = (e: HTMLElement) => e.matches('[data-testid="UserCell"]')
+    if (rootElem instanceof HTMLElement && isUserCell(rootElem)) {
+      userCellElems.push(rootElem)
+    }
+    // UserCell이 나중에 로딩된 경우,
+    // (UserCell이 자식요소로 들어간 요소가 아닌) UserCell 자체가 들어온다.
+    const filteredUserCellElems = MirrorBlock.Utils.filterElements(
+      userCellElems
+    )
     for (const cell of filteredUserCellElems) {
       userCellObserver.observe(cell)
     }

@@ -6,13 +6,14 @@ namespace MirrorBlock.BadgeV2 {
       const target = name ? `@${name}` : '이 사용자'
       const badgeCss = browser.runtime.getURL('styles/mob-badge.css')
       this.baseElem.className = 'mob-badge mob-badge-v2'
+      this.baseElem.style.whiteSpace = 'initial'
       this.shadowRoot.innerHTML = `\
 <span class="badge-wrapper">
-  <span class="badge blocks-you" title="나를 차단함: ${target}이(가) 나를 차단하고 있습니다.">
+  <span class="badge blocks-you" title="나를 차단함: ${target}님이 나를 차단하고 있습니다.">
     나를 차단함
     <span hidden class="username">${name}</span>
   </span>
-  <span hidden class="badge block-reflected" title="차단반사 발동: Mirror Block이 ${target}을(를) 맞차단했습니다.">
+  <span hidden class="badge block-reflected" title="차단반사 발동: Mirror Block이 ${target}님을 맞차단했습니다.">
     차단반사 발동!
   </span>
 </span>

@@ -13,7 +13,7 @@
 }
 
 .badge-wrapper {
-  white-space: initial;
+  white-space: nowrap;
 }
 
 .badge {
@@ -26,8 +26,9 @@
 }
 
 :host-context(#react-root) .badge {
-  border-radius: 8px;
-  padding: 4px 8px;
+  padding: 0.1rem 5px;
+  border-radius: 5px;
+  font-size: 13px;
 }
 
 .blocks-you {
@@ -68,8 +69,4 @@
 
 :host-context(.mob-nightmode .ProfileHeaderCard) .badge {
   background-color: #141d26;
-}
-
-:host-context(#react-root) .badge {
-  font-size: 14px;
 }
