@@ -12,6 +12,10 @@
   }
 }
 
+.badge-wrapper {
+  white-space: initial;
+}
+
 .badge {
   display: inline-block;
   border-radius: 4px;
@@ -19,6 +23,11 @@
   font-weight: normal;
   margin-left: 2px;
   padding: 4px;
+}
+
+:host-context(#react-root) .badge {
+  border-radius: 8px;
+  padding: 4px 8px;
 }
 
 .blocks-you {
@@ -31,6 +40,10 @@
   color: #8a6d3b;
   animation: Pop 0.2s;
   will-change: transform;
+}
+
+[hidden] {
+  display: none;
 }
 
 :host-context(.account) .badge {

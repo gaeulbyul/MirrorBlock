@@ -100,14 +100,20 @@ namespace MirrorBlock.Mobile {
           continue
         }
         const tweetAuthor = await getUserByName(tweetAuthorName)
+        const badge = new MirrorBlock.BadgeV2.Badge(tweetAuthorName)
+        if (/\/status\/\d+$/.test(link.href)) {
+          badge.showUserName()
+        }
         await MirrorBlock.Reflection.reflectBlock({
           user: tweetAuthor!,
           indicateBlock() {
             markOutline(link)
-            MirrorBlock.Badge.insertBlocksYouBadgeAfter(link)
+            if (!MirrorBlock.BadgeV2.alreadyExists(link)) {
+              link.after(badge.element)
+            }
           },
           indicateReflection() {
-            MirrorBlock.Badge.insertBlockReflectedBadgeAfter(link)
+            badge.blockReflected()
           },
         })
       }
@@ -129,14 +135,18 @@ namespace MirrorBlock.Mobile {
           .forEach(async ltr => {
             const userName = ltr.textContent!.replace(/^@/, '')
             const user = await getUserByName(userName)
+            if (!user) {
+              return
+            }
+            const badge = new MirrorBlock.BadgeV2.Badge()
             MirrorBlock.Reflection.reflectBlock({
               user,
               indicateBlock() {
                 markOutline(cell)
-                MirrorBlock.Badge.insertBlocksYouBadgeAfter(ltr)
+                cell.after(badge.element)
               },
               indicateReflection() {
-                MirrorBlock.Badge.insertBlockReflectedBadgeAfter(ltr)
+                badge.blockReflected()
               },
             })
           })
@@ -176,13 +186,14 @@ namespace MirrorBlock.Mobile {
     if (!user) {
       return
     }
+    const badge = new MirrorBlock.BadgeV2.Badge()
     MirrorBlock.Reflection.reflectBlock({
       user,
       indicateBlock() {
-        MirrorBlock.Badge.appendBlocksYouBadge(helpLink.parentElement!)
+        helpLink.parentElement!.appendChild(badge.element)
       },
       indicateReflection() {
-        MirrorBlock.Badge.appendBlockReflectedBadge(helpLink.parentElement!)
+        badge.blockReflected()
       },
     })
   }

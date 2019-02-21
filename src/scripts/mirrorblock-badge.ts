@@ -1,3 +1,56 @@
+namespace MirrorBlock.BadgeV2 {
+  export class Badge {
+    private readonly baseElem = document.createElement('span')
+    private readonly shadowRoot = this.baseElem.attachShadow({ mode: 'closed' })
+    constructor(name = '') {
+      const target = name ? `@${name}` : '이 사용자'
+      const badgeCss = browser.runtime.getURL('styles/mob-badge.css')
+      this.baseElem.className = 'mob-badge mob-badge-v2'
+      this.shadowRoot.innerHTML = `\
+<span class="badge-wrapper">
+  <span class="badge blocks-you" title="나를 차단함: ${target}이(가) 나를 차단하고 있습니다.">
+    나를 차단함
+    <span hidden class="username">${name}</span>
+  </span>
+  <span hidden class="badge block-reflected" title="차단반사 발동: Mirror Block이 ${target}을(를) 맞차단했습니다.">
+    차단반사 발동!
+  </span>
+</span>
+<link rel="stylesheet" href="${badgeCss}" />`
+    }
+    public get element() {
+      return this.baseElem
+    }
+    public showUserName() {
+      this.shadowRoot.querySelector<HTMLElement>('.username')!.hidden = false
+    }
+    public blockReflected() {
+      const brBadge = this.shadowRoot.querySelector<HTMLElement>(
+        '.block-reflected[hidden]'
+      )!
+      brBadge.hidden = false
+    }
+  }
+  export function alreadyExists(elem: HTMLElement): boolean {
+    if (elem.querySelector('.mob-badge')) {
+      return true
+    }
+    let nelem = elem.nextElementSibling
+    let count = 10
+    while (nelem) {
+      if (--count <= 10) {
+        break
+      }
+      if (nelem.matches('.mob-badge')) {
+        return true
+      } else {
+        nelem = nelem.nextElementSibling
+      }
+    }
+    return false
+  }
+}
+
 namespace MirrorBlock.Badge {
   const enum BadgeType {
     BlocksYou = 'blocks-you',
