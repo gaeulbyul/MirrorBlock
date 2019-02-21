@@ -26,7 +26,9 @@
     }
   } else {
     const nightModeObserver = new MutationObserver(mutations => {
-      for (const elem of getAddedElementsFromMutations(mutations)) {
+      for (const elem of MirrorBlock.Utils.getAddedElementsFromMutations(
+        mutations
+      )) {
         if (elem.matches('link.coreCSSBundles')) {
           const css = elem as HTMLLinkElement
           const nightMode = /nightmode/.test(css.href)

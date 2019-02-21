@@ -269,7 +269,7 @@ class ChainMirrorBlockUI extends EventEmitter {
     this.completeProgressUI(progress)
     if (progress.foundUsers.length <= 0) {
       // sleep: progress가 100%되기 전에 메시지가 뜨며 닫히는 현상 방지
-      sleep(100).then(() => {
+      MirrorBlock.Utils.sleep(100).then(() => {
         window.alert('여기에선 아무도 나를 차단하지 않았습니다.')
         this.emit('ui:close-without-confirm')
       })

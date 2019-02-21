@@ -116,9 +116,11 @@ function userDataHandler(userDataElem: HTMLElement) {
 }
 
 function main() {
-  injectScript('scripts/tweetdeck-inject.js')
+  MirrorBlock.Utils.injectScript('scripts/tweetdeck-inject.js')
   const observer = new MutationObserver(mutations => {
-    for (const elem of getAddedElementsFromMutations(mutations)) {
+    for (const elem of MirrorBlock.Utils.getAddedElementsFromMutations(
+      mutations
+    )) {
       const elementsToHandle = [
         ...elem.querySelectorAll<HTMLElement>('span.mob-user-data'),
       ]

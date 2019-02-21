@@ -99,7 +99,9 @@ namespace MirrorBlock.ChainMirrorBlock {
       this.isRunning = true
       try {
         const updateProgress = () => {
-          this.ui.updateProgress(copyFrozenObject(this.progress))
+          this.ui.updateProgress(
+            MirrorBlock.Utils.copyFrozenObject(this.progress)
+          )
         }
         const classifyUserState = (user: TwitterUser): UserState => {
           if (user.blocking) {
@@ -129,11 +131,8 @@ namespace MirrorBlock.ChainMirrorBlock {
         const total = getTotalFollows(targetUser, followType)
         this.ui.initProgress(total)
         let delay = 500 + Math.ceil(total / 50)
-        const firstCursor = '-1'
         const scraper = TwitterAPI.getAllFollows(targetUser, followType, {
           delay,
-          firstCursor,
-          includeCursor: false,
         })
         let rateLimited = false
         for await (const follower of scraper) {
@@ -145,7 +144,7 @@ namespace MirrorBlock.ChainMirrorBlock {
             TwitterAPI.getFollowsScraperRateLimitStatus(followType).then(
               this.ui.rateLimited
             )
-            await sleep(1000 * 60 * 2)
+            await MirrorBlock.Utils.sleep(1000 * 60 * 2)
             continue
           }
           if (rateLimited) {
@@ -162,7 +161,7 @@ namespace MirrorBlock.ChainMirrorBlock {
           this.processImmediatelyBlockMode()
         }
         if (!this.shouldStop) {
-          this.ui.complete(copyFrozenObject(this.progress))
+          this.ui.complete(MirrorBlock.Utils.copyFrozenObject(this.progress))
         }
       } finally {
         this.isRunning = false

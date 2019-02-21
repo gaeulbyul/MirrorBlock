@@ -141,7 +141,7 @@
   }
 
   const observer = new MutationObserver(mutations => {
-    Array.from(getAddedElementsFromMutations(mutations))
+    Array.from(MirrorBlock.Utils.getAddedElementsFromMutations(mutations))
       .map(elem => extractTargetElems(elem))
       .flat()
       .forEach(foundTargetHandler)

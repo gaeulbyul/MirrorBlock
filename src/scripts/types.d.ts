@@ -17,7 +17,6 @@ interface TwitterUser {
   verified: boolean
   created_at: string // datetime example: 'Sun Jun 29 05:52:09 +0000 2014'
   description: string
-  $_cursor?: string
 }
 
 interface FollowsListResponse {
@@ -65,8 +64,6 @@ interface LimitStatus {
 
 interface FollowsScraperOptions {
   delay: number
-  firstCursor?: string
-  includeCursor: boolean
 }
 
 type RateLimited<T> = T | 'RateLimitError'

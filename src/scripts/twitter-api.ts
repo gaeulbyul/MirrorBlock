@@ -179,8 +179,8 @@ namespace TwitterAPI {
     user: TwitterUser,
     followType: FollowType,
     options: FollowsScraperOptions
-  ): AsyncIterableIterator<RateLimited<TwitterUser>> {
-    let cursor: string = options.firstCursor || '-1'
+  ): AsyncIterableIterator<RateLimited<Readonly<TwitterUser>>> {
+    let cursor = '-1'
     while (true) {
       try {
         let json: FollowsListResponse
@@ -196,18 +196,11 @@ namespace TwitterAPI {
         }
         cursor = json.next_cursor_str
         const users = json.users as TwitterUser[]
-        if (options.includeCursor) {
-          yield* users.map(user => {
-            user.$_cursor = cursor
-            return user
-          })
-        } else {
-          yield* users
-        }
+        yield* users.map(u => Object.freeze(u))
         if (cursor === '0') {
           break
         } else {
-          await sleep(options.delay)
+          await MirrorBlock.Utils.sleep(options.delay)
           continue
         }
       } catch (e) {

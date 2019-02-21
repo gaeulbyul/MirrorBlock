@@ -56,20 +56,24 @@ namespace MirrorBlock.Mobile {
         user,
       })
     }
-    public async fetchAndInsertByName(userName: string): Promise<TwitterUser> {
-      const user = await TwitterAPI.getSingleUserByName(userName)
-      this.insertUserIntoStore(user)
-      return user
-    }
   }
   const reduxedStore = new ReduxedStore()
-  async function getUserByName(userName: string): Promise<TwitterUser> {
+  async function getUserByName(userName: string): Promise<TwitterUser | null> {
     const userFromStore = await reduxedStore.getUserByName(userName)
     if (userFromStore) {
       return userFromStore
     } else {
       console.debug('request api "@%s"', userName)
-      return reduxedStore.fetchAndInsertByName(userName)
+      const user = await TwitterAPI.getSingleUserByName(userName).catch(err => {
+        if (err instanceof Response) {
+          console.error(err)
+        }
+        return null
+      })
+      if (user) {
+        reduxedStore.insertUserIntoStore(user)
+      }
+      return user
     }
   }
   function markOutline(elem: Element | null): void {
@@ -220,23 +224,24 @@ namespace MirrorBlock.Mobile {
   function detect(rootElem: Document | HTMLElement): void {
     detectOnTweetLinks(rootElem)
     detectOnUserCell(rootElem)
+    detectProfile()
   }
   export async function initialize() {
     const reactRoot = document.getElementById('react-root')
     if (!reactRoot) {
       return
     }
-    await injectScript('scripts/twitter-inject.js')
+    await MirrorBlock.Utils.injectScript('scripts/twitter-inject.js')
     new MutationObserver(mutations => {
-      for (const elem of getAddedElementsFromMutations(mutations)) {
-        detectProfile()
+      for (const elem of MirrorBlock.Utils.getAddedElementsFromMutations(
+        mutations
+      )) {
         detect(elem)
       }
     }).observe(reactRoot, {
       subtree: true,
       childList: true,
     })
-    detectProfile()
     detect(document)
   }
 }
