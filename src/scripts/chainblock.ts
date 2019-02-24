@@ -217,7 +217,7 @@ namespace MirrorBlock.ChainMirrorBlock {
     }
   }
 
-  function checkLogin(): boolean {
+  async function checkLogin(): Promise<boolean> {
     // legacy(jquery-based) desktop site
     if (document.body.classList.contains('logged-in')) {
       return true
@@ -227,19 +227,16 @@ namespace MirrorBlock.ChainMirrorBlock {
     }
     // react-based mobile(responsive) site
     // const isMobile = document.getElementById('react-root') !== null
-    const loggedInUserLink =
-      document.querySelector('[data-testid="loggedInUserLink"]') !== null
-    if (loggedInUserLink) {
-      return true
-    }
-    return false
+    const myself = await TwitterAPI.getMyself().catch(() => null)
+    return myself !== null
   }
 
   export async function startChainBlock(
     targetUserName: string,
     followType: FollowType
   ) {
-    if (!checkLogin()) {
+    const isLoggedIn = await checkLogin()
+    if (!isLoggedIn) {
       window.alert('로그인을 해주세요')
       return
     }
