@@ -2,6 +2,7 @@ declare function cloneInto<T>(detail: T, view: Window | null): T
 const userNamePattern = /^@[0-9a-z_]{1,15}$/i
 namespace MirrorBlock.Mobile {
   class ReduxedStore {
+    // 파이어폭스에서 CustomEvent의 detail 개체 전달용
     private cloneDetail<T>(detail: T): T {
       if (typeof detail !== 'object') {
         return detail
@@ -105,173 +106,180 @@ namespace MirrorBlock.Mobile {
     const matches = /^\/([0-9a-z_]{1,15})/i.exec(pathname)
     return matches ? matches[1] : null
   }
-  const tweetLinkObserver = new IntersectionObserver(
-    async (entries, observer) => {
-      const userMap = new Map<string, TwitterUser>()
-      const visibleEntries = entries.filter(e => e.isIntersecting)
-      for (const entry of visibleEntries) {
-        const link = entry.target as HTMLAnchorElement
-        observer.unobserve(link)
-        const userName = getUserNameFromTweetUrl(link)
-        if (!userName) {
-          continue
-        }
-        let user = userMap.get(userName) || null
-        if (!user) {
-          user = await getUserFromEitherStoreOrAPI(userName)
-        }
-        if (!user) {
-          continue
-        }
-        userMap.set(userName, user)
-        const badge = new MirrorBlock.BadgeV2.Badge()
-        if (/\/status\/\d+$/.test(link.href)) {
-          badge.showUserName(userName)
-        }
-        await MirrorBlock.Reflection.reflectBlock({
-          user,
-          indicateBlock() {
-            markOutline(link)
-            if (!MirrorBlock.BadgeV2.alreadyExists(link)) {
-              link.after(badge.element)
-            }
-          },
-          indicateReflection() {
-            badge.blockReflected()
-            reduxedStore.afterBlockUser(user!)
-          },
-        })
-      }
-    },
-    {
-      rootMargin: '10px',
-    }
-  )
-  const userCellObserver = new IntersectionObserver(
-    async (entries, observer) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) {
-          continue
-        }
-        const cell = entry.target as HTMLElement
-        observer.unobserve(cell)
-        Array.from(cell.querySelectorAll('[dir="ltr"]'))
-          .filter(ltr => userNamePattern.test(ltr.textContent || ''))
-          // tagName이 a인 경우, 자기소개 속 닉네임 멘션으로 본다.
-          .filter(ltr => ltr.tagName === 'DIV')
-          .forEach(async ltr => {
-            const userName = ltr.textContent!.replace(/^@/, '')
-            const user = await getUserFromEitherStoreOrAPI(userName)
-            if (!user) {
-              return
-            }
-            const badge = new MirrorBlock.BadgeV2.Badge()
-            MirrorBlock.Reflection.reflectBlock({
-              user,
-              indicateBlock() {
-                markOutline(cell)
-                ltr.after(badge.element)
-              },
-              indicateReflection() {
-                badge.blockReflected()
-              },
-            })
+  namespace TweetLinkDetector {
+    const tweetLinkObserver = new IntersectionObserver(
+      async (entries, observer) => {
+        const userMap = new Map<string, TwitterUser>()
+        const visibleEntries = entries.filter(e => e.isIntersecting)
+        for (const entry of visibleEntries) {
+          const link = entry.target as HTMLAnchorElement
+          observer.unobserve(link)
+          const userName = getUserNameFromTweetUrl(link)
+          if (!userName) {
+            continue
+          }
+          let user = userMap.get(userName) || null
+          if (!user) {
+            user = await getUserFromEitherStoreOrAPI(userName)
+          }
+          if (!user) {
+            continue
+          }
+          userMap.set(userName, user)
+          const badge = new MirrorBlock.BadgeV2.Badge()
+          if (/\/status\/\d+$/.test(link.href)) {
+            badge.showUserName(userName)
+          }
+          await MirrorBlock.Reflection.reflectBlock({
+            user,
+            indicateBlock() {
+              markOutline(link)
+              if (!MirrorBlock.BadgeV2.alreadyExists(link)) {
+                link.after(badge.element)
+              }
+            },
+            indicateReflection() {
+              badge.blockReflected()
+              reduxedStore.afterBlockUser(user!)
+            },
           })
+        }
+      },
+      {
+        rootMargin: '10px',
       }
-    },
-    {
-      rootMargin: '10px',
-    }
-  )
-  function findLinks(tweetElem: HTMLElement): HTMLAnchorElement[] {
-    const result: HTMLAnchorElement[] = []
-    const internalLinks = Array.from(
-      // 트윗 내 링크만
-      tweetElem.querySelectorAll<HTMLAnchorElement>(
-        '#react-root [dir="auto"] a[href^="/"]'
+    )
+    function findLinks(tweetElem: HTMLElement): HTMLAnchorElement[] {
+      const result: HTMLAnchorElement[] = []
+      const internalLinks = Array.from(
+        // 트윗 내 링크만
+        tweetElem.querySelectorAll<HTMLAnchorElement>(
+          '#react-root [dir="auto"] a[href^="/"]'
+        )
       )
-    )
-    for (const link of internalLinks) {
-      const { pathname, textContent } = link
-      if (/^\/[0-9a-z_]{1,15}\/status\/\d+/.test(pathname)) {
-        result.push(link)
-        continue
+      for (const link of internalLinks) {
+        const { pathname, textContent } = link
+        if (/^\/[0-9a-z_]{1,15}\/status\/\d+/.test(pathname)) {
+          result.push(link)
+          continue
+        }
+        if (textContent && userNamePattern.test(textContent)) {
+          result.push(link)
+          continue
+        }
       }
-      if (textContent && userNamePattern.test(textContent)) {
-        result.push(link)
-        continue
+      return result
+    }
+    export function detectOnTweetLinks(rootElem: Document | HTMLElement): void {
+      const tweetElems = rootElem.querySelectorAll<HTMLElement>(
+        '[data-testid="tweet"], [data-testid="tweetDetail"]'
+      )
+      const filteredTweetElems = MirrorBlock.Utils.filterElements(tweetElems)
+      for (const tweet of filteredTweetElems) {
+        for (const link of findLinks(tweet)) {
+          tweetLinkObserver.observe(link)
+        }
       }
     }
-    return result
   }
-  async function detectProfile(rootElem: Document | HTMLElement) {
-    const helpLinks = rootElem.querySelectorAll<HTMLElement>(
-      'a[href="https://support.twitter.com/articles/20172060"]'
-    )
-    const filteredElems = MirrorBlock.Utils.filterElements(helpLinks)
-    if (filteredElems.length <= 0) {
-      return
-    }
-    const helpLink = filteredElems[0]
-    const userName = getUserNameFromTweetUrl(location)
-    if (!userName) {
-      return
-    }
-    const user = await getUserFromEitherStoreOrAPI(userName)
-    if (!user) {
-      return
-    }
-    const badge = new MirrorBlock.BadgeV2.Badge()
-    MirrorBlock.Reflection.reflectBlock({
-      user,
-      indicateBlock() {
-        helpLink.parentElement!.appendChild(badge.element)
+  namespace UserCellDetector {
+    const userCellObserver = new IntersectionObserver(
+      async (entries, observer) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) {
+            continue
+          }
+          const cell = entry.target as HTMLElement
+          observer.unobserve(cell)
+          Array.from(cell.querySelectorAll('[dir="ltr"]'))
+            .filter(ltr => userNamePattern.test(ltr.textContent || ''))
+            // tagName이 a인 경우, 자기소개 속 닉네임 멘션으로 본다.
+            .filter(ltr => ltr.tagName === 'DIV')
+            .forEach(async ltr => {
+              const userName = ltr.textContent!.replace(/^@/, '')
+              const user = await getUserFromEitherStoreOrAPI(userName)
+              if (!user) {
+                return
+              }
+              const badge = new MirrorBlock.BadgeV2.Badge()
+              MirrorBlock.Reflection.reflectBlock({
+                user,
+                indicateBlock() {
+                  markOutline(cell)
+                  ltr.after(badge.element)
+                },
+                indicateReflection() {
+                  badge.blockReflected()
+                },
+              })
+            })
+        }
       },
-      indicateReflection() {
-        badge.blockReflected()
-        reduxedStore.afterBlockUser(user)
-      },
-    })
-  }
-  function detectOnTweetLinks(rootElem: Document | HTMLElement): void {
-    const tweetElems = rootElem.querySelectorAll<HTMLElement>(
-      '[data-testid="tweet"], [data-testid="tweetDetail"]'
+      {
+        rootMargin: '10px',
+      }
     )
-    const filteredTweetElems = MirrorBlock.Utils.filterElements(tweetElems)
-    for (const tweet of filteredTweetElems) {
-      for (const link of findLinks(tweet)) {
-        tweetLinkObserver.observe(link)
+    export function detectOnUserCell(rootElem: Document | HTMLElement): void {
+      const userCellElems = Array.from(
+        rootElem.querySelectorAll<HTMLElement>('[data-testid="UserCell"]')
+      )
+      const isUserCell = (e: HTMLElement) =>
+        e.matches('[data-testid="UserCell"]')
+      const onTweetDetailHeader = (e: HTMLElement) =>
+        e.matches('[data-testid="tweetDetail"] [data-testid="UserCell"]')
+      if (rootElem instanceof HTMLElement && isUserCell(rootElem)) {
+        userCellElems.push(rootElem)
+      }
+      // UserCell이 나중에 로딩된 경우,
+      // (UserCell이 자식요소로 들어간 요소가 아닌) UserCell 자체가 들어온다.
+      const filteredUserCellElems = MirrorBlock.Utils.filterElements(
+        userCellElems
+      )
+      for (const cell of filteredUserCellElems) {
+        // 트윗 헤더(사용자이름)부분에 들어간 거 말고*
+        // 트윗 내용에 들어있는 거만
+        // (*: 날 차단하면 트윗이 보일 수 없기 때문)
+        if (!onTweetDetailHeader(cell)) {
+          userCellObserver.observe(cell)
+        }
       }
     }
   }
-  function detectOnUserCell(rootElem: Document | HTMLElement): void {
-    const userCellElems = Array.from(
-      rootElem.querySelectorAll<HTMLElement>('[data-testid="UserCell"]')
-    )
-    const isUserCell = (e: HTMLElement) => e.matches('[data-testid="UserCell"]')
-    const onTweetDetailHeader = (e: HTMLElement) =>
-      e.matches('[data-testid="tweetDetail"] [data-testid="UserCell"]')
-    if (rootElem instanceof HTMLElement && isUserCell(rootElem)) {
-      userCellElems.push(rootElem)
-    }
-    // UserCell이 나중에 로딩된 경우,
-    // (UserCell이 자식요소로 들어간 요소가 아닌) UserCell 자체가 들어온다.
-    const filteredUserCellElems = MirrorBlock.Utils.filterElements(
-      userCellElems
-    )
-    for (const cell of filteredUserCellElems) {
-      // 트윗 헤더(사용자이름)부분에 들어간 거 말고*
-      // 트윗 내용에 들어있는 거만
-      // (*: 날 차단하면 트윗이 보일 수 없기 때문)
-      if (!onTweetDetailHeader(cell)) {
-        userCellObserver.observe(cell)
+  namespace ProfileDetector {
+    export async function detectProfile(rootElem: Document | HTMLElement) {
+      const helpLinks = rootElem.querySelectorAll<HTMLElement>(
+        'a[href="https://support.twitter.com/articles/20172060"]'
+      )
+      const filteredElems = MirrorBlock.Utils.filterElements(helpLinks)
+      if (filteredElems.length <= 0) {
+        return
       }
+      const helpLink = filteredElems[0]
+      const userName = getUserNameFromTweetUrl(location)
+      if (!userName) {
+        return
+      }
+      const user = await getUserFromEitherStoreOrAPI(userName)
+      if (!user) {
+        return
+      }
+      const badge = new MirrorBlock.BadgeV2.Badge()
+      MirrorBlock.Reflection.reflectBlock({
+        user,
+        indicateBlock() {
+          helpLink.parentElement!.appendChild(badge.element)
+        },
+        indicateReflection() {
+          badge.blockReflected()
+          reduxedStore.afterBlockUser(user)
+        },
+      })
     }
   }
   function detect(rootElem: Document | HTMLElement): void {
-    detectOnTweetLinks(rootElem)
-    detectOnUserCell(rootElem)
-    detectProfile(rootElem)
+    TweetLinkDetector.detectOnTweetLinks(rootElem)
+    UserCellDetector.detectOnUserCell(rootElem)
+    ProfileDetector.detectProfile(rootElem)
   }
   export async function initialize() {
     const reactRoot = document.getElementById('react-root')
