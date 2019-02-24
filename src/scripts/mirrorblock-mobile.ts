@@ -12,10 +12,10 @@ namespace MirrorBlock.Mobile {
         return detail
       }
     }
-    private async triggerPageEvent<T>(
+    private async triggerPageEvent(
       eventName: string,
       eventDetail?: object
-    ): Promise<T> {
+    ): Promise<any> {
       const nonce = Math.random()
       const detail = this.cloneDetail(
         Object.assign({}, eventDetail, {
@@ -41,30 +41,44 @@ namespace MirrorBlock.Mobile {
         document.dispatchEvent(requestEvent)
       })
     }
-    public async getWholeState(): Promise<any> {
-      // for debugging
-      return this.triggerPageEvent('getWholeState')
-    }
     public async getUserByName(userName: string): Promise<TwitterUser | null> {
-      const result = await this.triggerPageEvent<TwitterUser>('getUserByName', {
+      const result = await this.triggerPageEvent('getUserByName', {
         userName,
       })
-      return result || null
+      if (MirrorBlock.Utils.isTwitterUser(result)) {
+        return result
+      } else {
+        return null
+      }
     }
     public async insertUserIntoStore(user: TwitterUser): Promise<void> {
-      this.triggerPageEvent('inserUserIntoStore', {
+      this.triggerPageEvent('insertUserIntoStore', {
+        user,
+      })
+    }
+    public async blockUser(user: TwitterUser): Promise<void> {
+      this.triggerPageEvent('blockUser', {
         user,
       })
     }
   }
   const reduxedStore = new ReduxedStore()
-  async function getUserByName(userName: string): Promise<TwitterUser | null> {
+  // API호출 실패한 사용자이름을 저장하여 API호출을 반복하지 않도록 한다.
+  // (예: 지워지거나 정지걸린 계정)
+  const failedUserNames = new Set<string>()
+  async function getUserFromEitherStoreOrAPI(
+    userName: string
+  ): Promise<TwitterUser | null> {
+    if (failedUserNames.has(userName)) {
+      return null
+    }
     const userFromStore = await reduxedStore.getUserByName(userName)
     if (userFromStore) {
       return userFromStore
     } else {
       console.debug('request api "@%s"', userName)
       const user = await TwitterAPI.getSingleUserByName(userName).catch(err => {
+        failedUserNames.add(userName)
         if (err instanceof Response) {
           console.error(err)
         }
@@ -90,26 +104,29 @@ namespace MirrorBlock.Mobile {
   }
   const tweetLinkObserver = new IntersectionObserver(
     async (entries, observer) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) {
-          continue
-        }
-        const link = entry.target
+      const userMap = new Map<string, TwitterUser>()
+      const visibleEntries = entries.filter(e => e.isIntersecting)
+      for (const entry of visibleEntries) {
+        const link = entry.target as HTMLAnchorElement
         observer.unobserve(link)
-        if (!(link instanceof HTMLAnchorElement)) {
-          continue
-        }
         const tweetAuthorName = getUserNameFromTweetUrl(link)
         if (!tweetAuthorName) {
           continue
         }
-        const tweetAuthor = await getUserByName(tweetAuthorName)
-        const badge = new MirrorBlock.BadgeV2.Badge(tweetAuthorName)
+        let tweetAuthor = userMap.get(tweetAuthorName) || null
+        if (!tweetAuthor) {
+          tweetAuthor = await getUserFromEitherStoreOrAPI(tweetAuthorName)
+        }
+        if (!tweetAuthor) {
+          continue
+        }
+        userMap.set(tweetAuthorName, tweetAuthor)
+        const badge = new MirrorBlock.BadgeV2.Badge()
         if (/\/status\/\d+$/.test(link.href)) {
-          badge.showUserName()
+          badge.showUserName(tweetAuthorName)
         }
         await MirrorBlock.Reflection.reflectBlock({
-          user: tweetAuthor!,
+          user: tweetAuthor,
           indicateBlock() {
             markOutline(link)
             if (!MirrorBlock.BadgeV2.alreadyExists(link)) {
@@ -140,7 +157,7 @@ namespace MirrorBlock.Mobile {
           .filter(ltr => ltr.tagName === 'DIV')
           .forEach(async ltr => {
             const userName = ltr.textContent!.replace(/^@/, '')
-            const user = await getUserByName(userName)
+            const user = await getUserFromEitherStoreOrAPI(userName)
             if (!user) {
               return
             }
@@ -157,12 +174,18 @@ namespace MirrorBlock.Mobile {
             })
           })
       }
+    },
+    {
+      rootMargin: '10px',
     }
   )
   function findLinks(tweetElem: HTMLElement): HTMLAnchorElement[] {
     const result: HTMLAnchorElement[] = []
     const internalLinks = Array.from(
-      tweetElem.querySelectorAll<HTMLAnchorElement>('a[href^="/"]')
+      // 트윗 내 링크만
+      tweetElem.querySelectorAll<HTMLAnchorElement>(
+        '#react-root [dir="auto"] a[href^="/"]'
+      )
     )
     for (const link of internalLinks) {
       const { pathname, textContent } = link
@@ -177,29 +200,40 @@ namespace MirrorBlock.Mobile {
     }
     return result
   }
-  async function detectProfile() {
-    const helpLink = document.querySelector(
+  async function detectProfile(rootElem: Document | HTMLElement) {
+    const helpLinks = rootElem.querySelectorAll<HTMLElement>(
       'a[href="https://support.twitter.com/articles/20172060"]'
     )
-    if (!helpLink) {
+    const filteredElems = MirrorBlock.Utils.filterElements(helpLinks)
+    if (filteredElems.length <= 0) {
       return
     }
+    const helpLink = filteredElems[0]
     const userName = getUserNameFromTweetUrl(location)
     if (!userName) {
       return
     }
-    const user = await getUserByName(userName)
+    const user = await getUserFromEitherStoreOrAPI(userName)
     if (!user) {
       return
     }
     const badge = new MirrorBlock.BadgeV2.Badge()
+    const userNameBelowProfileImage = Array.from(
+      rootElem.querySelectorAll('[dir="ltr"]')
+    )
+      .filter(el => (el.textContent || '').startsWith(`@${user.screen_name}`))
+      .pop()
     MirrorBlock.Reflection.reflectBlock({
       user,
       indicateBlock() {
         helpLink.parentElement!.appendChild(badge.element)
+        if (userNameBelowProfileImage) {
+          markOutline(userNameBelowProfileImage)
+        }
       },
       indicateReflection() {
         badge.blockReflected()
+        reduxedStore.blockUser(user)
       },
     })
   }
@@ -219,6 +253,8 @@ namespace MirrorBlock.Mobile {
       rootElem.querySelectorAll<HTMLElement>('[data-testid="UserCell"]')
     )
     const isUserCell = (e: HTMLElement) => e.matches('[data-testid="UserCell"]')
+    const onTweetDetailHeader = (e: HTMLElement) =>
+      e.matches('[data-testid="tweetDetail"] [data-testid="UserCell"]')
     if (rootElem instanceof HTMLElement && isUserCell(rootElem)) {
       userCellElems.push(rootElem)
     }
@@ -228,19 +264,25 @@ namespace MirrorBlock.Mobile {
       userCellElems
     )
     for (const cell of filteredUserCellElems) {
-      userCellObserver.observe(cell)
+      // 트윗 헤더(사용자이름)부분에 들어간 거 말고*
+      // 트윗 내용에 들어있는 거만
+      // (*: 날 차단하면 트윗이 보일 수 없기 때문)
+      if (!onTweetDetailHeader(cell)) {
+        userCellObserver.observe(cell)
+      }
     }
   }
   function detect(rootElem: Document | HTMLElement): void {
     detectOnTweetLinks(rootElem)
     detectOnUserCell(rootElem)
-    detectProfile()
+    detectProfile(rootElem)
   }
   export async function initialize() {
     const reactRoot = document.getElementById('react-root')
     if (!reactRoot) {
       return
     }
+    await MirrorBlock.Utils.injectScript('vendor/uuid.js')
     await MirrorBlock.Utils.injectScript('scripts/twitter-inject.js')
     new MutationObserver(mutations => {
       for (const elem of MirrorBlock.Utils.getAddedElementsFromMutations(

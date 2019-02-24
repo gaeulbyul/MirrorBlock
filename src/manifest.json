@@ -74,7 +74,8 @@
   "web_accessible_resources": [
     "styles/mob-badge.css",
     "scripts/tweetdeck-inject.js",
-    "scripts/twitter-inject.js"
+    "scripts/twitter-inject.js",
+    "vendor/uuid.js"
   ],
 
   "browser_action": {

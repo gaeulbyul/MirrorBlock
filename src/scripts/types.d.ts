@@ -19,6 +19,12 @@ interface TwitterUser {
   description: string
 }
 
+interface IncompleteTwitterUser {
+  id_str: string
+  screen_name: string
+  name: string
+}
+
 interface FollowsListResponse {
   next_cursor_str: string
   users: TwitterUser[]
@@ -105,6 +111,7 @@ interface MirrorBlockOption {
   enableBlockReflection: boolean
   blockMutedUser: boolean
   alwaysImmediatelyBlockMode: boolean
+  noDelay: boolean
 }
 
 // r.i.c
@@ -124,3 +131,7 @@ declare function requestIdleCallback(
 ): RequestIdleCallbackHandle
 declare function cancelIdleCallback(handle: RequestIdleCallbackHandle): void
 // .end
+
+declare namespace uuid {
+  function v1(): string
+}

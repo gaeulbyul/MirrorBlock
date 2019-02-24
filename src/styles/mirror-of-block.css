@@ -24,6 +24,12 @@
 
 .mob-enable-outline
   #react-root
+  div[dir='ltr'][data-mirrorblock-blocks-you='1'] {
+  outline: 2px solid crimson;
+}
+
+.mob-enable-outline
+  #react-root
   [data-testid='tweet']
   [data-mirrorblock-blocks-you='1'],
 .mob-enable-outline

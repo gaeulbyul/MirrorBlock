@@ -14,14 +14,15 @@
     const reactRootContainer = reactRoot._reactRootContainer
     const reduxStore =
       reactRootContainer._internalRoot.current.memoizedState.element.props.store
-    addEvent('getWholeState', () => {
-      const state = reduxStore.getState()
-      return state
-    })
     addEvent('getUserByName', event => {
       const { userName } = event.detail
       const state = reduxStore.getState()
-      const users = Object.values<TwitterUser>(state.entities.users.entities)
+      // 주의:
+      // entities에 저장된 사용자 정보엔 일부 값이 빠질 수 있음
+      // 특히, blocked_by , blocking 같은 정보!
+      const users = Object.values<IncompleteTwitterUser>(
+        state.entities.users.entities
+      )
       for (const user of users) {
         if (user.screen_name === userName) {
           return user
@@ -29,7 +30,7 @@
       }
       return null
     })
-    addEvent('inserUserIntoStore', event => {
+    addEvent('insertUserIntoStore', event => {
       const { user: user_ } = event.detail
       if (typeof user_.id_str !== 'string') {
         console.error(user_)
@@ -46,6 +47,38 @@
         },
       })
     })
+    addEvent('blockUser', event => {
+      const { user } = event.detail
+      const userId = user.id_str
+      const uniqId = uuid.v1()
+      reduxStore.dispatch({
+        type: 'rweb/blockedUsers/BLOCK_REQUEST',
+        optimist: {
+          id: uniqId,
+          type: 'BEGIN',
+        },
+        meta: {
+          userId,
+        },
+      })
+    })
+    // XXX debug
+    Object.assign(window, {
+      $$store: reduxStore,
+      $$blockUser(userId: string) {
+        const uniqId = uuid.v1()
+        reduxStore.dispatch({
+          type: 'rweb/blockedUsers/BLOCK_REQUEST',
+          optimist: {
+            id: uniqId,
+            type: 'BEGIN',
+          },
+          meta: {
+            userId,
+          },
+        })
+      },
+    })
   }
   function initialize() {
     const reactRoot = document.getElementById('react-root')!
@@ -59,7 +92,7 @@
   }
   if ('requestIdleCallback' in window) {
     requestIdleCallback(initialize, {
-      timeout: 5000,
+      timeout: 3000,
     })
   } else {
     console.warn('requestIdleCallback not found. fallback')

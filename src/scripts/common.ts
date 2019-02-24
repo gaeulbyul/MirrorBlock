@@ -87,4 +87,21 @@ namespace MirrorBlock.Utils {
         return elem
       })
   }
+
+  // naive check given object is TwitterUser
+  export function isTwitterUser(obj: any): obj is TwitterUser {
+    if (typeof obj !== 'object' || obj === null) {
+      return false
+    }
+    if (typeof obj.id_str !== 'string') {
+      return false
+    }
+    if (typeof obj.screen_name !== 'string') {
+      return false
+    }
+    if (typeof obj.blocked_by !== 'boolean') {
+      return false
+    }
+    return true
+  }
 }
