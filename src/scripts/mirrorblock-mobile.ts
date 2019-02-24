@@ -222,18 +222,10 @@ namespace MirrorBlock.Mobile {
       return
     }
     const badge = new MirrorBlock.BadgeV2.Badge()
-    const userNameBelowProfileImage = Array.from(
-      rootElem.querySelectorAll('[dir="ltr"]')
-    )
-      .filter(el => (el.textContent || '').startsWith(`@${user.screen_name}`))
-      .pop()
     MirrorBlock.Reflection.reflectBlock({
       user,
       indicateBlock() {
         helpLink.parentElement!.appendChild(badge.element)
-        if (userNameBelowProfileImage) {
-          markOutline(userNameBelowProfileImage)
-        }
       },
       indicateReflection() {
         badge.blockReflected()
