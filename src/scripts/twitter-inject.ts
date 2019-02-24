@@ -47,7 +47,7 @@
         },
       })
     })
-    addEvent('blockUser', event => {
+    addEvent('afterBlockUser', event => {
       const { user } = event.detail
       const userId = user.id_str
       const uniqId = uuid.v1()
@@ -65,19 +65,6 @@
     // XXX debug
     Object.assign(window, {
       $$store: reduxStore,
-      $$blockUser(userId: string) {
-        const uniqId = uuid.v1()
-        reduxStore.dispatch({
-          type: 'rweb/blockedUsers/BLOCK_REQUEST',
-          optimist: {
-            id: uniqId,
-            type: 'BEGIN',
-          },
-          meta: {
-            userId,
-          },
-        })
-      },
     })
   }
   function initialize() {

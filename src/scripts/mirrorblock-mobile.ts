@@ -56,10 +56,13 @@ namespace MirrorBlock.Mobile {
         user,
       })
     }
-    public async blockUser(user: TwitterUser): Promise<void> {
-      this.triggerPageEvent('blockUser', {
+    public async afterBlockUser(user: TwitterUser): Promise<void> {
+      this.triggerPageEvent('afterBlockUser', {
         user,
       })
+      const clonedUser = Object.assign({}, user)
+      clonedUser.blocking = true
+      this.insertUserIntoStore(clonedUser)
     }
   }
   const reduxedStore = new ReduxedStore()
@@ -109,24 +112,24 @@ namespace MirrorBlock.Mobile {
       for (const entry of visibleEntries) {
         const link = entry.target as HTMLAnchorElement
         observer.unobserve(link)
-        const tweetAuthorName = getUserNameFromTweetUrl(link)
-        if (!tweetAuthorName) {
+        const userName = getUserNameFromTweetUrl(link)
+        if (!userName) {
           continue
         }
-        let tweetAuthor = userMap.get(tweetAuthorName) || null
-        if (!tweetAuthor) {
-          tweetAuthor = await getUserFromEitherStoreOrAPI(tweetAuthorName)
+        let user = userMap.get(userName) || null
+        if (!user) {
+          user = await getUserFromEitherStoreOrAPI(userName)
         }
-        if (!tweetAuthor) {
+        if (!user) {
           continue
         }
-        userMap.set(tweetAuthorName, tweetAuthor)
+        userMap.set(userName, user)
         const badge = new MirrorBlock.BadgeV2.Badge()
         if (/\/status\/\d+$/.test(link.href)) {
-          badge.showUserName(tweetAuthorName)
+          badge.showUserName(userName)
         }
         await MirrorBlock.Reflection.reflectBlock({
-          user: tweetAuthor,
+          user,
           indicateBlock() {
             markOutline(link)
             if (!MirrorBlock.BadgeV2.alreadyExists(link)) {
@@ -135,6 +138,7 @@ namespace MirrorBlock.Mobile {
           },
           indicateReflection() {
             badge.blockReflected()
+            reduxedStore.afterBlockUser(user!)
           },
         })
       }
@@ -233,7 +237,7 @@ namespace MirrorBlock.Mobile {
       },
       indicateReflection() {
         badge.blockReflected()
-        reduxedStore.blockUser(user)
+        reduxedStore.afterBlockUser(user)
       },
     })
   }
