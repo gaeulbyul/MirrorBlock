@@ -131,6 +131,9 @@ namespace MirrorBlock.ChainMirrorBlock {
         const total = getTotalFollows(targetUser, followType)
         this.ui.initProgress(total)
         let delay = 500 + Math.ceil(total / 50)
+        if (this.options.noDelay) {
+          delay = 10
+        }
         const scraper = TwitterAPI.getAllFollows(targetUser, followType, {
           delay,
         })
@@ -149,7 +152,6 @@ namespace MirrorBlock.ChainMirrorBlock {
           }
           if (rateLimited) {
             rateLimited = false
-            delay += 50
             this.ui.rateLimitResetted()
           }
           ++this.progress.scraped

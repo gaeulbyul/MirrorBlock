@@ -4,6 +4,7 @@ namespace MirrorBlock.Options {
     enableBlockReflection: false,
     blockMutedUser: false,
     alwaysImmediatelyBlockMode: false,
+    noDelay: false,
   })
   export async function save(newOption: MirrorBlockOption) {
     const option = Object.assign<
