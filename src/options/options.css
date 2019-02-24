@@ -36,6 +36,10 @@ kbd {
   margin-top: 1em;
 }
 
+.field {
+  cursor: pointer;
+}
+
 .field input {
   user-select: none;
 }
