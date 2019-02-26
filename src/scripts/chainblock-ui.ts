@@ -47,17 +47,6 @@ const CHAINBLOCK_UI_HTML = `
   </div>
 `
 
-function checkProfileForChainblock(user: TwitterUser): boolean {
-  const bio = user.description
-  if (/체인\s?블락[x×]/i.test(bio)) {
-    return false
-  }
-  if (/체인[.,/·],\s*미러블락/.test(bio)) {
-    return true
-  }
-  return /체인블락/.test(bio)
-}
-
 function getLimitResetTime(limit: Limit): string {
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
   const formatter = new Intl.DateTimeFormat('ko-KR', {
@@ -88,13 +77,6 @@ class UserList {
       userPrefix = '[스킵]'
     }
     let tooltip = `${userPrefix} @${user.screen_name} (${user.name})`
-    const maybeChainblock = checkProfileForChainblock(user)
-    if (maybeChainblock) {
-      // 체인 에모지
-      userPrefix += '(\u{26d3}\u{fe0f})'
-      tooltip +=
-        '\n(※ \u{26d3}\u{fe0f}: 프로필을 보아 체인블락을 사용하는 것으로 추정됩니다.)'
-    }
     tooltip += `\n프로필:\n${user.description}`
     const ul = this.rootElem.querySelector('ul')!
     const item = document.createElement('li')
