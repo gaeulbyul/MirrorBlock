@@ -159,7 +159,7 @@ namespace MirrorBlock.Mobile {
       )
       for (const link of internalLinks) {
         const { pathname, textContent } = link
-        if (/^\/[0-9a-z_]{1,15}\/status\/\d+/.test(pathname)) {
+        if (/^\/[0-9a-z_]{1,15}\/status\/\d+/i.test(pathname)) {
           result.push(link)
           continue
         }
