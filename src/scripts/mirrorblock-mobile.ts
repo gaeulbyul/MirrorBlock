@@ -98,6 +98,7 @@ namespace MirrorBlock.Mobile {
   const TI_TWEET = '[data-testid="tweet"]'
   const TI_TWEET_DETAIL = '[data-testid="tweetDetail"]'
   const TI_USER_CELL = '[data-testid="UserCell"]'
+  const TI_CONVERSATION = '[data-testid="conversation"]'
   function markOutline(elem: Element | null): void {
     if (elem) {
       elem.setAttribute('data-mirrorblock-blocks-you', '1')
@@ -248,6 +249,51 @@ namespace MirrorBlock.Mobile {
       }
     }
   }
+  namespace DMUserListDetector {
+    const dmUserItemObserver = new IntersectionObserver(
+      async (entries, observer) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) {
+            continue
+          }
+          const cell = entry.target as HTMLElement
+          observer.unobserve(cell)
+          Array.from(cell.querySelectorAll('[dir="ltr"]'))
+            .filter(ltr => userNamePattern.test(ltr.textContent || ''))
+            .forEach(async ltr => {
+              const userName = ltr.textContent!.replace(/^@/, '')
+              const user = await getUserFromEitherStoreOrAPI(userName)
+              if (!user) {
+                return
+              }
+              const badge = new MirrorBlock.BadgeV2.Badge()
+              MirrorBlock.Reflection.reflectBlock({
+                user,
+                indicateBlock() {
+                  markOutline(cell)
+                  badge.attachAfter(ltr)
+                },
+                indicateReflection() {
+                  badge.blockReflected()
+                },
+              })
+            })
+        }
+      },
+      {
+        rootMargin: '10px',
+      }
+    )
+    export function detectOnDMUserItem(rootElem: Document | HTMLElement): void {
+      const dmUserItems = Array.from(
+        rootElem.querySelectorAll<HTMLElement>(TI_CONVERSATION)
+      )
+      const filteredDmUserItems = MirrorBlock.Utils.filterElements(dmUserItems)
+      for (const cell of filteredDmUserItems) {
+        dmUserItemObserver.observe(cell)
+      }
+    }
+  }
   namespace ProfileDetector {
     export async function detectProfile(rootElem: Document | HTMLElement) {
       const helpLinks = rootElem.querySelectorAll<HTMLElement>(
@@ -283,6 +329,7 @@ namespace MirrorBlock.Mobile {
     TweetLinkDetector.detectOnTweetLinks(rootElem)
     UserCellDetector.detectOnUserCell(rootElem)
     ProfileDetector.detectProfile(rootElem)
+    DMUserListDetector.detectOnDMUserItem(rootElem)
   }
   export async function initialize() {
     const reactRoot = document.getElementById('react-root')
