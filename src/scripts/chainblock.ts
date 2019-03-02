@@ -130,10 +130,7 @@ namespace MirrorBlock.ChainMirrorBlock {
         }
         const total = getTotalFollows(targetUser, followType)
         this.ui.initProgress(total)
-        let delay = 500 + Math.ceil(total / 50)
-        if (this.options.noDelay) {
-          delay = 10
-        }
+        const delay = 950
         const scraper = TwitterAPI.getAllFollows(targetUser, followType, {
           delay,
         })
@@ -270,8 +267,14 @@ namespace MirrorBlock.ChainMirrorBlock {
     const options = await MirrorBlock.Options.load()
     const followTypeKor =
       followType === FollowType.followers ? '팔로워' : '팔로잉'
-    const confirmMessage = `@${targetUserName}님의 ${followTypeKor} 목록에서 체인맞블락을 실행하시겠습니까?`
-    const confirmed = window.confirm(confirmMessage)
+    let confirmed = window.confirm(
+      `@${targetUserName}님의 ${followTypeKor} 목록에서 체인맞블락을 실행하시겠습니까?`
+    )
+    if (followsCount > 200000) {
+      confirmed = window.confirm(
+        `주의!: 팔로잉/팔로워가 너무 많으면 체인맞블락 도중 리밋 등 계정 사용에 제한에 걸릴 수 있습니다.${''}정말로 진행하시겠습니까?`
+      )
+    }
     if (confirmed) {
       const chainblocker = new ChainMirrorBlock(options)
       chainblocker.start(targetUser, followType)
