@@ -3,6 +3,9 @@
   function toggleNightMode(isDarkMode: boolean): void {
     document.documentElement.classList.toggle('mob-nightmode', isDarkMode)
   }
+  function changeBadgeTheme(): void {
+    MirrorBlock.BadgeV2.applyThemeChange()
+  }
 
   if (document.getElementById('react-root')) {
     document.documentElement.classList.add('mob-mobile')
@@ -17,6 +20,7 @@
         const themeColor = target.content.toUpperCase()
         const nightMode = themeColor !== '#FFFFFF'
         toggleNightMode(nightMode)
+        changeBadgeTheme()
       })
 
       nightModeObserver.observe(colorThemeTag, {

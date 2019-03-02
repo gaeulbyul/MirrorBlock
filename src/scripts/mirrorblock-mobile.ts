@@ -135,7 +135,7 @@ namespace MirrorBlock.Mobile {
             indicateBlock() {
               markOutline(link)
               if (!MirrorBlock.BadgeV2.alreadyExists(link)) {
-                link.after(badge.element)
+                badge.attachAfter(link)
               }
             },
             indicateReflection() {
@@ -206,7 +206,7 @@ namespace MirrorBlock.Mobile {
                 user,
                 indicateBlock() {
                   markOutline(cell)
-                  ltr.after(badge.element)
+                  badge.attachAfter(ltr)
                 },
                 indicateReflection() {
                   badge.blockReflected()
@@ -267,7 +267,7 @@ namespace MirrorBlock.Mobile {
       MirrorBlock.Reflection.reflectBlock({
         user,
         indicateBlock() {
-          helpLink.parentElement!.appendChild(badge.element)
+          badge.appendTo(helpLink.parentElement!)
         },
         indicateReflection() {
           badge.blockReflected()

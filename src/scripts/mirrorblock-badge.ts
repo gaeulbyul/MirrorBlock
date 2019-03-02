@@ -6,6 +6,9 @@ namespace MirrorBlock.BadgeV2 {
       const badgeCss = browser.runtime.getURL('styles/mob-badge.css')
       this.baseElem.className = 'mob-badge mob-badge-v2'
       this.baseElem.style.whiteSpace = 'initial'
+      this.baseElem.addEventListener('MirrorBlock:BadgeThemeChange', () => {
+        this.workaroundHostContext()
+      })
       this.shadowRoot.innerHTML = `\
 <span class="badge-wrapper">
   <span class="badge blocks-you" title="나를 차단함: 이 사용자가 나를 차단하고 있습니다.">
@@ -17,9 +20,6 @@ namespace MirrorBlock.BadgeV2 {
   </span>
 </span>
 <link rel="stylesheet" href="${badgeCss}" />`
-    }
-    public get element() {
-      return this.baseElem
     }
     public showUserName(name: string) {
       const userNameElem = this.shadowRoot.querySelector<HTMLElement>(
@@ -33,6 +33,31 @@ namespace MirrorBlock.BadgeV2 {
         '.block-reflected[hidden]'
       )!
       brBadge.hidden = false
+    }
+    public attachAfter(targetElem: Element): void {
+      targetElem.after(this.baseElem)
+      this.workaroundHostContext()
+    }
+    public appendTo(targetElem: Element): void {
+      targetElem.appendChild(this.baseElem)
+      this.workaroundHostContext()
+    }
+    /* 파이어폭스에는 현재(v66) Shadow DOM의 :host-context selector가 구현되어있지 않다.
+     * 따라서, matches를 이용하여 직접 context를 찾아 설정한다.
+     */
+    private workaroundHostContext() {
+      const baseElem = this.baseElem
+      const contexts = [
+        '#react-root',
+        '.account',
+        '.mob-nightmode',
+        '.js-user-profile-link',
+        '.ProfileHeaderCard',
+      ]
+      const matchedContexts = contexts.filter(context =>
+        baseElem.matches(`${context} .mob-badge-v2`)
+      )
+      baseElem.setAttribute('data-host-contexts', matchedContexts.join(' '))
     }
   }
   export function alreadyExists(elem: HTMLElement): boolean {
@@ -52,6 +77,13 @@ namespace MirrorBlock.BadgeV2 {
       }
     }
     return false
+  }
+  export function applyThemeChange() {
+    const badges = document.querySelectorAll('.mob-badge-v2')
+    const themeChangeEvent = new CustomEvent('MirrorBlock:BadgeThemeChange')
+    for (const badge of badges) {
+      badge.dispatchEvent(themeChangeEvent)
+    }
   }
 }
 
