@@ -156,6 +156,19 @@ namespace MirrorBlock.Mobile {
     )
     function findLinks(tweetElem: HTMLElement): HTMLAnchorElement[] {
       const result: HTMLAnchorElement[] = []
+      // 트윗에 프로필이미지가 보이면 그 트윗은 보이는 트윗이고,
+      // 보이는 트윗이면 해당 트윗 작성자가 나를 차단하지 않았다고 볼 수 있다.
+      // 주로 셀프-답글을 걸러냄
+      const profileImage = tweetElem.querySelector(
+        'a[href^="/"] img[src^="https://pbs.twimg.com/profile_images/"]'
+      )
+      let profileImageUserName: string | null = null
+      if (profileImage) {
+        const profileImageLink = profileImage.closest(
+          'a[href^="/"]'
+        ) as HTMLAnchorElement
+        profileImageUserName = getUserNameFromTweetUrl(profileImageLink)
+      }
       const internalLinks = Array.from(
         // 트윗 내 링크만
         tweetElem.querySelectorAll<HTMLAnchorElement>(
@@ -164,6 +177,10 @@ namespace MirrorBlock.Mobile {
       )
       for (const link of internalLinks) {
         const { pathname, textContent } = link
+        const linkUserName = getUserNameFromTweetUrl(link)
+        if (linkUserName === profileImageUserName) {
+          continue
+        }
         if (/^\/[0-9a-z_]{1,15}\/status\/\d+/i.test(pathname)) {
           result.push(link)
           continue
