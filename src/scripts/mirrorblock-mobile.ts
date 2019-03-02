@@ -94,6 +94,10 @@ namespace MirrorBlock.Mobile {
       return user
     }
   }
+  // data-testid 쓸 일이 많아서 만든 shortcut
+  const TI_TWEET = '[data-testid="tweet"]'
+  const TI_TWEET_DETAIL = '[data-testid="tweetDetail"]'
+  const TI_USER_CELL = '[data-testid="UserCell"]'
   function markOutline(elem: Element | null): void {
     if (elem) {
       elem.setAttribute('data-mirrorblock-blocks-you', '1')
@@ -172,7 +176,7 @@ namespace MirrorBlock.Mobile {
     }
     export function detectOnTweetLinks(rootElem: Document | HTMLElement): void {
       const tweetElems = rootElem.querySelectorAll<HTMLElement>(
-        '[data-testid="tweet"], [data-testid="tweetDetail"]'
+        `${TI_TWEET}, ${TI_TWEET_DETAIL}`
       )
       const filteredTweetElems = MirrorBlock.Utils.filterElements(tweetElems)
       for (const tweet of filteredTweetElems) {
@@ -221,17 +225,16 @@ namespace MirrorBlock.Mobile {
     )
     export function detectOnUserCell(rootElem: Document | HTMLElement): void {
       const userCellElems = Array.from(
-        rootElem.querySelectorAll<HTMLElement>('[data-testid="UserCell"]')
+        rootElem.querySelectorAll<HTMLElement>(TI_USER_CELL)
       )
-      const isUserCell = (e: HTMLElement) =>
-        e.matches('[data-testid="UserCell"]')
+      const isUserCell = (e: HTMLElement) => e.matches(TI_USER_CELL)
       const onTweetDetailHeader = (e: HTMLElement) =>
-        e.matches('[data-testid="tweetDetail"] [data-testid="UserCell"]')
+        e.matches(`${TI_TWEET_DETAIL} ${TI_USER_CELL}`)
       if (rootElem instanceof HTMLElement && isUserCell(rootElem)) {
+        // UserCell이 나중에 로딩된 경우,
+        // rootElem에 (UserCell이 자식요소로 들어간 요소가 아닌) UserCell 자체가 들어온다.
         userCellElems.push(rootElem)
       }
-      // UserCell이 나중에 로딩된 경우,
-      // (UserCell이 자식요소로 들어간 요소가 아닌) UserCell 자체가 들어온다.
       const filteredUserCellElems = MirrorBlock.Utils.filterElements(
         userCellElems
       )
