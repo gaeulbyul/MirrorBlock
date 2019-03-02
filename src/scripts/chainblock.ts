@@ -244,7 +244,7 @@ namespace MirrorBlock.ChainMirrorBlock {
       targetUserName
     ).catch(async err => {
       if (err instanceof TwitterAPI.APIError) {
-        const json = await err.response.json()
+        const json = await err.response.json().catch(() => null)
         const jsonstr = JSON.stringify(json, null, 2)
         window.alert(`트위터 서버에서 오류가 발생했습니다:\n${jsonstr}`)
       } else if (err instanceof Error) {
@@ -255,13 +255,22 @@ namespace MirrorBlock.ChainMirrorBlock {
     if (!targetUser) {
       return
     }
+    const protectedUser = targetUser.protected && !targetUser.following
+    if (protectedUser) {
+      window.alert(
+        `@${targetUserName}님은 프로텍트가 걸려있어서 팔로워 목록을 가져올 수 없습니다.`
+      )
+      return
+    }
     const followsCount = getTotalFollows(targetUser, followType)
     if (followsCount <= 0) {
       window.alert('팔로워가 0명입니다.')
       return
     }
     const options = await MirrorBlock.Options.load()
-    const confirmMessage = `@${targetUserName}님에게 체인맞블락을 실행하시겠습니까?`
+    const followTypeKor =
+      followType === FollowType.followers ? '팔로워' : '팔로잉'
+    const confirmMessage = `@${targetUserName}님의 ${followTypeKor} 목록에서 체인맞블락을 실행하시겠습니까?`
     const confirmed = window.confirm(confirmMessage)
     if (confirmed) {
       const chainblocker = new ChainMirrorBlock(options)
