@@ -15,7 +15,8 @@
     const reduxStore =
       reactRootContainer._internalRoot.current.memoizedState.element.props.store
     addEvent('getUserByName', event => {
-      const { userName } = event.detail
+      const userNameToGet = event.detail.userName as string
+      const loweredUserNameToGet = userNameToGet.toLowerCase()
       const state = reduxStore.getState()
       // 주의:
       // entities에 저장된 사용자 정보엔 일부 값이 빠질 수 있음
@@ -24,7 +25,8 @@
         state.entities.users.entities
       )
       for (const user of users) {
-        if (user.screen_name === userName) {
+        const lowered = user.screen_name.toLowerCase()
+        if (lowered === loweredUserNameToGet) {
           return user
         }
       }
