@@ -1,6 +1,6 @@
 declare function cloneInto<T>(detail: T, view: Window | null): T
-const userNamePattern = /^@[0-9a-z_]{1,15}$/i
 namespace MirrorBlock.Mobile {
+  const userNamePattern = /^@[0-9a-z_]{1,15}$/i
   class ReduxedStore {
     // 파이어폭스에서 CustomEvent의 detail 개체 전달용
     private cloneDetail<T>(detail: T): T {
@@ -156,18 +156,16 @@ namespace MirrorBlock.Mobile {
     )
     function findLinks(tweetElem: HTMLElement): HTMLAnchorElement[] {
       const result: HTMLAnchorElement[] = []
-      // 트윗에 프로필이미지가 보이면 그 트윗은 보이는 트윗이고,
-      // 보이는 트윗이면 해당 트윗 작성자가 나를 차단하지 않았다고 볼 수 있다.
-      // 주로 셀프-답글을 걸러냄
-      const profileImage = tweetElem.querySelector(
-        'a[href^="/"] img[src^="https://pbs.twimg.com/profile_images/"]'
+      // Helper.insertNameToTweetDetailRegion에 넣은 값을 바탕으로
+      // tweetDetail의 원 트윗작성자에겐 API호출을 하지 않도록 함
+      let tweetDetailAuthor = ''
+      const region = tweetElem.closest(
+        'section[role=region][data-mirrorblock-tweetdetail-author]'
       )
-      let profileImageUserName: string | null = null
-      if (profileImage) {
-        const profileImageLink = profileImage.closest(
-          'a[href^="/"]'
-        ) as HTMLAnchorElement
-        profileImageUserName = getUserNameFromTweetUrl(profileImageLink)
+      if (region) {
+        tweetDetailAuthor = region.getAttribute(
+          'data-mirrorblock-tweetdetail-author'
+        )!
       }
       const internalLinks = Array.from(
         // 트윗 내 링크만
@@ -178,7 +176,7 @@ namespace MirrorBlock.Mobile {
       for (const link of internalLinks) {
         const { pathname, textContent } = link
         const linkUserName = getUserNameFromTweetUrl(link)
-        if (linkUserName === profileImageUserName) {
+        if (linkUserName === tweetDetailAuthor) {
           continue
         }
         if (/^\/[0-9a-z_]{1,15}\/status\/\d+/i.test(pathname)) {
@@ -342,6 +340,21 @@ namespace MirrorBlock.Mobile {
       })
     }
   }
+  namespace Helper {
+    // tweetDetail에 사용자 이름을 넣는다
+    export function insertNameToTweetDetailRegion(elem: HTMLElement): void {
+      const authorLink = elem.querySelector<HTMLAnchorElement>(
+        `${TI_TWEET_DETAIL} > ${TI_USER_CELL} a[href^='/']`
+      )
+      const region = elem.closest('section[role=region]') as HTMLElement | null
+      if (authorLink && region) {
+        const name = getUserNameFromTweetUrl(authorLink)
+        if (name) {
+          region.setAttribute('data-mirrorblock-tweetdetail-author', name)
+        }
+      }
+    }
+  }
   function detect(rootElem: Document | HTMLElement): void {
     TweetLinkDetector.detectOnTweetLinks(rootElem)
     UserCellDetector.detectOnUserCell(rootElem)
@@ -359,6 +372,10 @@ namespace MirrorBlock.Mobile {
       for (const elem of MirrorBlock.Utils.getAddedElementsFromMutations(
         mutations
       )) {
+        const tweetDetail = elem.querySelector<HTMLElement>(TI_TWEET_DETAIL)
+        if (tweetDetail) {
+          Helper.insertNameToTweetDetailRegion(tweetDetail)
+        }
         detect(elem)
       }
     }).observe(reactRoot, {
