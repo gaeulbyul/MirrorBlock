@@ -107,9 +107,7 @@ namespace MirrorBlock.Mobile {
   function getUserNameFromTweetUrl(
     extractMe: HTMLAnchorElement | URL | Location
   ): string | null {
-    const pathname = extractMe.pathname
-    const matches = /^\/([0-9a-z_]{1,15})/i.exec(pathname)
-    return matches ? matches[1] : null
+    return MirrorBlock.Utils.getUserNameFromTweetUrl(extractMe)
   }
   namespace TweetLinkDetector {
     const tweetLinkObserver = new IntersectionObserver(

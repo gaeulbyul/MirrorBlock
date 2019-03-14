@@ -8,6 +8,26 @@ const enum Action {
   StopChainBlock = 'MirrorBlock/Stop',
 }
 
+const USER_NAME_BLACKLIST = Object.freeze([
+  '1',
+  'about',
+  'account',
+  'followers',
+  'followings',
+  'hashtag',
+  'home',
+  'i',
+  'lists',
+  'login',
+  'oauth',
+  'privacy',
+  'search',
+  'tos',
+  'notifications',
+  'messages',
+  'explore',
+])
+
 abstract class EventEmitter {
   protected events: EventStore = {}
   on<T>(eventName: string, handler: (t: T) => any) {
@@ -103,5 +123,42 @@ namespace MirrorBlock.Utils {
       return false
     }
     return true
+  }
+
+  export function isInNameBlacklist(name: string): boolean {
+    const lowerCasedName = name.toLowerCase()
+    return USER_NAME_BLACKLIST.includes(lowerCasedName)
+  }
+
+  export function validateTwitterUserName(userName: string): boolean {
+    const unl = userName.length
+    const userNameIsValidLength = 1 <= unl && unl <= 15
+    if (!userNameIsValidLength) {
+      return false
+    }
+    if (isInNameBlacklist(userName)) {
+      return false
+    }
+    return true
+  }
+
+  export function getUserNameFromTweetUrl(
+    extractMe: HTMLAnchorElement | URL | Location
+  ): string | null {
+    const { hostname, pathname } = extractMe
+    const supportingHostname = ['twitter.com', 'mobile.twitter.com']
+    if (!supportingHostname.includes(hostname)) {
+      return null
+    }
+    const matches = /^\/([0-9a-z_]{1,15})/i.exec(pathname)
+    if (!matches) {
+      return null
+    }
+    const name = matches[1]
+    if (validateTwitterUserName(name)) {
+      return name
+    } else {
+      return null
+    }
   }
 }

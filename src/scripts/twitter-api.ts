@@ -1,23 +1,5 @@
 namespace TwitterAPI {
   const BEARER_TOKEN = `AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA`
-  const USER_NAME_BLACKLIST = [
-    '1',
-    'about',
-    'account',
-    'followers',
-    'followings',
-    'hashtag',
-    'i',
-    'lists',
-    'login',
-    'oauth',
-    'privacy',
-    'search',
-    'tos',
-    'notifications',
-    'messages',
-    'explore',
-  ]
 
   export class APIError extends Error {
     constructor(public readonly response: Response) {
@@ -32,17 +14,8 @@ namespace TwitterAPI {
     }
   }
 
-  function validateTwitterUserName(userName: string): boolean {
-    const unl = userName.length
-    const userNameIsValidLength = 1 <= unl && unl <= 15
-    if (!userNameIsValidLength) {
-      return false
-    }
-    const lowerCasedUserName = userName.toLowerCase()
-    if (USER_NAME_BLACKLIST.includes(lowerCasedUserName)) {
-      return false
-    }
-    return true
+  export function validateTwitterUserName(userName: string): boolean {
+    return MirrorBlock.Utils.validateTwitterUserName(userName)
   }
 
   function rateLimited(resp: Response): boolean {
