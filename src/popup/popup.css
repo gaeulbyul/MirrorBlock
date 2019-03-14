@@ -46,6 +46,11 @@ hr {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+.menu-item:disabled {
+  filter: saturate(0);
+  opacity: 0.4;
+}
+
 .menu-item:hover {
   text-decoration: underline;
   background-color: crimson;

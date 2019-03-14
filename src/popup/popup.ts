@@ -2,32 +2,24 @@ function closePopup() {
   window.close()
 }
 
-function extractUserNameFromUrl(url: URL): string | null {
-  const supportingHostname = ['twitter.com', 'mobile.twitter.com']
-  if (!supportingHostname.includes(url.hostname)) {
-    return null
-  }
-  const notUserPagePattern01 = /^\/\w\w\/(?:tos|privacy)/
-  if (notUserPagePattern01.test(url.pathname)) {
-    return null
-  }
-  const pattern = /^\/([0-9a-z_]+)/i
-  const match = pattern.exec(url.pathname)
-  if (!match) {
-    return null
-  }
-  const userName = match[1]
-  return userName
-}
+type Tab = browser.tabs.Tab
 
-async function executeChainBlock(followType: FollowType) {
+async function getCurrentTab(): Promise<Tab | null> {
   const tabs = await browser.tabs.query({ active: true, currentWindow: true })
   const currentTab = tabs[0]
   if (!currentTab.url || !currentTab.id) {
+    return null
+  }
+  return currentTab
+}
+
+async function executeChainBlock(followType: FollowType) {
+  const currentTab = await getCurrentTab()
+  if (!currentTab) {
     return
   }
-  const parsedUrl = new URL(currentTab.url)
-  if (parsedUrl.hostname === 'tweetdeck.twitter.com') {
+  const url = new URL(currentTab.url!)
+  if (url.hostname === 'tweetdeck.twitter.com') {
     const message = String.raw`Mirror Block: 트윗덱에선 작동하지 않습니다. 트위터(https://twitter.com)에서 실행해주세요.`.replace(
       /'/g,
       ''
@@ -39,21 +31,21 @@ async function executeChainBlock(followType: FollowType) {
       .then(closePopup)
     return
   }
-  const userName = extractUserNameFromUrl(parsedUrl)
+  const userName = MirrorBlock.Utils.getUserNameFromTweetUrl(url)
   if (!userName) {
-    const message = String.raw`Mirror Block: 트위터(twitter.com)의 팔로잉 혹은 팔로워 페이지에서만 작동합니다.\n(예: https://twitter.com/(UserName)/followers)`.replace(
-      /'/g,
-      ''
-    )
+    const a =
+      'Mirror Block: 체인맞블락을 사용하시려면 사용자의 프로필페이지로 이동해주세요.'
+    const b = '( 예: https://twitter.com/(사용자이름) )'
+    const message = String.raw`${a}\n${b}`
     browser.tabs
-      .executeScript(currentTab.id, {
-        code: `window.alert('${message}')`,
+      .executeScript(currentTab.id!, {
+        code: `window.alert('${message.replace(/'/g, '')}')`,
       })
       .then(closePopup)
     return
   }
   browser.tabs
-    .sendMessage<MBMessage>(currentTab.id, {
+    .sendMessage<MBMessage>(currentTab.id!, {
       action: Action.StartChainBlock,
       followType,
       userName,
@@ -61,7 +53,22 @@ async function executeChainBlock(followType: FollowType) {
     .then(closePopup)
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  const currentTab = await getCurrentTab()
+  if (currentTab && currentTab.url) {
+    const currentUrl = new URL(currentTab.url!)
+    const cbButtons = document.querySelectorAll<HTMLButtonElement>(
+      'button.chain-block'
+    )
+    const supportingHostname = ['twitter.com', 'mobile.twitter.com']
+    if (supportingHostname.includes(currentUrl.hostname)) {
+      cbButtons.forEach(el => (el.disabled = false))
+    } else {
+      cbButtons.forEach(
+        el => (el.title = '체인맞블락은 트위터 내에서 사용할 수 있습니다.')
+      )
+    }
+  }
   document
     .querySelector('.menu-item.chain-block-followers')!
     .addEventListener('click', event => {
@@ -82,23 +89,22 @@ document.addEventListener('DOMContentLoaded', () => {
     })
   {
     const manifest = browser.runtime.getManifest()
-    const currentVersion = document.querySelector(
+    const currentVersion = document.querySelector<HTMLElement>(
       '.currentVersion'
-    ) as HTMLElement
+    )!
     currentVersion.textContent = `버전: ${manifest.version}`
     currentVersion.title = `Mirror Block 버전 ${
       manifest.version
     }을(를) 사용하고 있습니다.`
   }
-  MirrorBlock.Options.load().then(option => {
-    {
-      const blockReflection = document.querySelector(
-        '.blockReflection'
-      ) as HTMLElement
-      const val = option.enableBlockReflection
-      // const warningEmoji = '\u{26a0}\u{fe0f}'
-      blockReflection.classList.toggle('on', val)
-      blockReflection.textContent = `차단반사: ${val ? 'On \u2714' : 'Off'}`
-    }
-  })
+  {
+    const options = await MirrorBlock.Options.load()
+    const blockReflection = document.querySelector<HTMLElement>(
+      '.blockReflection'
+    )!
+    const val = options.enableBlockReflection
+    // const warningEmoji = '\u{26a0}\u{fe0f}'
+    blockReflection.classList.toggle('on', val)
+    blockReflection.textContent = `차단반사: ${val ? 'On \u2714' : 'Off'}`
+  }
 })
