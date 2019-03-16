@@ -35,10 +35,16 @@ namespace MirrorBlock.BadgeV2 {
       brBadge.hidden = false
     }
     public attachAfter(targetElem: Element): void {
+      if (alreadyExists(targetElem)) {
+        return
+      }
       targetElem.after(this.baseElem)
       this.workaroundHostContext()
     }
     public appendTo(targetElem: Element): void {
+      if (alreadyExists(targetElem)) {
+        return
+      }
       targetElem.appendChild(this.baseElem)
       this.workaroundHostContext()
     }
@@ -60,7 +66,7 @@ namespace MirrorBlock.BadgeV2 {
       baseElem.setAttribute('data-host-contexts', matchedContexts.join(' '))
     }
   }
-  export function alreadyExists(elem: HTMLElement): boolean {
+  function alreadyExists(elem: Element): boolean {
     if (elem.querySelector('.mob-badge')) {
       return true
     }
@@ -105,7 +111,7 @@ namespace MirrorBlock.Badge {
         badgeClasses = 'badge blocks-you'
         badgeText = '나를 차단함'
         badgeTooltip = '나를 차단함: 이 사용자가 나를 차단하고 있습니다.'
-        if (userName.length > 0) {
+        if (MirrorBlock.Utils.validateTwitterUserName(userName)) {
           badgeText += ` (@${userName})`
           badgeTooltip = `나를 차단함: @${userName}님이 나를 차단하고 있습니다.`
         }

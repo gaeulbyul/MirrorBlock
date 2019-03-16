@@ -137,9 +137,7 @@ namespace MirrorBlock.Mobile {
             user,
             indicateBlock() {
               markOutline(link)
-              if (!MirrorBlock.BadgeV2.alreadyExists(link)) {
-                badge.attachAfter(link)
-              }
+              badge.attachAfter(link)
             },
             indicateReflection() {
               badge.blockReflected()
