@@ -59,10 +59,13 @@ namespace MirrorBlock.BadgeV2 {
         '.mob-nightmode',
         '.js-user-profile-link',
         '.ProfileHeaderCard',
+        '[data-testid="tweetDetail"]',
       ]
-      const matchedContexts = contexts.filter(context =>
-        baseElem.matches(`${context} .mob-badge-v2`)
-      )
+      const matchedContexts = contexts
+        .filter(context => baseElem.matches(`${context} .mob-badge-v2`))
+        .map(context =>
+          context.replace(/\[data-testid="([^"]+?)"\]/, 'testid:$1')
+        )
       baseElem.setAttribute('data-host-contexts', matchedContexts.join(' '))
     }
   }

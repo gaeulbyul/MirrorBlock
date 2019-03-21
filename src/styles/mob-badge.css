@@ -77,3 +77,7 @@
   .badge {
   background-color: #141d26;
 }
+
+:host([data-host-contexts~='testid:tweetDetail']) .badge {
+  font-size: 16px;
+}

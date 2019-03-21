@@ -110,6 +110,19 @@ namespace MirrorBlock.Mobile {
     return MirrorBlock.Utils.getUserNameFromTweetUrl(extractMe)
   }
   namespace TweetLinkDetector {
+    function getVisibleTextFromLink(ln: Element): string | null {
+      if (!ln.matches('a[dir="ltr"][role="link"][data-focusable]')) {
+        return null
+      }
+      const { lastChild } = ln
+      if (!lastChild) {
+        return null
+      }
+      if (!(lastChild instanceof Text)) {
+        return null
+      }
+      return lastChild.textContent
+    }
     const tweetLinkObserver = new IntersectionObserver(
       async (entries, observer) => {
         const userMap = new Map<string, TwitterUser>()
@@ -130,7 +143,10 @@ namespace MirrorBlock.Mobile {
           }
           userMap.set(userName, user)
           const badge = new MirrorBlock.BadgeV2.Badge()
-          if (/\/status\/\d+$/.test(link.href)) {
+          const isUserNameVisible = (
+            getVisibleTextFromLink(link) || ''
+          ).includes(userName)
+          if (/\/status\/\d+$/.test(link.href) && !isUserNameVisible) {
             badge.showUserName(userName)
           }
           await MirrorBlock.Reflection.reflectBlock({
