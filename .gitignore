@@ -2,6 +2,7 @@
 /_ignore_/
 /.idea/
 /.vs/
+/.vscode/
 /node_modules/
 /dist/
 /MirrorOfBlock/
