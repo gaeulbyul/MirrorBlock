@@ -47,7 +47,9 @@ namespace MirrorBlock.ChainMirrorBlock {
           user => user.state === 'shouldBlock'
         )
         if (shouldBlocks.length > 0) {
-          const confirmMessage = '발견한 사용자를 맞차단하시겠습니까?'
+          const confirmMessage = `발견한 사용자 ${
+            shouldBlocks.length
+          }명을 맞차단하시겠습니까?`
           if (!window.confirm(confirmMessage)) {
             return
           }
@@ -252,16 +254,16 @@ namespace MirrorBlock.ChainMirrorBlock {
     if (!targetUser) {
       return
     }
+    const followsCount = getTotalFollows(targetUser, followType)
+    if (followsCount <= 0) {
+      window.alert('팔로잉/팔로워가 0명이므로 아무것도 하지 않았습니다.')
+      return
+    }
     const protectedUser = targetUser.protected && !targetUser.following
     if (protectedUser) {
       window.alert(
         `@${targetUserName}님은 프로텍트가 걸려있어서 팔로워 목록을 가져올 수 없습니다.`
       )
-      return
-    }
-    const followsCount = getTotalFollows(targetUser, followType)
-    if (followsCount <= 0) {
-      window.alert('팔로워가 0명입니다.')
       return
     }
     const options = await MirrorBlock.Options.load()
