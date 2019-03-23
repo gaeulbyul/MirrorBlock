@@ -25,18 +25,6 @@
   padding: 4px;
 }
 
-/* 파이어폭스에선 현재(v66) :host-context Selector가 구현되어있지 않다.
- * 따라서, :host를 이용하여 우회하도록 한다.
- * data-host-contexts 는 mirrorblock-badge.ts의 workaroundHostContext 메서드에서
- * 설정함
- * NOTE: data-host-contexts 쓸 일 생기면 위 메서드의 contexts Array에도 추가할 것!
- */
-:host([data-host-contexts~='#react-root']) .badge {
-  padding: 0.1rem 5px;
-  border-radius: 5px;
-  font-size: 13px;
-}
-
 .blocks-you {
   background-color: #f9f2f4;
   color: #c7254e;
@@ -53,31 +41,36 @@
   display: none;
 }
 
-:host([data-host-contexts~='.account']) .badge {
+#react-root .badge {
+  padding: 0.1rem 5px;
+  border-radius: 5px;
+  font-size: 90%;
+}
+
+#react-root [data-testid='UserCell'] .badge {
+  font-size: 12px;
+}
+
+.account .badge {
   margin: 0;
 }
 
-:host([data-host-contexts~='.mob-nightmode']) .badge {
+.mob-nightmode .badge {
   background-color: #10171e;
 }
 
-:host([data-host-contexts~='.mob-nightmode']) .block-reflected {
+.mob-nightmode .block-reflected {
   color: #fce8b3;
 }
 
-:host([data-host-contexts~='.js-user-profile-link']) .badge {
+.js-user-profile-link .badge {
   padding: 0 4px;
 }
 
-:host([data-host-contexts~='.ProfileHeaderCard']) .badge {
+.ProfileHeaderCard .badge {
   padding: 0 4px;
 }
 
-:host([data-host-contexts~='.mob-nightmode'][data-host-contexts~='.ProfileHeaderCard'])
-  .badge {
+.mob-nightmode.ProfileHeaderCard .badge {
   background-color: #141d26;
-}
-
-:host([data-host-contexts~='testid:tweetDetail']) .badge {
-  font-size: 16px;
 }

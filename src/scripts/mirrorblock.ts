@@ -87,25 +87,29 @@
     }
   }
 
-  async function blockReflectionToFt(ft: FoundTarget) {
+  async function blockReflectionToFt(ft: FoundTarget): Promise<boolean> {
     const result = await TwitterAPI.blockUserById(ft.userId)
     if (result) {
-      MirrorBlock.Badge.appendBlockReflectedBadge(ft.badgeElem)
       if (typeof ft.afterBlockReflect === 'function') {
         ft.afterBlockReflect()
       }
     }
+    return result
   }
 
   async function foundTargetHandler(ft: FoundTarget): Promise<void> {
     ft.addOutlineClassName()
-    MirrorBlock.Badge.appendBlocksYouBadge(ft.badgeElem)
+    const badge = new MirrorBlock.BadgeV2.Badge()
+    badge.appendTo(ft.badgeElem)
     const options = await MirrorBlock.Options.load()
     const muteSkip = ft.muted && !options.blockMutedUser
     const shouldBlock =
       options.enableBlockReflection && !ft.alreadyBlocked && !muteSkip
     if (shouldBlock) {
-      blockReflectionToFt(ft)
+      const blockResult = await blockReflectionToFt(ft)
+      if (blockResult) {
+        badge.blockReflected()
+      }
     }
   }
 

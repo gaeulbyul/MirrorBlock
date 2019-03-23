@@ -21,14 +21,16 @@
       if (!targetUser) {
         return
       }
+      const badge = new MirrorBlock.BadgeV2.Badge()
+      badge.showUserName(targetUser.screen_name)
       MirrorBlock.Reflection.reflectBlock({
         user: targetUser,
         indicateBlock() {
-          MirrorBlock.Badge.appendBlocksYouBadge(ts, targetUser.screen_name)
+          badge.appendTo(ts)
           ts.classList.add('mob-blocks-you-outline')
         },
         indicateReflection() {
-          MirrorBlock.Badge.appendBlockReflectedBadge(ts)
+          badge.blockReflected()
         },
       })
     }
