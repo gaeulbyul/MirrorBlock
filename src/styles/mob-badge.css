@@ -25,12 +25,12 @@
   padding: 4px;
 }
 
-.blocks-you {
+.badge.blocks-you {
   background-color: #f9f2f4;
   color: #c7254e;
 }
 
-.block-reflected {
+.badge.block-reflected {
   background-color: #fcf8e3;
   color: #8a6d3b;
   animation: Pop 0.2s;
@@ -59,7 +59,7 @@
   background-color: #10171e;
 }
 
-.mob-nightmode .block-reflected {
+.mob-nightmode .badge.block-reflected {
   color: #fce8b3;
 }
 
