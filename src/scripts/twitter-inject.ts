@@ -1,4 +1,58 @@
+interface ReduxStore {
+  getState(): any
+  dispatch(payload: any): any
+  subscribe(callback: () => void): void
+  // replaceReducer(): any
+}
 {
+  function isReduxStore(something: any): something is ReduxStore {
+    if (typeof something !== 'object') {
+      return false
+    }
+    if (typeof something.getState !== 'function') {
+      return false
+    }
+    if (typeof something.dispatch !== 'function') {
+      return false
+    }
+    if (typeof something.subscribe !== 'function') {
+      return false
+    }
+    return true
+  }
+  function findReduxStore(): ReduxStore | null {
+    {
+      const reactRoot1 = document.getElementById('react-root') as any
+      const store1 =
+        reactRoot1._reactRootContainer._internalRoot.current.memoizedState
+          .element.props.store
+      if (isReduxStore(store1)) {
+        return store1
+      }
+    }
+    // 2019-04-08: store 위치 바뀐 듯
+    // do-while: 유사 GOTO문
+    // $.__reactEventHandlers$???????????.children.props.store
+    do {
+      const reactRoot2 = document.querySelector('[data-reactroot]')!.children[0]
+      const ehkey = Object.keys(reactRoot2)
+        .filter((k: string) => k.startsWith('__reactEventHandlers'))
+        .pop()
+      if (!ehkey) {
+        break
+      }
+      console.debug('ehkey: "%s"', ehkey)
+      const rEventHandlers = (reactRoot2 as any)[ehkey]
+      const store2 = rEventHandlers.children.props.store
+      if (isReduxStore(store2)) {
+        return store2
+      }
+    } while (0)
+    console.warn(
+      '[Mirror Block] WARNING: failed to find redux store! Block-reflection on new UI is disabled!'
+    )
+    return null
+  }
   function addEvent(name: string, callback: (event: CustomEvent) => any): void {
     document.addEventListener(`MirrorBlock->${name}`, event => {
       const customEvent = event as CustomEvent
@@ -10,10 +64,11 @@
       document.dispatchEvent(responseEvent)
     })
   }
-  function inject(reactRoot: any) {
-    const reactRootContainer = reactRoot._reactRootContainer
-    const reduxStore =
-      reactRootContainer._internalRoot.current.memoizedState.element.props.store
+  function inject() {
+    const reduxStore = findReduxStore()
+    if (!reduxStore) {
+      return
+    }
     addEvent('getUserByName', event => {
       const userNameToGet = event.detail.userName as string
       const loweredUserNameToGet = userNameToGet.toLowerCase()
@@ -73,7 +128,7 @@
     const reactRoot = document.getElementById('react-root')!
     if ('_reactRootContainer' in reactRoot) {
       console.debug('inject!!!')
-      inject(reactRoot)
+      inject()
     } else {
       console.debug('waiting...')
       setTimeout(initialize, 500)
