@@ -21,7 +21,7 @@
       if (!targetUser) {
         return
       }
-      const badge = new MirrorBlock.BadgeV2.Badge()
+      const badge = new MirrorBlock.Badge.Badge()
       badge.showUserName(targetUser.screen_name)
       MirrorBlock.Reflection.reflectBlock({
         user: targetUser,

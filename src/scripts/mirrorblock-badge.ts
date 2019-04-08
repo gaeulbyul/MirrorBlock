@@ -1,4 +1,4 @@
-namespace MirrorBlock.BadgeV2 {
+namespace MirrorBlock.Badge {
   export class Badge {
     private readonly baseElem = document.createElement('span')
     constructor() {

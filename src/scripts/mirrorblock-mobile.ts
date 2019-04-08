@@ -77,7 +77,7 @@ namespace MirrorBlock.Mobile {
             continue
           }
           userMap.set(userName, user)
-          const badge = new MirrorBlock.BadgeV2.Badge()
+          const badge = new MirrorBlock.Badge.Badge()
           const isUserNameVisible = (
             getVisibleTextFromLink(link) || ''
           ).includes(userName)
@@ -168,7 +168,7 @@ namespace MirrorBlock.Mobile {
               if (!user) {
                 return
               }
-              const badge = new MirrorBlock.BadgeV2.Badge()
+              const badge = new MirrorBlock.Badge.Badge()
               MirrorBlock.Reflection.reflectBlock({
                 user,
                 indicateBlock() {
@@ -228,7 +228,7 @@ namespace MirrorBlock.Mobile {
               if (!user) {
                 return
               }
-              const badge = new MirrorBlock.BadgeV2.Badge()
+              const badge = new MirrorBlock.Badge.Badge()
               MirrorBlock.Reflection.reflectBlock({
                 user,
                 indicateBlock() {
@@ -274,7 +274,7 @@ namespace MirrorBlock.Mobile {
       if (!user) {
         return
       }
-      const badge = new MirrorBlock.BadgeV2.Badge()
+      const badge = new MirrorBlock.Badge.Badge()
       MirrorBlock.Reflection.reflectBlock({
         user,
         indicateBlock() {
