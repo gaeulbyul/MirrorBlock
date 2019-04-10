@@ -1,8 +1,25 @@
 namespace MirrorBlock.Mobile.Redux {
-  declare function cloneInto<T>(detail: T, view: Window | null): T
-  export class ReduxedStore {
+  const userMapByName = new Map<string, TwitterUser>()
+  export namespace StoreRetriever {
+    export function getUserByName(userName: string): TwitterUser | null {
+      return userMapByName.get(userName) || null
+    }
+    export function subcribeEvent() {
+      document.addEventListener('MirrorBlock<-subscribe', event => {
+        const customEvent = event as CustomEvent
+        if (!customEvent.detail) {
+          return
+        }
+        const users = customEvent.detail.users as TwitterUserEntities
+        for (const user of Object.values(users)) {
+          userMapByName.set(user.screen_name, user)
+        }
+      })
+    }
+  }
+  export namespace StoreUpdater {
     // 파이어폭스에서 CustomEvent의 detail 개체 전달용
-    private cloneDetail<T>(detail: T): T {
+    function cloneDetail<T>(detail: T): T {
       if (typeof detail !== 'object') {
         return detail
       }
@@ -12,57 +29,33 @@ namespace MirrorBlock.Mobile.Redux {
         return detail
       }
     }
-    private async triggerPageEvent(
-      eventName: string,
-      eventDetail?: object
-    ): Promise<any> {
-      const nonce = Math.random()
-      const detail = this.cloneDetail(
-        Object.assign({}, eventDetail, {
-          nonce,
-        })
-      )
+    function triggerPageEvent(eventName: string, eventDetail?: object): void {
+      const detail = cloneDetail(eventDetail)
       const requestEvent = new CustomEvent(`MirrorBlock->${eventName}`, {
         detail,
       })
-      return new Promise((resolve, reject) => {
-        const timeout = window.setTimeout(() => {
-          reject('timeouted!')
-        }, 10000)
-        document.addEventListener(
-          `MirrorBlock<-${eventName}.${nonce}`,
-          event => {
-            window.clearTimeout(timeout)
-            const customEvent = event as CustomEvent
-            resolve(customEvent.detail)
-          },
-          { once: true }
-        )
-        document.dispatchEvent(requestEvent)
-      })
+      document.dispatchEvent(requestEvent)
     }
-    public async getUserByName(userName: string): Promise<TwitterUser | null> {
-      const result = await this.triggerPageEvent('getUserByName', {
-        userName,
-      })
-      if (MirrorBlock.Utils.isTwitterUser(result)) {
-        return result
-      } else {
-        return null
-      }
-    }
-    public async insertUserIntoStore(user: TwitterUser): Promise<void> {
-      this.triggerPageEvent('insertUserIntoStore', {
+    export async function insertUserIntoStore(
+      user: TwitterUser
+    ): Promise<void> {
+      userMapByName.set(user.screen_name, user)
+      triggerPageEvent('insertUserIntoStore', {
         user,
       })
     }
-    public async afterBlockUser(user: TwitterUser): Promise<void> {
-      this.triggerPageEvent('afterBlockUser', {
+    export async function afterBlockUser(user: TwitterUser): Promise<void> {
+      triggerPageEvent('afterBlockUser', {
         user,
       })
       const clonedUser = Object.assign({}, user)
       clonedUser.blocking = true
-      this.insertUserIntoStore(clonedUser)
+      insertUserIntoStore(clonedUser)
+    }
+    export async function toastMessage(text: string): Promise<void> {
+      triggerPageEvent('toastMessage', {
+        text,
+      })
     }
   }
 }

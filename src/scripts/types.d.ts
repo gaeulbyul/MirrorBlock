@@ -19,10 +19,8 @@ interface TwitterUser {
   description: string
 }
 
-interface IncompleteTwitterUser {
-  id_str: string
-  screen_name: string
-  name: string
+interface TwitterUserEntities {
+  [userId: string]: TwitterUser
 }
 
 interface FollowsListResponse {
@@ -114,6 +112,8 @@ interface MirrorBlockOption {
   noDelay: boolean
 }
 
+declare function cloneInto<T>(detail: T, view: Window | null): T
+
 // r.i.c
 // copied from https://github.com/Microsoft/TypeScript/issues/21309#issuecomment-376338415
 type RequestIdleCallbackHandle = any
@@ -122,11 +122,11 @@ type RequestIdleCallbackOptions = {
 }
 type RequestIdleCallbackDeadline = {
   readonly didTimeout: boolean
-  timeRemaining: (() => number)
+  timeRemaining: () => number
 }
 
 declare function requestIdleCallback(
-  callback: ((deadline: RequestIdleCallbackDeadline) => void),
+  callback: (deadline: RequestIdleCallbackDeadline) => void,
   opts?: RequestIdleCallbackOptions
 ): RequestIdleCallbackHandle
 declare function cancelIdleCallback(handle: RequestIdleCallbackHandle): void

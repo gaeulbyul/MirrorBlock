@@ -1,7 +1,20 @@
 namespace MirrorBlock.Mobile {
-  const { ReduxedStore } = MirrorBlock.Mobile.Redux
+  const {
+    Utils,
+    Badge: { Badge },
+    Reflection: { reflectBlock },
+    Mobile: {
+      Redux: { StoreRetriever, StoreUpdater },
+    },
+  } = MirrorBlock
+
+  // data-testid 쓸 일이 많아서 만든 shortcut
+  const TI_TWEET = '[data-testid="tweet"]'
+  const TI_TWEET_DETAIL = '[data-testid="tweetDetail"]'
+  const TI_USER_CELL = '[data-testid="UserCell"]'
+  const TI_CONVERSATION = '[data-testid="conversation"]'
+
   const userNamePattern = /^@[0-9a-z_]{1,15}$/i
-  const reduxedStore = new ReduxedStore()
   // API호출 실패한 사용자이름을 저장하여 API호출을 반복하지 않도록 한다.
   // (예: 지워지거나 정지걸린 계정)
   const failedUserNames = new Set<string>()
@@ -11,8 +24,9 @@ namespace MirrorBlock.Mobile {
     if (failedUserNames.has(userName)) {
       return null
     }
-    const userFromStore = await reduxedStore.getUserByName(userName)
+    const userFromStore = StoreRetriever.getUserByName(userName)
     if (userFromStore) {
+      console.debug('from store "@%s": %o', userName, userFromStore)
       return userFromStore
     } else {
       console.debug('request api "@%s"', userName)
@@ -24,16 +38,12 @@ namespace MirrorBlock.Mobile {
         return null
       })
       if (user) {
-        reduxedStore.insertUserIntoStore(user)
+        StoreUpdater.insertUserIntoStore(user)
       }
       return user
     }
   }
-  // data-testid 쓸 일이 많아서 만든 shortcut
-  const TI_TWEET = '[data-testid="tweet"]'
-  const TI_TWEET_DETAIL = '[data-testid="tweetDetail"]'
-  const TI_USER_CELL = '[data-testid="UserCell"]'
-  const TI_CONVERSATION = '[data-testid="conversation"]'
+
   function markOutline(elem: Element | null): void {
     if (elem) {
       elem.setAttribute('data-mirrorblock-blocks-you', '1')
@@ -42,7 +52,7 @@ namespace MirrorBlock.Mobile {
   function getUserNameFromTweetUrl(
     extractMe: HTMLAnchorElement | URL | Location
   ): string | null {
-    return MirrorBlock.Utils.getUserNameFromTweetUrl(extractMe)
+    return Utils.getUserNameFromTweetUrl(extractMe)
   }
   namespace TweetLinkDetector {
     function getVisibleTextFromLink(ln: Element): string | null {
@@ -60,7 +70,6 @@ namespace MirrorBlock.Mobile {
     }
     const tweetLinkObserver = new IntersectionObserver(
       async (entries, observer) => {
-        const userMap = new Map<string, TwitterUser>()
         const visibleEntries = entries.filter(e => e.isIntersecting)
         for (const entry of visibleEntries) {
           const link = entry.target as HTMLAnchorElement
@@ -69,22 +78,18 @@ namespace MirrorBlock.Mobile {
           if (!userName) {
             continue
           }
-          let user = userMap.get(userName) || null
-          if (!user) {
-            user = await getUserFromEitherStoreOrAPI(userName)
-          }
+          const user = await getUserFromEitherStoreOrAPI(userName)
           if (!user) {
             continue
           }
-          userMap.set(userName, user)
-          const badge = new MirrorBlock.Badge.Badge()
+          const badge = new Badge()
           const isUserNameVisible = (
             getVisibleTextFromLink(link) || ''
           ).includes(userName)
           if (/\/status\/\d+$/.test(link.href) && !isUserNameVisible) {
             badge.showUserName(userName)
           }
-          await MirrorBlock.Reflection.reflectBlock({
+          await reflectBlock({
             user,
             indicateBlock() {
               markOutline(link)
@@ -92,7 +97,7 @@ namespace MirrorBlock.Mobile {
             },
             indicateReflection() {
               badge.blockReflected()
-              reduxedStore.afterBlockUser(user!)
+              StoreUpdater.afterBlockUser(user)
             },
           })
         }
@@ -141,7 +146,7 @@ namespace MirrorBlock.Mobile {
       const tweetElems = rootElem.querySelectorAll<HTMLElement>(
         `${TI_TWEET}, ${TI_TWEET_DETAIL}`
       )
-      const filteredTweetElems = MirrorBlock.Utils.filterElements(tweetElems)
+      const filteredTweetElems = Utils.filterElements(tweetElems)
       for (const tweet of filteredTweetElems) {
         for (const link of findLinks(tweet)) {
           tweetLinkObserver.observe(link)
@@ -168,8 +173,8 @@ namespace MirrorBlock.Mobile {
               if (!user) {
                 return
               }
-              const badge = new MirrorBlock.Badge.Badge()
-              MirrorBlock.Reflection.reflectBlock({
+              const badge = new Badge()
+              reflectBlock({
                 user,
                 indicateBlock() {
                   markOutline(cell)
@@ -198,9 +203,7 @@ namespace MirrorBlock.Mobile {
         // rootElem에 (UserCell이 자식요소로 들어간 요소가 아닌) UserCell 자체가 들어온다.
         userCellElems.push(rootElem)
       }
-      const filteredUserCellElems = MirrorBlock.Utils.filterElements(
-        userCellElems
-      )
+      const filteredUserCellElems = Utils.filterElements(userCellElems)
       for (const cell of filteredUserCellElems) {
         // 트윗 헤더(사용자이름)부분에 들어간 거 말고*
         // 트윗 내용에 들어있는 거만
@@ -228,8 +231,8 @@ namespace MirrorBlock.Mobile {
               if (!user) {
                 return
               }
-              const badge = new MirrorBlock.Badge.Badge()
-              MirrorBlock.Reflection.reflectBlock({
+              const badge = new Badge()
+              reflectBlock({
                 user,
                 indicateBlock() {
                   markOutline(cell)
@@ -250,7 +253,7 @@ namespace MirrorBlock.Mobile {
       const dmUserItems = Array.from(
         rootElem.querySelectorAll<HTMLElement>(TI_CONVERSATION)
       )
-      const filteredDmUserItems = MirrorBlock.Utils.filterElements(dmUserItems)
+      const filteredDmUserItems = Utils.filterElements(dmUserItems)
       for (const cell of filteredDmUserItems) {
         dmUserItemObserver.observe(cell)
       }
@@ -261,7 +264,7 @@ namespace MirrorBlock.Mobile {
       const helpLinks = rootElem.querySelectorAll<HTMLElement>(
         'a[href="https://support.twitter.com/articles/20172060"]'
       )
-      const filteredElems = MirrorBlock.Utils.filterElements(helpLinks)
+      const filteredElems = Utils.filterElements(helpLinks)
       if (filteredElems.length <= 0) {
         return
       }
@@ -274,15 +277,15 @@ namespace MirrorBlock.Mobile {
       if (!user) {
         return
       }
-      const badge = new MirrorBlock.Badge.Badge()
-      MirrorBlock.Reflection.reflectBlock({
+      const badge = new Badge()
+      reflectBlock({
         user,
         indicateBlock() {
           badge.appendTo(helpLink.parentElement!)
         },
         indicateReflection() {
           badge.blockReflected()
-          reduxedStore.afterBlockUser(user)
+          StoreUpdater.afterBlockUser(user)
         },
       })
     }
@@ -313,12 +316,11 @@ namespace MirrorBlock.Mobile {
     if (!reactRoot) {
       return
     }
-    await MirrorBlock.Utils.injectScript('vendor/uuid.js')
-    await MirrorBlock.Utils.injectScript('scripts/twitter-inject.js')
+    await Utils.injectScript('vendor/uuid.js')
+    await Utils.injectScript('scripts/twitter-inject.js')
+    StoreRetriever.subcribeEvent()
     new MutationObserver(mutations => {
-      for (const elem of MirrorBlock.Utils.getAddedElementsFromMutations(
-        mutations
-      )) {
+      for (const elem of Utils.getAddedElementsFromMutations(mutations)) {
         const tweetDetail = elem.querySelector<HTMLElement>(TI_TWEET_DETAIL)
         if (tweetDetail) {
           Helper.insertNameToTweetDetailRegion(tweetDetail)

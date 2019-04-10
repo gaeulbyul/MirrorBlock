@@ -1,6 +1,6 @@
 interface ReduxStore {
   getState(): any
-  dispatch(payload: any): any
+  dispatch(payload: { type: string; [key: string]: any }): any
   subscribe(callback: () => void): void
   // replaceReducer(): any
 }
@@ -53,15 +53,29 @@ interface ReduxStore {
     )
     return null
   }
-  function addEvent(name: string, callback: (event: CustomEvent) => any): void {
+  function sendEntitiesToExtension(state: any) {
+    try {
+      const users = state.entities.users.entities
+      const detail = { users }
+      document.dispatchEvent(
+        new CustomEvent('MirrorBlock<-subscribe', {
+          detail,
+        })
+      )
+    } catch (err) {
+      if (err instanceof TypeError) {
+        return
+      }
+      console.error(err)
+    }
+  }
+  function addEvent(
+    name: string,
+    callback: (event: CustomEvent) => void
+  ): void {
     document.addEventListener(`MirrorBlock->${name}`, event => {
       const customEvent = event as CustomEvent
-      const nonce = customEvent.detail.nonce
-      const detail = callback(customEvent)
-      const responseEvent = new CustomEvent(`MirrorBlock<-${name}.${nonce}`, {
-        detail,
-      })
-      document.dispatchEvent(responseEvent)
+      callback(customEvent)
     })
   }
   function inject() {
@@ -69,23 +83,9 @@ interface ReduxStore {
     if (!reduxStore) {
       return
     }
-    addEvent('getUserByName', event => {
-      const userNameToGet = event.detail.userName as string
-      const loweredUserNameToGet = userNameToGet.toLowerCase()
+    reduxStore.subscribe(() => {
       const state = reduxStore.getState()
-      // 주의:
-      // entities에 저장된 사용자 정보엔 일부 값이 빠질 수 있음
-      // 특히, blocked_by , blocking 같은 정보!
-      const users = Object.values<IncompleteTwitterUser>(
-        state.entities.users.entities
-      )
-      for (const user of users) {
-        const lowered = user.screen_name.toLowerCase()
-        if (lowered === loweredUserNameToGet) {
-          return user
-        }
-      }
-      return null
+      sendEntitiesToExtension(state)
     })
     addEvent('insertUserIntoStore', event => {
       const { user: user_ } = event.detail
@@ -117,6 +117,13 @@ interface ReduxStore {
         meta: {
           userId,
         },
+      })
+    })
+    addEvent('toastMessage', event => {
+      const { text } = event.detail
+      reduxStore.dispatch({
+        type: 'rweb/toasts/ADD_TOAST',
+        payload: { text },
       })
     })
     // XXX debug
