@@ -5,16 +5,16 @@ interface TwitterUser {
   id_str: string
   screen_name: string
   name: string
-  blocked_by: boolean
-  blocking: boolean
-  muting: boolean
-  followed_by: boolean
-  following: boolean
-  follow_request_sent: boolean
+  blocked_by?: boolean
+  blocking?: boolean
+  muting?: boolean
+  followed_by?: boolean
+  following?: boolean
+  follow_request_sent?: boolean
   friends_count: number
   followers_count: number
-  protected: boolean
-  verified: boolean
+  protected?: boolean
+  verified?: boolean
   created_at: string // datetime example: 'Sun Jun 29 05:52:09 +0000 2014'
   description: string
 }
