@@ -1,18 +1,28 @@
 namespace MirrorBlock.Mobile.Redux {
+  const tweetMap = new Map<string, Tweet>()
+  const userMapById = new Map<string, TwitterUser>()
   const userMapByName = new Map<string, TwitterUser>()
   export namespace StoreRetriever {
     export function getUserByName(userName: string): TwitterUser | null {
       return userMapByName.get(userName) || null
     }
+    export function getUserById(userId: string): TwitterUser | null {
+      return userMapById.get(userId) || null
+    }
+    export function getTweet(tweetId: string): Tweet | null {
+      return tweetMap.get(tweetId) || null
+    }
     export function subcribeEvent() {
       document.addEventListener('MirrorBlock<-subscribe', event => {
-        const customEvent = event as CustomEvent
-        if (!customEvent.detail) {
-          return
-        }
-        const users = customEvent.detail.users as TwitterUserEntities
-        for (const user of Object.values(users)) {
+        const customEvent = event as ReduxSubscribeEvent
+        const users = Object.entries(customEvent.detail.users)
+        const tweets = Object.entries(customEvent.detail.tweets)
+        for (const [userId, user] of users) {
+          userMapById.set(userId, user)
           userMapByName.set(user.screen_name, user)
+        }
+        for (const [tweetId, tweet] of tweets) {
+          tweetMap.set(tweetId, tweet)
         }
       })
     }
@@ -56,6 +66,60 @@ namespace MirrorBlock.Mobile.Redux {
       triggerPageEvent('toastMessage', {
         text,
       })
+    }
+  }
+  export namespace UserGetter {
+    // API호출 실패한 사용자이름을 저장하여 API호출을 반복하지 않도록 한다.
+    // (예: 지워지거나 정지걸린 계정)
+    const failedUserParams = new Set<string>()
+    function errorHandler(failedParam: string): (err: any) => null {
+      return (err: any) => {
+        failedUserParams.add(failedParam)
+        if (err instanceof Response) {
+          console.error(err)
+        }
+        return null
+      }
+    }
+    export async function getUserById(
+      userId: string
+    ): Promise<TwitterUser | null> {
+      if (failedUserParams.has(userId)) {
+        return null
+      }
+      const userFromStore = StoreRetriever.getUserById(userId)
+      if (userFromStore) {
+        return userFromStore
+      } else {
+        console.debug('request api "%s"', userId)
+        const user = await TwitterAPI.getSingleUserById(userId).catch(
+          errorHandler(userId)
+        )
+        if (user) {
+          StoreUpdater.insertUserIntoStore(user)
+        }
+        return user
+      }
+    }
+    export async function getUserByName(
+      userName: string
+    ): Promise<TwitterUser | null> {
+      if (failedUserParams.has(userName)) {
+        return null
+      }
+      const userFromStore = StoreRetriever.getUserByName(userName)
+      if (userFromStore) {
+        return userFromStore
+      } else {
+        console.debug('request api "@%s"', userName)
+        const user = await TwitterAPI.getSingleUserByName(userName).catch(
+          errorHandler(userName)
+        )
+        if (user) {
+          StoreUpdater.insertUserIntoStore(user)
+        }
+        return user
+      }
     }
   }
 }

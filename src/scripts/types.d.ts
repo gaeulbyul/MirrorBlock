@@ -23,6 +23,53 @@ interface TwitterUserEntities {
   [userId: string]: TwitterUser
 }
 
+interface Tweet {
+  id_str: string
+  // conversation_id_str: string
+  user: string
+  text: string
+  full_text: string
+  lang: string
+  source: string
+  source_name: string
+  source_url: string
+  // possibly_sensitive_editable: boolean
+  // user_id_str: string
+  created_at: string
+  reply_count: number
+  retweet_count: number
+  favorite_count: number
+  favorited: boolean
+  retweeted: boolean
+  isReported?: boolean // 넌 왜 camelCase냐!
+  quoted_status?: string
+  quoted_status_permalink?: UrlEntity
+  $userObj?: TwitterUser
+}
+
+interface UrlEntity {
+  url: string
+  display: string
+  expanded: string
+}
+
+interface TweetEntities {
+  [tweetId: string]: Tweet
+}
+
+interface ReduxSubscribeEvent extends CustomEvent {
+  detail: {
+    users: TwitterUserEntities
+    tweets: TweetEntities
+  }
+}
+
+interface TweetItemEvent extends CustomEvent {
+  detail: {
+    tweetId: string
+  }
+}
+
 interface FollowsListResponse {
   next_cursor_str: string
   users: TwitterUser[]

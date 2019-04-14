@@ -4,7 +4,7 @@ namespace MirrorBlock.Mobile {
     Badge: { Badge },
     Reflection: { reflectBlock },
     Mobile: {
-      Redux: { StoreRetriever, StoreUpdater },
+      Redux: { StoreRetriever, StoreUpdater, UserGetter },
     },
   } = MirrorBlock
 
@@ -14,45 +14,14 @@ namespace MirrorBlock.Mobile {
   const TI_USER_CELL = '[data-testid="UserCell"]'
   const TI_CONVERSATION = '[data-testid="conversation"]'
 
+  type DOMQueryable = HTMLElement | Document
+
   const userNamePattern = /^@[0-9a-z_]{1,15}$/i
-  // API호출 실패한 사용자이름을 저장하여 API호출을 반복하지 않도록 한다.
-  // (예: 지워지거나 정지걸린 계정)
-  const failedUserNames = new Set<string>()
-  async function getUserFromEitherStoreOrAPI(
-    userName: string
-  ): Promise<TwitterUser | null> {
-    if (failedUserNames.has(userName)) {
-      return null
-    }
-    const userFromStore = StoreRetriever.getUserByName(userName)
-    if (userFromStore) {
-      console.debug('from store "@%s": %o', userName, userFromStore)
-      return userFromStore
-    } else {
-      console.debug('request api "@%s"', userName)
-      const user = await TwitterAPI.getSingleUserByName(userName).catch(err => {
-        failedUserNames.add(userName)
-        if (err instanceof Response) {
-          console.error(err)
-        }
-        return null
-      })
-      if (user) {
-        StoreUpdater.insertUserIntoStore(user)
-      }
-      return user
-    }
-  }
 
   function markOutline(elem: Element | null): void {
     if (elem) {
       elem.setAttribute('data-mirrorblock-blocks-you', '1')
     }
-  }
-  function getUserNameFromTweetUrl(
-    extractMe: HTMLAnchorElement | URL | Location
-  ): string | null {
-    return Utils.getUserNameFromTweetUrl(extractMe)
   }
   namespace TweetLinkDetector {
     function getVisibleTextFromLink(ln: Element): string | null {
@@ -60,13 +29,11 @@ namespace MirrorBlock.Mobile {
         return null
       }
       const { lastChild } = ln
-      if (!lastChild) {
+      if (lastChild && lastChild instanceof Text) {
+        return lastChild.textContent
+      } else {
         return null
       }
-      if (!(lastChild instanceof Text)) {
-        return null
-      }
-      return lastChild.textContent
     }
     const tweetLinkObserver = new IntersectionObserver(
       async (entries, observer) => {
@@ -74,11 +41,11 @@ namespace MirrorBlock.Mobile {
         for (const entry of visibleEntries) {
           const link = entry.target as HTMLAnchorElement
           observer.unobserve(link)
-          const userName = getUserNameFromTweetUrl(link)
+          const userName = Utils.getUserNameFromTweetUrl(link)
           if (!userName) {
             continue
           }
-          const user = await getUserFromEitherStoreOrAPI(userName)
+          const user = await UserGetter.getUserByName(userName)
           if (!user) {
             continue
           }
@@ -101,9 +68,6 @@ namespace MirrorBlock.Mobile {
             },
           })
         }
-      },
-      {
-        rootMargin: '10px',
       }
     )
     function findLinks(tweetElem: HTMLElement): HTMLAnchorElement[] {
@@ -127,7 +91,7 @@ namespace MirrorBlock.Mobile {
       )
       for (const link of internalLinks) {
         const { pathname, textContent } = link
-        const linkUserName = getUserNameFromTweetUrl(link)
+        const linkUserName = Utils.getUserNameFromTweetUrl(link)
         if (linkUserName === tweetDetailAuthor) {
           continue
         }
@@ -142,7 +106,7 @@ namespace MirrorBlock.Mobile {
       }
       return result
     }
-    export function detectOnTweetLinks(rootElem: Document | HTMLElement): void {
+    export function detectOnTweetLinks(rootElem: DOMQueryable): void {
       const tweetElems = rootElem.querySelectorAll<HTMLElement>(
         `${TI_TWEET}, ${TI_TWEET_DETAIL}`
       )
@@ -169,7 +133,7 @@ namespace MirrorBlock.Mobile {
             .filter(ltr => ltr.tagName === 'DIV')
             .forEach(async ltr => {
               const userName = ltr.textContent!.replace(/^@/, '')
-              const user = await getUserFromEitherStoreOrAPI(userName)
+              const user = await UserGetter.getUserByName(userName)
               if (!user) {
                 return
               }
@@ -186,12 +150,9 @@ namespace MirrorBlock.Mobile {
               })
             })
         }
-      },
-      {
-        rootMargin: '10px',
       }
     )
-    export function detectOnUserCell(rootElem: Document | HTMLElement): void {
+    export function detectOnUserCell(rootElem: DOMQueryable): void {
       const userCellElems = Array.from(
         rootElem.querySelectorAll<HTMLElement>(TI_USER_CELL)
       )
@@ -227,7 +188,7 @@ namespace MirrorBlock.Mobile {
             .filter(ltr => userNamePattern.test(ltr.textContent || ''))
             .forEach(async ltr => {
               const userName = ltr.textContent!.replace(/^@/, '')
-              const user = await getUserFromEitherStoreOrAPI(userName)
+              const user = await UserGetter.getUserByName(userName)
               if (!user) {
                 return
               }
@@ -244,12 +205,9 @@ namespace MirrorBlock.Mobile {
               })
             })
         }
-      },
-      {
-        rootMargin: '10px',
       }
     )
-    export function detectOnDMUserItem(rootElem: Document | HTMLElement): void {
+    export function detectOnDMUserItem(rootElem: DOMQueryable): void {
       const dmUserItems = Array.from(
         rootElem.querySelectorAll<HTMLElement>(TI_CONVERSATION)
       )
@@ -260,7 +218,7 @@ namespace MirrorBlock.Mobile {
     }
   }
   namespace ProfileDetector {
-    export async function detectProfile(rootElem: Document | HTMLElement) {
+    export async function detectProfile(rootElem: DOMQueryable) {
       const helpLinks = rootElem.querySelectorAll<HTMLElement>(
         'a[href="https://support.twitter.com/articles/20172060"]'
       )
@@ -269,11 +227,11 @@ namespace MirrorBlock.Mobile {
         return
       }
       const helpLink = filteredElems[0]
-      const userName = getUserNameFromTweetUrl(location)
+      const userName = Utils.getUserNameFromTweetUrl(location)
       if (!userName) {
         return
       }
-      const user = await getUserFromEitherStoreOrAPI(userName)
+      const user = await UserGetter.getUserByName(userName)
       if (!user) {
         return
       }
@@ -290,6 +248,58 @@ namespace MirrorBlock.Mobile {
       })
     }
   }
+  namespace TweetConversationDetector {
+    const failedTweetIds = new Set<string>()
+    const tweetItemObserver = new IntersectionObserver(
+      async (entries, observer) => {
+        const visibleEntries = entries.filter(e => e.isIntersecting)
+        for (const entry of visibleEntries) {
+          observer.unobserve(entry.target)
+          const target = entry.target as HTMLElement
+          const tweetId = target.getAttribute('data-mirrorblock-tweetid')!
+          const tweet = StoreRetriever.getTweet(tweetId)
+          if (!tweet) {
+            failedTweetIds.add(tweetId)
+            continue
+          }
+          const user = await UserGetter.getUserById(tweet.user)
+          if (!user) {
+            continue
+          }
+          target.classList.add('mob-checked')
+          const badgeTarget = target.querySelector('span[dir]')!
+          const badge = new Badge()
+          const outlineTarget = badgeTarget.closest('div[dir=auto]')!
+            .parentElement!
+          badge.showUserName(user.screen_name)
+          reflectBlock({
+            user,
+            indicateBlock() {
+              badge.appendTo(badgeTarget)
+              markOutline(outlineTarget)
+            },
+            indicateReflection() {
+              badge.blockReflected()
+              StoreUpdater.afterBlockUser(user)
+            },
+          })
+        }
+      }
+    )
+    export function startTweetItemObserver() {
+      document.addEventListener('MirrorBlock<-tweetItem', event => {
+        const customEvent = event as TweetItemEvent
+        const { tweetId } = customEvent.detail
+        if (failedTweetIds.has(tweetId)) {
+          return
+        }
+        const target = document.querySelector<HTMLElement>(
+          `[data-mirrorblock-tweetid="${tweetId}"]`
+        )!
+        tweetItemObserver.observe(target)
+      })
+    }
+  }
   namespace Helper {
     // tweetDetail에 사용자 이름을 넣는다
     export function insertNameToTweetDetailRegion(elem: HTMLElement): void {
@@ -298,27 +308,20 @@ namespace MirrorBlock.Mobile {
       )
       const region = elem.closest('section[role=region]') as HTMLElement | null
       if (authorLink && region) {
-        const name = getUserNameFromTweetUrl(authorLink)
+        const name = Utils.getUserNameFromTweetUrl(authorLink)
         if (name) {
           region.setAttribute('data-mirrorblock-tweetdetail-author', name)
         }
       }
     }
   }
-  function detect(rootElem: Document | HTMLElement): void {
+  function detect(rootElem: DOMQueryable): void {
     TweetLinkDetector.detectOnTweetLinks(rootElem)
     UserCellDetector.detectOnUserCell(rootElem)
     ProfileDetector.detectProfile(rootElem)
     DMUserListDetector.detectOnDMUserItem(rootElem)
   }
-  export async function initialize() {
-    const reactRoot = document.getElementById('react-root')
-    if (!reactRoot) {
-      return
-    }
-    await Utils.injectScript('vendor/uuid.js')
-    await Utils.injectScript('scripts/twitter-inject.js')
-    StoreRetriever.subcribeEvent()
+  function startObserve(reactRoot: HTMLElement): void {
     new MutationObserver(mutations => {
       for (const elem of Utils.getAddedElementsFromMutations(mutations)) {
         const tweetDetail = elem.querySelector<HTMLElement>(TI_TWEET_DETAIL)
@@ -331,6 +334,22 @@ namespace MirrorBlock.Mobile {
       subtree: true,
       childList: true,
     })
+    TweetConversationDetector.startTweetItemObserver()
+  }
+  export async function initialize() {
+    const reactRoot = document.getElementById('react-root')
+    if (!reactRoot) {
+      return
+    }
+    // 로그인여부 체크용
+    const myself = await TwitterAPI.getMyself().catch(() => null)
+    if (!myself) {
+      return
+    }
+    await Utils.injectScript('vendor/uuid.js')
+    await Utils.injectScript('scripts/twitter-inject.js')
+    StoreRetriever.subcribeEvent()
+    startObserve(reactRoot)
     detect(document)
   }
 }

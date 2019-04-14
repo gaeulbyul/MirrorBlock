@@ -27,6 +27,12 @@
   div[dir='ltr'][data-mirrorblock-blocks-you='1'] {
   outline: 2px solid crimson;
 }
+.mob-enable-outline
+  #react-root
+  [data-mirrorblock-tweetid]
+  [data-mirrorblock-blocks-you='1'] {
+  border: 2px solid crimson;
+}
 
 .mob-enable-outline
   #react-root

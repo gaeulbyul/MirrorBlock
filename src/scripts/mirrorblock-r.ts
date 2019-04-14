@@ -5,10 +5,11 @@ namespace MirrorBlock.Reflection {
     indicateReflection: () => void
   }
 
-  export async function reflectBlock(
-    reflOptions: ReflectionOptions
-  ): Promise<void> {
-    const { user, indicateBlock, indicateReflection } = reflOptions
+  export async function reflectBlock({
+    user,
+    indicateBlock,
+    indicateReflection,
+  }: ReflectionOptions): Promise<void> {
     if (!user.blocked_by) {
       return
     }
