@@ -42,9 +42,21 @@ interface Tweet {
   favorited: boolean
   retweeted: boolean
   isReported?: boolean // 넌 왜 camelCase냐!
-  quoted_status?: string
-  quoted_status_permalink?: UrlEntity
+  is_quote_status: boolean
+  in_reply_to_status_id_str?: string
+  in_reply_to_user_id_str?: string
+  in_reply_to_screen_name?: string
   $userObj?: TwitterUser
+  entities: {
+    // user_mentions?: []
+    // urls?:
+  }
+}
+
+interface TweetWithQuote extends Tweet {
+  is_quote_status: true
+  quoted_status: string
+  quoted_status_permalink: UrlEntity
 }
 
 interface UrlEntity {
@@ -57,18 +69,66 @@ interface TweetEntities {
   [tweetId: string]: Tweet
 }
 
-interface ReduxSubscribeEvent extends CustomEvent {
-  detail: {
-    users: TwitterUserEntities
-    tweets: TweetEntities
+interface BaseEntry {
+  entryId: string
+  sortIndex: string
+  type: string
+}
+
+interface BaseEntryContent {
+  id?: string
+  displayType: string
+}
+
+interface TweetEntry extends BaseEntry {
+  type: 'tweet'
+  content: TweetEntryContent | FocalTweetEntryContent
+}
+
+interface TweetEntryContent extends BaseEntryContent {
+  id: string
+  displayType: 'tweet'
+}
+
+interface FocalTweetEntryContent extends BaseEntryContent {
+  id: string
+  displayType: 'FocalTweet'
+  focal: {
+    contextTweetId: string
   }
 }
 
-interface TweetItemEvent extends CustomEvent {
-  detail: {
-    tweetId: string
-  }
+interface TombstoneEntry extends BaseEntry {
+  type: 'tombstone'
+  content: TombstoneEntryContent
 }
+
+interface TombstoneEntryContent extends BaseEntryContent {
+  id: undefined
+  displayType: 'TweetUnavailable' | 'Inline'
+  tombstoneInfo: {
+    text: string
+    richText: {
+      text: string
+    }
+    richRevealText?: {
+      text: string
+    }
+  }
+  tweet: TweetEntryContent
+}
+
+interface UserEntry extends BaseEntry {
+  type: 'user'
+  content: UserEntryContent
+}
+
+interface UserEntryContent extends BaseEntryContent {
+  displayType: 'UserDetailed'
+  id: string
+}
+
+type Entry = TweetEntry | TombstoneEntry | UserEntry
 
 interface FollowsListResponse {
   next_cursor_str: string

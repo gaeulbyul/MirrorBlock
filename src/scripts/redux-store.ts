@@ -1,4 +1,8 @@
 namespace MirrorBlock.Mobile.Redux {
+  type SubscribedEntities = {
+    users: TwitterUserEntities
+    tweets: TweetEntities
+  }
   const tweetMap = new Map<string, Tweet>()
   const userMapById = new Map<string, TwitterUser>()
   const userMapByName = new Map<string, TwitterUser>()
@@ -14,7 +18,7 @@ namespace MirrorBlock.Mobile.Redux {
     }
     export function subcribeEvent() {
       document.addEventListener('MirrorBlock<-subscribe', event => {
-        const customEvent = event as ReduxSubscribeEvent
+        const customEvent = event as CustomEvent<SubscribedEntities>
         const users = Object.entries(customEvent.detail.users)
         const tweets = Object.entries(customEvent.detail.tweets)
         for (const [userId, user] of users) {
@@ -82,7 +86,8 @@ namespace MirrorBlock.Mobile.Redux {
       }
     }
     export async function getUserById(
-      userId: string
+      userId: string,
+      useAPI: boolean
     ): Promise<TwitterUser | null> {
       if (failedUserParams.has(userId)) {
         return null
@@ -90,7 +95,7 @@ namespace MirrorBlock.Mobile.Redux {
       const userFromStore = StoreRetriever.getUserById(userId)
       if (userFromStore) {
         return userFromStore
-      } else {
+      } else if (useAPI) {
         console.debug('request api "%s"', userId)
         const user = await TwitterAPI.getSingleUserById(userId).catch(
           errorHandler(userId)
@@ -99,10 +104,13 @@ namespace MirrorBlock.Mobile.Redux {
           StoreUpdater.insertUserIntoStore(user)
         }
         return user
+      } else {
+        return null
       }
     }
     export async function getUserByName(
-      userName: string
+      userName: string,
+      useAPI: boolean
     ): Promise<TwitterUser | null> {
       if (failedUserParams.has(userName)) {
         return null
@@ -110,7 +118,7 @@ namespace MirrorBlock.Mobile.Redux {
       const userFromStore = StoreRetriever.getUserByName(userName)
       if (userFromStore) {
         return userFromStore
-      } else {
+      } else if (useAPI) {
         console.debug('request api "@%s"', userName)
         const user = await TwitterAPI.getSingleUserByName(userName).catch(
           errorHandler(userName)
@@ -119,6 +127,8 @@ namespace MirrorBlock.Mobile.Redux {
           StoreUpdater.insertUserIntoStore(user)
         }
         return user
+      } else {
+        return null
       }
     }
   }

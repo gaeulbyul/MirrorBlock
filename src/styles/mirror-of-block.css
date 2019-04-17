@@ -18,19 +18,12 @@
 
 .mob-enable-outline
   #react-root
-  [data-testid='UserCell'][data-mirrorblock-blocks-you='1'] {
-  outline: 2px solid crimson;
-}
-
-.mob-enable-outline
-  #react-root
   div[dir='ltr'][data-mirrorblock-blocks-you='1'] {
   outline: 2px solid crimson;
 }
 .mob-enable-outline
   #react-root
-  [data-mirrorblock-tweetid]
-  [data-mirrorblock-blocks-you='1'] {
+  [data-mirrorblock-entryid][data-mirrorblock-blocks-you='1'] {
   border: 2px solid crimson;
 }
 

@@ -28,4 +28,25 @@ namespace MirrorBlock.Reflection {
       }
     }
   }
+  export function reflectBlockOnVisible(
+    elem: HTMLElement,
+    reflOptions: ReflectionOptions
+  ) {
+    const intob = new IntersectionObserver((entries, observer) => {
+      const execute = () => reflectBlock(reflOptions)
+      const visibleEntries = entries.filter(ent => ent.isIntersecting)
+      for (const ent of visibleEntries) {
+        observer.unobserve(ent.target)
+        console.debug('visible!! ent: %o', ent)
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(execute, {
+            timeout: 1000,
+          })
+        } else {
+          execute()
+        }
+      }
+    })
+    intob.observe(elem)
+  }
 }

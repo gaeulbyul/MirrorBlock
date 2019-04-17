@@ -167,7 +167,7 @@ function dig<T>(obj: () => T): T | null {
     console.warn('requestIdleCallback not found. fallback')
     initialize()
   }
-  function setTweetIdToConversation() {
+  function sendEntryToExtension() {
     const section = document.querySelector('section[role=region]')
     if (!section) {
       return
@@ -180,38 +180,33 @@ function dig<T>(obj: () => T): T | null {
     }
     const items = Array.from(children, el => el as HTMLElement)
     for (const item of items) {
-      const rEventHandler = getReactEventHandler(item)!
-      const props = dig(() => rEventHandler.children.props.children.props)
-      if (!props || !('entry' in props)) {
+      if (item.hasAttribute('data-mirrorblock-entryid')) {
         continue
       }
-      const entry = props.entry
-      const content = entry.content
-      let tweetId = ''
-      if ('tombstoneInfo' in content && content.tweet && content.tweet.id) {
-        tweetId = content.tweet.id
+      const rEventHandler = getReactEventHandler(item)!
+      const entry = dig<Entry>(
+        () => rEventHandler.children.props.children.props.entry
+      )
+      if (!entry) {
+        continue
       }
-      if (tweetId) {
-        item.setAttribute('data-mirrorblock-tweetid', tweetId)
-        const cusEvent = new CustomEvent('MirrorBlock<-tweetItem', {
-          detail: {
-            tweetId,
-          },
-        })
-        document.dispatchEvent(cusEvent)
-      }
-      // tombstone이 아닌 경우 content.id를 통해 트윗 ID를 가져올 수 있다.
-      // 하지만, tombstone이 아니면 트윗이 보이는 상태이고
-      // 트윗이 보이면 날 차단한 상태가 아니므로 굳이 ID를 가져올 필요는 없음
-      // ```
-      // item.setAttribute('data-mirrorblock-tweetid', content.id)
-      // ```
+      // console.debug('%o %o', item, entry)
+      item.setAttribute('data-mirrorblock-entryid', entry.entryId)
+      const customEvent = new CustomEvent('MirrorBlock<-entry', {
+        detail: entry,
+      })
+      document.dispatchEvent(customEvent)
     }
-    section.classList.add('section-checked')
+  }
+  // 트윗타래: 연관된 사람
+  function sendAsideUserIdsToExtension() {
+    // asi.__reactEventHandlers$wyjgb0wrp5s.children[1].props.userIds
+    // asi.children[1].__reactEventHandlers$wyjgb0wrp5s.children[{}].props
   }
   function initializeTweetIdHelper(): void {
     new MutationObserver(() => {
-      setTweetIdToConversation()
+      sendEntryToExtension()
+      sendAsideUserIdsToExtension()
     }).observe(reactRoot, {
       subtree: true,
       childList: true,
