@@ -8,7 +8,8 @@ namespace MirrorBlock.Mobile.Redux {
   const userMapByName = new Map<string, TwitterUser>()
   export namespace StoreRetriever {
     export function getUserByName(userName: string): TwitterUser | null {
-      return userMapByName.get(userName) || null
+      const loweredName = userName.toLowerCase()
+      return userMapByName.get(loweredName) || null
     }
     export function getUserById(userId: string): TwitterUser | null {
       return userMapById.get(userId) || null
@@ -22,8 +23,9 @@ namespace MirrorBlock.Mobile.Redux {
         const users = Object.entries(customEvent.detail.users)
         const tweets = Object.entries(customEvent.detail.tweets)
         for (const [userId, user] of users) {
+          const loweredName = user.screen_name.toLowerCase()
           userMapById.set(userId, user)
-          userMapByName.set(user.screen_name, user)
+          userMapByName.set(loweredName, user)
         }
         for (const [tweetId, tweet] of tweets) {
           tweetMap.set(tweetId, tweet)
@@ -96,7 +98,7 @@ namespace MirrorBlock.Mobile.Redux {
       if (userFromStore) {
         return userFromStore
       } else if (useAPI) {
-        console.debug('request api "%s"', userId)
+        console.log('request api "%s"', userId)
         const user = await TwitterAPI.getSingleUserById(userId).catch(
           errorHandler(userId)
         )
@@ -112,14 +114,15 @@ namespace MirrorBlock.Mobile.Redux {
       userName: string,
       useAPI: boolean
     ): Promise<TwitterUser | null> {
-      if (failedUserParams.has(userName)) {
+      const loweredName = userName.toLowerCase()
+      if (failedUserParams.has(loweredName)) {
         return null
       }
-      const userFromStore = StoreRetriever.getUserByName(userName)
+      const userFromStore = StoreRetriever.getUserByName(loweredName)
       if (userFromStore) {
         return userFromStore
       } else if (useAPI) {
-        console.debug('request api "@%s"', userName)
+        console.log('request api "@%s"', userName)
         const user = await TwitterAPI.getSingleUserByName(userName).catch(
           errorHandler(userName)
         )
@@ -130,6 +133,31 @@ namespace MirrorBlock.Mobile.Redux {
       } else {
         return null
       }
+    }
+    export async function getMultipleUsersById(
+      userIds: string[]
+    ): Promise<TwitterUserMap> {
+      if (userIds.length > 100) {
+        throw new Error('too many user!')
+      }
+      const userMap = new TwitterUserMap()
+      const idsToRequestAPI: string[] = []
+      for (const userId of userIds) {
+        const userFromStore = StoreRetriever.getUserById(userId)
+        if (userFromStore) {
+          userMap.addUser(userFromStore)
+          continue
+        }
+        idsToRequestAPI.push(userId)
+      }
+      const usersFromAPI = await TwitterAPI.getMultipleUsersById(
+        idsToRequestAPI
+      )
+      for (const apiUser of usersFromAPI) {
+        userMap.addUser(apiUser)
+        StoreUpdater.insertUserIntoStore(apiUser)
+      }
+      return userMap
     }
   }
 }

@@ -25,6 +25,12 @@ namespace MirrorBlock.Mobile {
       `[data-mirrorblock-entryid="${entry.entryId}"]`
     )
   }
+  function getElemsByUserCell(userId: string): HTMLElement[] {
+    const elems = document.querySelectorAll<HTMLElement>(
+      `[data-mirrorblock-usercell-id="${userId}"]`
+    )
+    return Utils.filterElements(elems)
+  }
   namespace ProfileDetector {
     export async function detectProfile(rootElem: DOMQueryable) {
       const helpLinks = rootElem.querySelectorAll<HTMLElement>(
@@ -59,6 +65,9 @@ namespace MirrorBlock.Mobile {
   }
   namespace EntryHandler {
     async function handleQuotedTweet(tweet: TweetWithQuote, entry: TweetEntry) {
+      if (!tweet.quoted_status_permalink) {
+        return
+      }
       const qUrlString = tweet.quoted_status_permalink.expanded
       const qUrl = new URL(qUrlString)
       const quotedUserName = Utils.getUserNameFromTweetUrl(qUrl)!
@@ -81,12 +90,63 @@ namespace MirrorBlock.Mobile {
         },
       })
     }
+    async function handleMentionsInTweet(tweet: Tweet, entry: TweetEntry) {
+      const mentionedUserEntities = tweet.entities.user_mentions || []
+      if (mentionedUserEntities.length <= 0) {
+        return
+      }
+      const tweetElem = getElemByEntry(entry)!
+      const links = Array.from(
+        tweetElem.querySelectorAll<HTMLAnchorElement>('a[role=link][href^="/"]')
+      )
+      const mentionElemsMap = new Map<string, HTMLAnchorElement[]>(
+        mentionedUserEntities
+          .map(ent => ent.screen_name.toLowerCase())
+          .map(loweredName => [
+            loweredName,
+            links.filter(a => a.pathname.toLowerCase() === `/${loweredName}`),
+          ])
+      )
+      const overflowed = tweetElem.querySelector(
+        'a[aria-label][href$="/people"]'
+      )
+      const mentionedUsersMap = await UserGetter.getMultipleUsersById(
+        mentionedUserEntities.map(u => u.id_str)
+      )
+      for (const mUser of mentionedUsersMap.values()) {
+        if (!mUser.blocked_by) {
+          continue
+        }
+        const loweredName = mUser.screen_name.toLowerCase()
+        const mentionElems = mentionElemsMap.get(loweredName)!
+        const badge = new Badge()
+        reflectBlockOnVisible(tweetElem, {
+          user: mUser,
+          indicateBlock() {
+            if (mentionElems.length > 0) {
+              mentionElems.forEach(el => {
+                markOutline(el)
+                badge.attachAfter(el)
+              })
+            } else if (overflowed) {
+              markOutline(overflowed)
+              badge.showUserName(mUser.screen_name)
+              badge.attachAfter(overflowed)
+            }
+          },
+          indicateReflection() {
+            badge.blockReflected()
+          },
+        })
+      }
+    }
     export async function handleTweet(tweetEntry: TweetEntry) {
       const tweet = StoreRetriever.getTweet(tweetEntry.content.id)!
       if (tweet.is_quote_status) {
         const qtweet = tweet as TweetWithQuote
         handleQuotedTweet(qtweet, tweetEntry)
       }
+      handleMentionsInTweet(tweet, tweetEntry)
     }
     export async function handleUser(userEntry: UserEntry) {
       const user = StoreRetriever.getUserById(userEntry.content.id)!
@@ -113,8 +173,11 @@ namespace MirrorBlock.Mobile {
       })
     }
     export async function handleTombstone(tombstoneEntry: TombstoneEntry) {
-      console.debug(tombstoneEntry)
-      const tweetId = tombstoneEntry.content.tweet.id
+      const contentTweet = tombstoneEntry.content.tweet
+      if (!contentTweet) {
+        return
+      }
+      const tweetId = contentTweet.id
       const tweet = StoreRetriever.getTweet(tweetId)
       if (!tweet) {
         return
@@ -136,6 +199,34 @@ namespace MirrorBlock.Mobile {
         },
         indicateReflection() {
           badge.blockReflected
+        },
+      })
+    }
+  }
+  namespace UserCellHandler {
+    export async function handleUserCells(userId: string) {
+      const userCellElems = getElemsByUserCell(userId)
+      if (userCellElems.length <= 0) {
+        return
+      }
+      const user = await UserGetter.getUserById(userId, false)
+      if (!user || !user.blocked_by) {
+        return
+      }
+      const badgesPool: Badge.Badge[] = []
+      reflectBlock({
+        user,
+        indicateBlock() {
+          const badge = new Badge()
+          badgesPool.push(badge)
+          for (const elem of userCellElems) {
+            markOutline(elem)
+            const badgeTarget = elem.querySelector('div[dir=ltr]')!
+            badge.attachAfter(badgeTarget)
+          }
+        },
+        indicateReflection() {
+          badgesPool.forEach(b => b.blockReflected())
         },
       })
     }
@@ -167,22 +258,44 @@ namespace MirrorBlock.Mobile {
           break
         }
         default: {
-          console.debug('entry: %o', entry)
+          // console.debug('entry: %o', entry)
         }
       }
     })
+    document.addEventListener('MirrorBlock<-UserCell', event => {
+      const customEvent = event as CustomEvent<{ userId: string }>
+      const { userId } = customEvent.detail
+      UserCellHandler.handleUserCells(userId)
+    })
+  }
+  async function isLoggedIn(): Promise<boolean> {
+    try {
+      const scripts = Array.from(document.querySelectorAll('script:not([src])'))
+      const result = scripts
+        .map(script => /"isLoggedIn":(true|false)/.exec(script.innerHTML))
+        .filter(n => !!n)
+        .pop()!
+        .pop()
+      return result === 'true'
+    } catch (err) {
+      console.warn('warning. login-check logic should update.')
+      console.warn('error: %o', err)
+      const checkViaAPI = await TwitterAPI.getMyself().then(
+        () => true,
+        () => false
+      )
+      return checkViaAPI
+    }
   }
   export async function initialize() {
     const reactRoot = document.getElementById('react-root')
     if (!reactRoot) {
       return
     }
-    // 로그인여부 체크용
-    // TODO: API 대신 reduxStore 쓰기?
-    // const myself = await TwitterAPI.getMyself().catch(() => null)
-    // if (!myself) {
-    //   return
-    // }
+    const loggedIn = await isLoggedIn()
+    if (!loggedIn) {
+      return
+    }
     await Utils.injectScript('vendor/uuid.js')
     await Utils.injectScript('scripts/twitter-inject.js')
     StoreRetriever.subcribeEvent()

@@ -15,6 +15,11 @@
 .mob-enable-outline .js-user-profile-link.mob-blocks-you-outline {
   outline: 2px solid crimson;
 }
+.mob-enable-outline
+  #react-root
+  [data-testid='UserCell'][data-mirrorblock-blocks-you='1'] {
+  border: 2px solid crimson;
+}
 
 .mob-enable-outline
   #react-root

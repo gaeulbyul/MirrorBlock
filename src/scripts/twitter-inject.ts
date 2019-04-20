@@ -17,11 +17,11 @@ function dig<T>(obj: () => T): T | null {
 }
 {
   const reactRoot = document.getElementById('react-root')!
-  function getReactEventHandler(target: any): any {
+  function getReactEventHandler(target: Element): any {
     const key = Object.keys(target)
       .filter((k: string) => k.startsWith('__reactEventHandlers'))
       .pop()
-    return key ? target[key] : null
+    return key ? (target as any)[key] : null
   }
   function isReduxStore(something: any): something is ReduxStore {
     if (!something) {
@@ -198,15 +198,46 @@ function dig<T>(obj: () => T): T | null {
       document.dispatchEvent(customEvent)
     }
   }
-  // 트윗타래: 연관된 사람
-  function sendAsideUserIdsToExtension() {
-    // asi.__reactEventHandlers$wyjgb0wrp5s.children[1].props.userIds
-    // asi.children[1].__reactEventHandlers$wyjgb0wrp5s.children[{}].props
+  function sendUserCellToExtension() {
+    // 그냥 [data-testid=UserCell] 쓰면 트윗타래의 원작성자 부분(tweetDetail)도 걸리는데,
+    // 이건 사용자목록이 아니므로 판단치 않도록.
+    const userCells = document.querySelectorAll('div[data-testid=UserCell]')
+    if (userCells.length <= 0) {
+      return
+    }
+    const parentsOfCell = new Set<HTMLElement>()
+    for (const cell of userCells) {
+      if (cell.matches('[data-mirrorblock-entryid]')) {
+        continue
+      }
+      const parent = cell.parentElement!
+      parentsOfCell.add(parent)
+    }
+    for (const parentElem of parentsOfCell) {
+      const rEventHandler = getReactEventHandler(parentElem)
+      const rChildrens = dig<{ props: UserCell }[]>(
+        () => rEventHandler.children
+      )
+      if (!rChildrens) {
+        continue
+      }
+      Array.from(parentElem.children).forEach((childElem, index) => {
+        const userId = dig(() => rChildrens[index].props.userId)
+        if (!userId || childElem.hasAttribute('data-mirrorblock-usercell-id')) {
+          return
+        }
+        childElem.setAttribute('data-mirrorblock-usercell-id', userId)
+        const customEvent = new CustomEvent('MirrorBlock<-UserCell', {
+          detail: { userId },
+        })
+        document.dispatchEvent(customEvent)
+      })
+    }
   }
   function initializeTweetIdHelper(): void {
     new MutationObserver(() => {
       sendEntryToExtension()
-      sendAsideUserIdsToExtension()
+      sendUserCellToExtension()
     }).observe(reactRoot, {
       subtree: true,
       childList: true,

@@ -37,7 +37,6 @@ namespace MirrorBlock.Reflection {
       const visibleEntries = entries.filter(ent => ent.isIntersecting)
       for (const ent of visibleEntries) {
         observer.unobserve(ent.target)
-        console.debug('visible!! ent: %o', ent)
         if ('requestIdleCallback' in window) {
           requestIdleCallback(execute, {
             timeout: 1000,

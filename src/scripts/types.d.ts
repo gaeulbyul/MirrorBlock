@@ -48,15 +48,27 @@ interface Tweet {
   in_reply_to_screen_name?: string
   $userObj?: TwitterUser
   entities: {
-    // user_mentions?: []
-    // urls?:
+    user_mentions?: MentionedUser[]
+    urls?: UrlEntityInTweet[]
   }
+}
+
+interface MentionedUser {
+  id_str: string
+  screen_name: string
+  name: string
+}
+
+interface UrlEntityInTweet {
+  url: string
+  display_url: string
+  expanded_url: string
 }
 
 interface TweetWithQuote extends Tweet {
   is_quote_status: true
-  quoted_status: string
-  quoted_status_permalink: UrlEntity
+  quoted_status?: string
+  quoted_status_permalink?: UrlEntity
 }
 
 interface UrlEntity {
@@ -115,7 +127,7 @@ interface TombstoneEntryContent extends BaseEntryContent {
       text: string
     }
   }
-  tweet: TweetEntryContent
+  tweet?: TweetEntryContent
 }
 
 interface UserEntry extends BaseEntry {
@@ -129,6 +141,13 @@ interface UserEntryContent extends BaseEntryContent {
 }
 
 type Entry = TweetEntry | TombstoneEntry | UserEntry
+
+interface UserCell {
+  displayMode: string
+  promotedItemType: string
+  userId: string
+  withFollowsYou: boolean
+}
 
 interface FollowsListResponse {
   next_cursor_str: string

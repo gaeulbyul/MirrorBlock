@@ -28,6 +28,36 @@ const USER_NAME_BLACKLIST = Object.freeze([
   'explore',
 ])
 
+class TwitterUserMap extends Map<string, TwitterUser> {
+  public addUser(user: TwitterUser, forceUpdate = false) {
+    const shouldUpdate = forceUpdate || !this.has(user.id_str)
+    if (shouldUpdate) {
+      this.set(user.id_str, user)
+    }
+  }
+  public toUserArray(): TwitterUser[] {
+    return Array.from(this.values())
+  }
+  public async refreshUsers(): Promise<TwitterUserMap> {
+    const freshMap = new TwitterUserMap()
+    const refreshSingleUser = async (user: TwitterUser) => {
+      return TwitterAPI.getSingleUserById(user.id_str)
+        .catch(() => null)
+        .then(freshUser => {
+          if (freshUser) {
+            freshMap.addUser(freshUser, true)
+          }
+        })
+    }
+    return Promise.all(this.toUserArray().map(refreshSingleUser)).then(
+      () => freshMap
+    )
+  }
+  public static fromUsersArray(users: TwitterUser[]): TwitterUserMap {
+    return new TwitterUserMap(users.map(user => [user.id_str, user]))
+  }
+}
+
 abstract class EventEmitter {
   protected events: EventStore = {}
   on<T>(eventName: string, handler: (t: T) => any) {

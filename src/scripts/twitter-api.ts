@@ -221,24 +221,20 @@ namespace TwitterAPI {
     }
   }
 
-  export async function getMultipleUsersByName(
-    userNames: string[]
+  export async function getMultipleUsersById(
+    userIds: string[]
   ): Promise<TwitterUser[]> {
-    if (userNames.length === 0) {
+    if (userIds.length === 0) {
       return []
     }
-    if (userNames.length > 100) {
+    if (userIds.length > 100) {
       throw new Error('too many users! (> 100)')
     }
-    const joinedNames = Array.from(new Set(userNames)).join(',')
-    const everyNamesAreValid = userNames.every(validateTwitterUserName)
-    if (!everyNamesAreValid) {
-      throw new Error(`Someone's name is invalid! check:[${joinedNames}]`)
-    }
+    const joinedIds = Array.from(new Set(userIds)).join(',')
     const response = await requestAPI('post', '/users/lookup.json', {
-      screen_name: joinedNames,
+      user_id: joinedIds,
       include_entities: false,
-      // user_id: ...
+      // screen_name: ...
     })
     if (response.ok) {
       return response.json() as Promise<TwitterUser[]>
