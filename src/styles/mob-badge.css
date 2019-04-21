@@ -51,6 +51,10 @@
   font-size: 12px;
 }
 
+#react-root [data-testid='tweetDetail'] .badge {
+  font-size: smaller;
+}
+
 .account .badge {
   margin: 0;
 }

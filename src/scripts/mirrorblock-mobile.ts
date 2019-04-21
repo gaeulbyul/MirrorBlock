@@ -15,11 +15,6 @@ namespace MirrorBlock.Mobile {
       elem.setAttribute('data-mirrorblock-blocks-you', '1')
     }
   }
-  function markOutlineViaCSS(elem: HTMLElement | null): void {
-    if (elem) {
-      elem.style.border = '2px solid crimson'
-    }
-  }
   function getElemByEntry(entry: Entry): HTMLElement | null {
     return document.querySelector(
       `[data-mirrorblock-entryid="${entry.entryId}"]`
@@ -77,7 +72,6 @@ namespace MirrorBlock.Mobile {
       }
       const elem = getElemByEntry(entry)!
       const badge = new Badge()
-      badge.showUserName(quotedUser.screen_name)
       const quoteLink = elem.querySelector(`a[href^="${qUrl.pathname}" i]`)!
       reflectBlockOnVisible(elem, {
         user: quotedUser,
@@ -194,7 +188,7 @@ namespace MirrorBlock.Mobile {
       reflectBlockOnVisible(elem, {
         user,
         indicateBlock() {
-          markOutlineViaCSS(outlineTarget)
+          markOutline(outlineTarget)
           badge.appendTo(badgeTarget)
         },
         indicateReflection() {
