@@ -1,3 +1,4 @@
+/* 구 UI */
 .mob-enable-outline .ProfileCard.mob-blocks-you-outline {
   outline: 3px solid crimson;
 }
@@ -15,20 +16,9 @@
 .mob-enable-outline .js-user-profile-link.mob-blocks-you-outline {
   outline: 2px solid crimson;
 }
-.mob-enable-outline
-  #react-root
-  [data-testid='UserCell'][data-mirrorblock-blocks-you='1'] {
-  border: 2px solid crimson;
-}
 
-.mob-enable-outline
-  #react-root
-  div[dir='ltr'][data-mirrorblock-blocks-you='1'] {
-  outline: 2px solid crimson;
-}
-.mob-enable-outline
-  #react-root
-  [data-mirrorblock-entryid][data-mirrorblock-blocks-you='1'] {
+/* 신 UI */
+.mob-enable-outline #react-root [data-mirrorblock-blocks-you='1'] {
   border: 2px solid crimson;
 }
 
@@ -45,6 +35,4 @@
   더 깔끔하게 표시하기 위해 inline-block으로 처리
    */
   display: inline-block;
-  padding: 0 0.1rem;
-  border: 2px solid crimson;
 }
