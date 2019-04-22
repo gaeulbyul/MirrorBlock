@@ -216,7 +216,7 @@ function dig<T>(obj: () => T): T | null {
     const lengthCheck =
       userIds.length > 0 &&
       userCells.length > 0 &&
-      userIds.length !== userCells.length
+      userIds.length === userCells.length
     if (!lengthCheck) {
       return null
     }
