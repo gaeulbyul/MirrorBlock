@@ -198,40 +198,100 @@ function dig<T>(obj: () => T): T | null {
       document.dispatchEvent(customEvent)
     }
   }
+  function handleUserCellsInAside(): NodeListOf<Element> | null {
+    const asideElem = document.querySelector(
+      'div[data-testid=sidebarColumn] aside[role=complementary]'
+    )
+    if (!asideElem || asideElem.classList.contains('mob-checked')) {
+      return null
+    }
+    const rEventHandler = getReactEventHandler(asideElem)
+    const userIds =
+      dig<string[]>(() => rEventHandler.children[1].props.userIds) || []
+    const userCells = asideElem.querySelectorAll('div[data-testid=UserCell]')
+    // ids !== cells:
+    // 일부 사용자 UserCell이 로딩되지 않았을 것이다.
+    // (특히, 날 차단한 사용자는 다른 cell보다 늦게 뜬다)
+    // 따라서, 처리하지 않고 무시하기로
+    const lengthCheck =
+      userIds.length > 0 &&
+      userCells.length > 0 &&
+      userIds.length !== userCells.length
+    if (!lengthCheck) {
+      return null
+    }
+    userCells.forEach((cell, index) => {
+      const userId = userIds[index]
+      if (!userId) {
+        return
+      }
+      cell.setAttribute('data-mirrorblock-usercell-id', userId)
+    })
+    asideElem.classList.add('mob-checked')
+    return userCells
+  }
+  function handleUserCellsInRepliers(): NodeListOf<Element> | null {
+    const rootElem = document.querySelector(
+      '[aria-modal=true], main[role=main]'
+    )
+    if (!rootElem) {
+      return null
+    }
+    // 모바일 UI의 경우 main[role=main]을 기준으로 삼는데,
+    // 이 땐 header[role=banner]가 안 떠야 한다.
+    if (rootElem.matches('main[role=main]')) {
+      const prevElem = rootElem.previousElementSibling
+      if (prevElem && prevElem.matches('header[role=banner]')) {
+        return null
+      }
+    }
+    const cellElems = rootElem.querySelectorAll('[data-testid=UserCell]')
+    if (cellElems.length <= 0) {
+      return null
+    }
+    const parent = cellElems[0].parentElement!
+    const rEventHandler = getReactEventHandler(parent)!
+    const cellDatas = dig<UserCell[]>(() => {
+      return rEventHandler.children.map((c: any) => c.props)
+    })
+    if (!cellDatas) {
+      return null
+    }
+    if (cellElems.length !== cellDatas.length) {
+      return null
+    }
+    cellElems.forEach((cell, index) => {
+      const { userId } = cellDatas[index]
+      if (!userId) {
+        return
+      }
+      cell.setAttribute('data-mirrorblock-usercell-id', userId)
+    })
+    rootElem.classList.add('mob-checked')
+    return cellElems
+  }
   function sendUserCellToExtension() {
-    // 그냥 [data-testid=UserCell] 쓰면 트윗타래의 원작성자 부분(tweetDetail)도 걸리는데,
-    // 이건 사용자목록이 아니므로 판단치 않도록.
-    const userCells = document.querySelectorAll('div[data-testid=UserCell]')
-    if (userCells.length <= 0) {
-      return
+    const userCells: Element[] = []
+    const cellsInAside = handleUserCellsInAside()
+    if (cellsInAside) {
+      userCells.push(...Array.from(cellsInAside))
     }
-    const parentsOfCell = new Set<HTMLElement>()
-    for (const cell of userCells) {
-      if (cell.matches('[data-mirrorblock-entryid]')) {
+    const cellsInModal = handleUserCellsInRepliers()
+    if (cellsInModal) {
+      userCells.push(...Array.from(cellsInModal))
+    }
+    for (const userCell of userCells) {
+      if (userCell.closest('[data-mirrorblock-entryid]')) {
         continue
       }
-      const parent = cell.parentElement!
-      parentsOfCell.add(parent)
-    }
-    for (const parentElem of parentsOfCell) {
-      const rEventHandler = getReactEventHandler(parentElem)
-      const rChildrens = dig<{ props: UserCell }[]>(
-        () => rEventHandler.children
-      )
-      if (!rChildrens) {
+      const userId = userCell.getAttribute('data-mirrorblock-usercell-id')
+      if (!userId) {
         continue
       }
-      Array.from(parentElem.children).forEach((childElem, index) => {
-        const userId = dig(() => rChildrens[index].props.userId)
-        if (!userId || childElem.hasAttribute('data-mirrorblock-usercell-id')) {
-          return
-        }
-        childElem.setAttribute('data-mirrorblock-usercell-id', userId)
-        const customEvent = new CustomEvent('MirrorBlock<-UserCell', {
-          detail: { userId },
-        })
-        document.dispatchEvent(customEvent)
+      const customEvent = new CustomEvent('MirrorBlock<-UserCell', {
+        detail: { userId },
       })
+      document.dispatchEvent(customEvent)
     }
   }
   function initializeTweetIdHelper(): void {

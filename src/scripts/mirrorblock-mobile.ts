@@ -106,7 +106,10 @@ namespace MirrorBlock.Mobile {
       )
       const mentionedUsersMap = await UserGetter.getMultipleUsersById(
         mentionedUserEntities.map(u => u.id_str)
-      )
+      ).catch(() => null)
+      if (!mentionedUsersMap) {
+        return
+      }
       for (const mUser of mentionedUsersMap.values()) {
         if (!mUser.blocked_by) {
           continue
