@@ -149,6 +149,17 @@ interface UserCell {
   withFollowsYou: boolean
 }
 
+type ReduxStoreEventNames =
+  | 'insertSingleUserIntoStore'
+  | 'insertMultipleUsersIntoStore'
+  | 'afterBlockUser'
+  | 'toastMessage'
+
+interface UserCellIdentifier {
+  userId: string | null
+  userName: string | null
+}
+
 interface FollowsListResponse {
   next_cursor_str: string
   users: TwitterUser[]

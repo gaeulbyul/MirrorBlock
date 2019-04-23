@@ -20,10 +20,16 @@ namespace MirrorBlock.Mobile {
       `[data-mirrorblock-entryid="${entry.entryId}"]`
     )
   }
-  function getElemsByUserCell(userId: string): HTMLElement[] {
-    const elems = document.querySelectorAll<HTMLElement>(
-      `[data-mirrorblock-usercell-id="${userId}"]`
-    )
+  function getElemsByUserCell(idOrName: UserCellIdentifier): HTMLElement[] {
+    const { userId, userName } = idOrName
+    let selectors: string[] = []
+    if (userId) {
+      selectors.push(`[data-mirrorblock-usercell-id="${userId}"]`)
+    }
+    if (userName) {
+      selectors.push(`[data-mirrorblock-usercell-name="${userName}"]`)
+    }
+    const elems = document.querySelectorAll<HTMLElement>(selectors.join(','))
     return Utils.filterElements(elems)
   }
   namespace ProfileDetector {
@@ -201,12 +207,20 @@ namespace MirrorBlock.Mobile {
     }
   }
   namespace UserCellHandler {
-    export async function handleUserCells(userId: string) {
-      const userCellElems = getElemsByUserCell(userId)
+    export async function handleUserCells(idOrName: UserCellIdentifier) {
+      const { userId, userName } = idOrName
+      const userCellElems = getElemsByUserCell(idOrName)
       if (userCellElems.length <= 0) {
         return
       }
-      const user = await UserGetter.getUserById(userId, false)
+      let user: TwitterUser | null = null
+      if (userId) {
+        user = await UserGetter.getUserById(userId, false)
+      } else if (userName) {
+        user = await UserGetter.getUserByName(userName, false)
+      } else {
+        throw new Error('unreachable')
+      }
       if (!user || !user.blocked_by) {
         return
       }
@@ -260,9 +274,9 @@ namespace MirrorBlock.Mobile {
       }
     })
     document.addEventListener('MirrorBlock<-UserCell', event => {
-      const customEvent = event as CustomEvent<{ userId: string }>
-      const { userId } = customEvent.detail
-      UserCellHandler.handleUserCells(userId)
+      const customEvent = event as CustomEvent<UserCellIdentifier>
+      const { userId, userName } = customEvent.detail
+      UserCellHandler.handleUserCells({ userId, userName })
     })
   }
   async function isLoggedIn(): Promise<boolean> {

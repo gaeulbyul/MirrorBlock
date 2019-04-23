@@ -87,7 +87,7 @@ function dig<T>(obj: () => T): T | null {
     }
   }
   function addEvent(
-    name: string,
+    name: ReduxStoreEventNames,
     callback: (event: CustomEvent) => void
   ): void {
     document.addEventListener(`MirrorBlock->${name}`, event => {
@@ -104,20 +104,23 @@ function dig<T>(obj: () => T): T | null {
       const state = reduxStore.getState()
       sendEntitiesToExtension(state)
     })
-    addEvent('insertUserIntoStore', event => {
-      const { user: user_ } = event.detail
-      if (typeof user_.id_str !== 'string') {
-        console.error(user_)
-        throw new Error('whats this')
-      }
-      const user = user_ as TwitterUser
-      const userId = user.id_str
+    addEvent('insertSingleUserIntoStore', event => {
+      const user: TwitterUser = event.detail.user
       reduxStore.dispatch({
         type: 'rweb/entities/ADD_ENTITIES',
         payload: {
           users: {
-            [userId]: user,
+            [user.id_str]: user,
           },
+        },
+      })
+    })
+    addEvent('insertMultipleUsersIntoStore', event => {
+      const users: TwitterUserEntities = event.detail.users
+      reduxStore.dispatch({
+        type: 'rweb/entities/ADD_ENTITIES',
+        payload: {
+          users,
         },
       })
     })
@@ -202,32 +205,21 @@ function dig<T>(obj: () => T): T | null {
     const asideElem = document.querySelector(
       'div[data-testid=sidebarColumn] aside[role=complementary]'
     )
-    if (!asideElem || asideElem.classList.contains('mob-checked')) {
+    if (!asideElem) {
       return null
     }
-    const rEventHandler = getReactEventHandler(asideElem)
-    const userIds =
-      dig<string[]>(() => rEventHandler.children[1].props.userIds) || []
+    // react내 값으로 id를 가져오려 했는데 계속 일부 사용자의 ID가 누락된다.
+    // 일단은 이전 방식을 사용함
     const userCells = asideElem.querySelectorAll('div[data-testid=UserCell]')
-    // ids !== cells:
-    // 일부 사용자 UserCell이 로딩되지 않았을 것이다.
-    // (특히, 날 차단한 사용자는 다른 cell보다 늦게 뜬다)
-    // 따라서, 처리하지 않고 무시하기로
-    const lengthCheck =
-      userIds.length > 0 &&
-      userCells.length > 0 &&
-      userIds.length === userCells.length
-    if (!lengthCheck) {
-      return null
-    }
-    userCells.forEach((cell, index) => {
-      const userId = userIds[index]
-      if (!userId) {
-        return
+    for (const cell of userCells) {
+      const ltr = cell.querySelector('a[role=link] div[dir=ltr]')
+      const userName = ltr && ltr.textContent
+      if (!(userName && /^@[0-9a-z_]{1,15}/i.test(userName))) {
+        continue
       }
-      cell.setAttribute('data-mirrorblock-usercell-id', userId)
-    })
-    asideElem.classList.add('mob-checked')
+      const userNameWithoutAtSign = userName.replace(/^@/, '')
+      cell.setAttribute('data-mirrorblock-usercell-name', userNameWithoutAtSign)
+    }
     return userCells
   }
   function handleUserCellsInRepliers(): NodeListOf<Element> | null {
@@ -267,7 +259,6 @@ function dig<T>(obj: () => T): T | null {
       }
       cell.setAttribute('data-mirrorblock-usercell-id', userId)
     })
-    rootElem.classList.add('mob-checked')
     return cellElems
   }
   function sendUserCellToExtension() {
@@ -285,11 +276,12 @@ function dig<T>(obj: () => T): T | null {
         continue
       }
       const userId = userCell.getAttribute('data-mirrorblock-usercell-id')
-      if (!userId) {
+      const userName = userCell.getAttribute('data-mirrorblock-usercell-name')
+      if (!(userId || userName)) {
         continue
       }
       const customEvent = new CustomEvent('MirrorBlock<-UserCell', {
-        detail: { userId },
+        detail: { userId, userName },
       })
       document.dispatchEvent(customEvent)
     }

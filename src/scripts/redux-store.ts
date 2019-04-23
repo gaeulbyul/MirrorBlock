@@ -45,19 +45,29 @@ namespace MirrorBlock.Mobile.Redux {
         return detail
       }
     }
-    function triggerPageEvent(eventName: string, eventDetail?: object): void {
+    function triggerPageEvent(
+      eventName: ReduxStoreEventNames,
+      eventDetail?: object
+    ): void {
       const detail = cloneDetail(eventDetail)
       const requestEvent = new CustomEvent(`MirrorBlock->${eventName}`, {
         detail,
       })
       document.dispatchEvent(requestEvent)
     }
-    export async function insertUserIntoStore(
+    export async function insertSingleUserIntoStore(
       user: TwitterUser
     ): Promise<void> {
-      userMapByName.set(user.screen_name, user)
-      triggerPageEvent('insertUserIntoStore', {
+      triggerPageEvent('insertSingleUserIntoStore', {
         user,
+      })
+    }
+    export async function insertMultipleUsersIntoStore(
+      usersMap: TwitterUserMap
+    ): Promise<void> {
+      const usersObj = usersMap.toUserObject()
+      triggerPageEvent('insertMultipleUsersIntoStore', {
+        users: usersObj,
       })
     }
     export async function afterBlockUser(user: TwitterUser): Promise<void> {
@@ -66,7 +76,7 @@ namespace MirrorBlock.Mobile.Redux {
       })
       const clonedUser = Object.assign({}, user)
       clonedUser.blocking = true
-      insertUserIntoStore(clonedUser)
+      insertSingleUserIntoStore(clonedUser)
     }
     export async function toastMessage(text: string): Promise<void> {
       triggerPageEvent('toastMessage', {
@@ -103,7 +113,7 @@ namespace MirrorBlock.Mobile.Redux {
           errorHandler(userId)
         )
         if (user) {
-          StoreUpdater.insertUserIntoStore(user)
+          StoreUpdater.insertSingleUserIntoStore(user)
         }
         return user
       } else {
@@ -127,7 +137,7 @@ namespace MirrorBlock.Mobile.Redux {
           errorHandler(userName)
         )
         if (user) {
-          StoreUpdater.insertUserIntoStore(user)
+          StoreUpdater.insertSingleUserIntoStore(user)
         }
         return user
       } else {
@@ -152,10 +162,10 @@ namespace MirrorBlock.Mobile.Redux {
       }
       const usersFromAPI = await TwitterAPI.getMultipleUsersById(
         idsToRequestAPI
-      )
-      for (const apiUser of usersFromAPI) {
+      ).then(users => TwitterUserMap.fromUsersArray(users))
+      StoreUpdater.insertMultipleUsersIntoStore(usersFromAPI)
+      for (const apiUser of usersFromAPI.values()) {
         userMap.addUser(apiUser)
-        StoreUpdater.insertUserIntoStore(apiUser)
       }
       return userMap
     }

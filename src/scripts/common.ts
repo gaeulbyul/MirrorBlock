@@ -38,6 +38,13 @@ class TwitterUserMap extends Map<string, TwitterUser> {
   public toUserArray(): TwitterUser[] {
     return Array.from(this.values())
   }
+  public toUserObject(): TwitterUserEntities {
+    const usersObj: TwitterUserEntities = {}
+    for (const [userId, user] of this) {
+      usersObj[userId] = user
+    }
+    return usersObj
+  }
   public async refreshUsers(): Promise<TwitterUserMap> {
     const freshMap = new TwitterUserMap()
     const refreshSingleUser = async (user: TwitterUser) => {
