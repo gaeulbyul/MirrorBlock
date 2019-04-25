@@ -99,7 +99,7 @@
 
   async function foundTargetHandler(ft: FoundTarget): Promise<void> {
     ft.addOutlineClassName()
-    const badge = new MirrorBlock.Badge.Badge()
+    const badge = new MirrorBlock.Badge.Badge(null)
     badge.appendTo(ft.badgeElem)
     const options = await MirrorBlock.Options.load()
     const muteSkip = ft.muted && !options.blockMutedUser

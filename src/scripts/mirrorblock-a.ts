@@ -1,4 +1,8 @@
 {
+  const {
+    Badge: { Badge },
+    Reflection: { reflectBlock },
+  } = MirrorBlock
   // 보이지 않는 인용트윗은 트위터에서 내부적으로 Tombstone이란 클래스네임이 붙는다.
   async function tombstoneHandler(ts: HTMLElement): Promise<void> {
     const parent = ts.parentElement
@@ -21,9 +25,9 @@
       if (!targetUser) {
         return
       }
-      const badge = new MirrorBlock.Badge.Badge()
-      badge.showUserName(targetUser.screen_name)
-      MirrorBlock.Reflection.reflectBlock({
+      const badge = new Badge(targetUser)
+      badge.showUserName()
+      reflectBlock({
         user: targetUser,
         indicateBlock() {
           badge.appendTo(ts)

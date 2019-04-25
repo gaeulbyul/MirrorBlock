@@ -1,4 +1,8 @@
 {
+  const {
+    Badge: { Badge },
+    Reflection: { reflectBlock },
+  } = MirrorBlock
   async function handleDM(elem: HTMLElement) {
     const header = elem.querySelector('#dm_dialog-header')
     if (!header) {
@@ -15,8 +19,8 @@
       return
     }
     const userBadges = header.querySelector('.UserBadges')!
-    const badge = new MirrorBlock.Badge.Badge()
-    MirrorBlock.Reflection.reflectBlock({
+    const badge = new Badge(targetUser)
+    reflectBlock({
       user: targetUser,
       indicateBlock() {
         badge.appendTo(userBadges)

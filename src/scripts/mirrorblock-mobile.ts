@@ -56,7 +56,7 @@ namespace MirrorBlock.Mobile {
       if (!user) {
         return
       }
-      const badge = new Badge()
+      const badge = new Badge(user)
       reflectBlock({
         user,
         indicateBlock() {
@@ -82,7 +82,7 @@ namespace MirrorBlock.Mobile {
         return
       }
       const elem = getElemByEntry(entry)!
-      const badge = new Badge()
+      const badge = new Badge(quotedUser)
       const quoteLink = elem.querySelector(`a[href^="${qUrl.pathname}" i]`)!
       reflectBlockOnVisible(elem, {
         user: quotedUser,
@@ -128,7 +128,7 @@ namespace MirrorBlock.Mobile {
         }
         const loweredName = mUser.screen_name.toLowerCase()
         const mentionElems = mentionElemsMap.get(loweredName)!
-        const badge = new Badge()
+        const badge = new Badge(mUser)
         reflectBlockOnVisible(tweetElem, {
           user: mUser,
           indicateBlock() {
@@ -139,7 +139,7 @@ namespace MirrorBlock.Mobile {
               })
             } else if (overflowed) {
               markOutline(overflowed)
-              badge.showUserName(mUser.screen_name)
+              badge.showUserName()
               badge.attachAfter(overflowed)
             }
           },
@@ -164,7 +164,7 @@ namespace MirrorBlock.Mobile {
         return
       }
       const elem = getElemByEntry(userEntry)!
-      const badge = new Badge()
+      const badge = new Badge(user)
       const badgeTarget = elem.querySelector(
         `a[role=link][href^="/${user.screen_name}" i] [dir=ltr]`
       )
@@ -198,8 +198,8 @@ namespace MirrorBlock.Mobile {
         return
       }
       const elem = getElemByEntry(tombstoneEntry)!
-      const badge = new Badge()
-      badge.showUserName(user.screen_name)
+      const badge = new Badge(user)
+      badge.showUserName()
       const badgeTarget = elem.querySelector('span[dir]')!
       const outlineTarget = badgeTarget.closest('div[dir=auto]')!.parentElement!
       reflectBlockOnVisible(elem, {
@@ -241,7 +241,7 @@ namespace MirrorBlock.Mobile {
       reflectBlock({
         user,
         indicateBlock() {
-          const badge = new Badge()
+          const badge = new Badge(user)
           badgesPool.push(badge)
           for (const elem of userCellElems) {
             markOutline(elem)
@@ -275,9 +275,9 @@ namespace MirrorBlock.Mobile {
         return
       }
       for (const userToBlock of blockedMe.values()) {
-        const badge = new Badge()
+        const badge = new Badge(userToBlock)
         if (dmData.type === 'GROUP_DM') {
-          badge.showUserName(userToBlock.screen_name)
+          badge.showUserName()
         }
         await reflectBlock({
           user: userToBlock,

@@ -1,8 +1,8 @@
 namespace MirrorBlock.Badge {
   export class Badge {
     private readonly baseElem = document.createElement('span')
-    constructor() {
-      this.baseElem.className = 'mob-badge mob-badge-v2'
+    constructor(private user: TwitterUser | null) {
+      this.baseElem.className = 'mob-badge'
       this.baseElem.style.whiteSpace = 'initial'
       this.baseElem.innerHTML = `\
 <span class="badge-wrapper">
@@ -15,7 +15,11 @@ namespace MirrorBlock.Badge {
   </span>
 </span>`
     }
-    public showUserName(name: string) {
+    public showUserName() {
+      if (!this.user) {
+        throw new Error('user is null!')
+      }
+      const name = this.user.screen_name
       const userNameElem = this.baseElem.querySelector<HTMLElement>(
         '.badge-username'
       )!
