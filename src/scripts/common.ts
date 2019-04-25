@@ -63,6 +63,9 @@ class TwitterUserMap extends Map<string, TwitterUser> {
   public static fromUsersArray(users: TwitterUser[]): TwitterUserMap {
     return new TwitterUserMap(users.map(user => [user.id_str, user]))
   }
+  public filter(fn: (user: TwitterUser) => boolean): TwitterUserMap {
+    return TwitterUserMap.fromUsersArray(this.toUserArray().filter(fn))
+  }
 }
 
 abstract class EventEmitter {

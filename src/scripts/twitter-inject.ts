@@ -75,16 +75,23 @@ function dig<T>(obj: () => T): T | null {
   function sendEntitiesToExtension(state: any) {
     const users = dig(() => state.entities.users.entities)
     const tweets = dig(() => state.entities.tweets.entities)
-    if (users && tweets) {
-      document.dispatchEvent(
-        new CustomEvent('MirrorBlock<-subscribe', {
-          detail: {
-            users,
-            tweets,
-          },
-        })
-      )
+    const conversations = dig(() => state.directMessages.conversations)
+    if (!(users && tweets)) {
+      return
     }
+    const detail: SubscribedEntities = {
+      users,
+      tweets,
+      conversations,
+    }
+    if (!conversations) {
+      delete detail.conversations
+    }
+    document.dispatchEvent(
+      new CustomEvent<SubscribedEntities>('MirrorBlock<-subscribe', {
+        detail,
+      })
+    )
   }
   function addEvent(
     name: ReduxStoreEventNames,
@@ -286,10 +293,29 @@ function dig<T>(obj: () => T): T | null {
       document.dispatchEvent(customEvent)
     }
   }
+  function sendDMConversationsToExtension() {
+    const convElems = document.querySelectorAll('[data-testid=conversation]')
+    for (const elem of convElems) {
+      const parent = elem.parentElement!
+      const rEventHandler = getReactEventHandler(parent)!
+      const convId = dig<string>(
+        () => rEventHandler.children[0].props.conversationId
+      )
+      if (!convId) {
+        throw new Error('failed to get conv. id')
+      }
+      elem.setAttribute('data-mirrorblock-conversation-id', convId)
+      const customEvent = new CustomEvent('MirrorBlock<-DMConversation', {
+        detail: { convId },
+      })
+      document.dispatchEvent(customEvent)
+    }
+  }
   function initializeTweetIdHelper(): void {
     new MutationObserver(() => {
       sendEntryToExtension()
       sendUserCellToExtension()
+      sendDMConversationsToExtension()
     }).observe(reactRoot, {
       subtree: true,
       childList: true,

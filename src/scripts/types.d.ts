@@ -81,6 +81,31 @@ interface TweetEntities {
   [tweetId: string]: Tweet
 }
 
+interface DMParticipant {
+  user_id: string
+}
+
+interface DMData {
+  conversation_id: string
+  participants: DMParticipant[]
+  type: 'ONE_TO_ONE' | 'GROUP_DM'
+  read_only: boolean
+}
+
+interface DMDataWrapped {
+  data: DMData
+}
+
+interface DMEntities {
+  [convId: string]: DMDataWrapped
+}
+
+interface SubscribedEntities {
+  users: TwitterUserEntities
+  tweets: TweetEntities
+  conversations?: DMEntities
+}
+
 interface BaseEntry {
   entryId: string
   sortIndex: string

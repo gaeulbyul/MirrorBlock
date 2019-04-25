@@ -1,11 +1,8 @@
 namespace MirrorBlock.Mobile.Redux {
-  type SubscribedEntities = {
-    users: TwitterUserEntities
-    tweets: TweetEntities
-  }
   const tweetMap = new Map<string, Tweet>()
   const userMapById = new Map<string, TwitterUser>()
   const userMapByName = new Map<string, TwitterUser>()
+  const conversationMap = new Map<string, DMData>()
   export namespace StoreRetriever {
     export function getUserByName(userName: string): TwitterUser | null {
       const loweredName = userName.toLowerCase()
@@ -16,6 +13,9 @@ namespace MirrorBlock.Mobile.Redux {
     }
     export function getTweet(tweetId: string): Tweet | null {
       return tweetMap.get(tweetId) || null
+    }
+    export function getDMData(convId: string): DMData | null {
+      return conversationMap.get(convId) || null
     }
     export function subcribeEvent() {
       document.addEventListener('MirrorBlock<-subscribe', event => {
@@ -29,6 +29,12 @@ namespace MirrorBlock.Mobile.Redux {
         }
         for (const [tweetId, tweet] of tweets) {
           tweetMap.set(tweetId, tweet)
+        }
+        if (customEvent.detail.conversations) {
+          const conversations = Object.entries(customEvent.detail.conversations)
+          for (const [convId, convData] of conversations) {
+            conversationMap.set(convId, convData.data)
+          }
         }
       })
     }

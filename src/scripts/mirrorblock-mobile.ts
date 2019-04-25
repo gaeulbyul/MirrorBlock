@@ -32,6 +32,11 @@ namespace MirrorBlock.Mobile {
     const elems = document.querySelectorAll<HTMLElement>(selectors.join(','))
     return Utils.filterElements(elems)
   }
+  function getElemByDmData(dmData: DMData): HTMLElement | null {
+    return document.querySelector(
+      `[data-mirrorblock-conversation-id="${dmData.conversation_id}"]`
+    )
+  }
   namespace ProfileDetector {
     export async function detectProfile(rootElem: DOMQueryable) {
       const helpLinks = rootElem.querySelectorAll<HTMLElement>(
@@ -242,6 +247,43 @@ namespace MirrorBlock.Mobile {
       })
     }
   }
+  namespace DMHandler {
+    export async function handleDMConversation(convId: string) {
+      const dmData = StoreRetriever.getDMData(convId)
+      if (!dmData) {
+        throw new Error('unreachable')
+      }
+      if (!dmData.read_only) {
+        return
+      }
+      const elem = getElemByDmData(dmData)!
+      const badgeTarget = elem.querySelector('div[dir=ltr]')!
+      const participants = await UserGetter.getMultipleUsersById(
+        dmData.participants.map(par => par.user_id)
+      )
+      const blockedMe = participants.filter(user => !!user.blocked_by)
+      if (blockedMe.size <= 0) {
+        return
+      }
+      for (const userToBlock of blockedMe.values()) {
+        const badge = new Badge()
+        if (dmData.type === 'GROUP_DM') {
+          badge.showUserName(userToBlock.screen_name)
+        }
+        await reflectBlock({
+          user: userToBlock,
+          indicateBlock () {
+            markOutline(elem)
+            badge.appendTo(badgeTarget)
+          },
+          indicateReflection(){
+            badge.blockReflected()
+            StoreUpdater.afterBlockUser(userToBlock)
+          }
+        })
+      }
+    }
+  }
   function startObserve(reactRoot: HTMLElement): void {
     new MutationObserver(mutations => {
       for (const elem of Utils.getAddedElementsFromMutations(mutations)) {
@@ -277,6 +319,11 @@ namespace MirrorBlock.Mobile {
       const customEvent = event as CustomEvent<UserCellIdentifier>
       const { userId, userName } = customEvent.detail
       UserCellHandler.handleUserCells({ userId, userName })
+    })
+    document.addEventListener('MirrorBlock<-DMConversation', event => {
+      const customEvent = event as CustomEvent<{ convId: string }>
+      const { convId } = customEvent.detail
+      DMHandler.handleDMConversation(convId)
     })
   }
   async function isLoggedIn(): Promise<boolean> {
