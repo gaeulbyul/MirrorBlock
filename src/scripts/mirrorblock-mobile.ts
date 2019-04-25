@@ -108,10 +108,12 @@ namespace MirrorBlock.Mobile {
       const mentionElemsMap = new Map<string, HTMLAnchorElement[]>(
         mentionedUserEntities
           .map(ent => ent.screen_name.toLowerCase())
-          .map(loweredName => [
-            loweredName,
-            links.filter(a => a.pathname.toLowerCase() === `/${loweredName}`),
-          ])
+          .map(
+            (loweredName): [string, HTMLAnchorElement[]] => [
+              loweredName,
+              links.filter(a => a.pathname.toLowerCase() === `/${loweredName}`),
+            ]
+          )
       )
       const overflowed = tweetElem.querySelector(
         'a[aria-label][href$="/people"]'

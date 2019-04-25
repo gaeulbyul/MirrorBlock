@@ -61,7 +61,9 @@ class TwitterUserMap extends Map<string, TwitterUser> {
     )
   }
   public static fromUsersArray(users: TwitterUser[]): TwitterUserMap {
-    return new TwitterUserMap(users.map(user => [user.id_str, user]))
+    return new TwitterUserMap(
+      users.map((user): [string, TwitterUser] => [user.id_str, user])
+    )
   }
   public filter(fn: (user: TwitterUser) => boolean): TwitterUserMap {
     return TwitterUserMap.fromUsersArray(this.toUserArray().filter(fn))
@@ -107,24 +109,6 @@ namespace MirrorBlock.Utils {
     return Object.freeze(Object.assign({}, obj))
   }
 
-  export function deepFreeze<T>(obj: T): Readonly<T> {
-    Object.freeze(obj)
-
-    const propNames = Object.getOwnPropertyNames(obj) as (keyof T)[]
-    propNames.forEach(prop => {
-      if (
-        obj.hasOwnProperty(prop) &&
-        obj[prop] !== null &&
-        (typeof obj[prop] === 'object' || typeof obj[prop] === 'function') &&
-        !Object.isFrozen(obj[prop])
-      ) {
-        deepFreeze(obj[prop])
-      }
-    })
-
-    return obj
-  }
-
   export function* getAddedElementsFromMutations(
     mutations: MutationRecord[]
   ): IterableIterator<HTMLElement> {
@@ -157,9 +141,6 @@ namespace MirrorBlock.Utils {
       return false
     }
     if (typeof obj.screen_name !== 'string') {
-      return false
-    }
-    if (typeof obj.blocked_by !== 'boolean') {
       return false
     }
     return true
