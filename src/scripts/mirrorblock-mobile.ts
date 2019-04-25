@@ -92,6 +92,7 @@ namespace MirrorBlock.Mobile {
         },
         indicateReflection() {
           badge.blockReflected()
+          StoreUpdater.afterBlockUser(quotedUser)
         },
       })
     }
@@ -144,6 +145,7 @@ namespace MirrorBlock.Mobile {
           },
           indicateReflection() {
             badge.blockReflected()
+            StoreUpdater.afterBlockUser(mUser)
           },
         })
       }
@@ -177,6 +179,7 @@ namespace MirrorBlock.Mobile {
         },
         indicateReflection() {
           badge.blockReflected()
+          StoreUpdater.afterBlockUser(user)
         },
       })
     }
@@ -206,26 +209,31 @@ namespace MirrorBlock.Mobile {
           badge.appendTo(badgeTarget)
         },
         indicateReflection() {
-          badge.blockReflected
+          badge.blockReflected()
+          StoreUpdater.afterBlockUser(user)
         },
       })
     }
   }
   namespace UserCellHandler {
-    export async function handleUserCells(idOrName: UserCellIdentifier) {
+    async function getUser(
+      idOrName: UserCellIdentifier
+    ): Promise<TwitterUser | null> {
       const { userId, userName } = idOrName
+      if (userId) {
+        return UserGetter.getUserById(userId, false)
+      } else if (userName) {
+        return UserGetter.getUserByName(userName, false)
+      } else {
+        throw new Error('unreachable')
+      }
+    }
+    export async function handleUserCells(idOrName: UserCellIdentifier) {
       const userCellElems = getElemsByUserCell(idOrName)
       if (userCellElems.length <= 0) {
         return
       }
-      let user: TwitterUser | null = null
-      if (userId) {
-        user = await UserGetter.getUserById(userId, false)
-      } else if (userName) {
-        user = await UserGetter.getUserByName(userName, false)
-      } else {
-        throw new Error('unreachable')
-      }
+      const user = await getUser(idOrName)
       if (!user || !user.blocked_by) {
         return
       }
@@ -243,6 +251,7 @@ namespace MirrorBlock.Mobile {
         },
         indicateReflection() {
           badgesPool.forEach(b => b.blockReflected())
+          StoreUpdater.afterBlockUser(user)
         },
       })
     }
@@ -272,14 +281,14 @@ namespace MirrorBlock.Mobile {
         }
         await reflectBlock({
           user: userToBlock,
-          indicateBlock () {
+          indicateBlock() {
             markOutline(elem)
             badge.appendTo(badgeTarget)
           },
-          indicateReflection(){
+          indicateReflection() {
             badge.blockReflected()
             StoreUpdater.afterBlockUser(userToBlock)
-          }
+          },
         })
       }
     }
