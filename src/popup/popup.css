@@ -9,8 +9,9 @@
 }
 
 body {
+  background-color: white;
   font-size: var(--default-font-size);
-  font-family: 'NanumGothic', 'Malgun Gothic', sans-serif;
+  font-family: sans-serif;
 }
 
 a,
@@ -74,6 +75,5 @@ hr {
 
 .warning {
   padding: 0.25em 1em;
-
   font-size: 14px;
 }
