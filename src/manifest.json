@@ -9,9 +9,6 @@
     "48": "icons/icon.png"
   },
 
-  "minimum_chrome_version": "65",
-  "minimum_opera_version": "52",
-
   "browser_specific_settings": {
     "gecko": {
       "id": "{85e5d0a4-fc52-4d60-8634-7c67239276de}",
