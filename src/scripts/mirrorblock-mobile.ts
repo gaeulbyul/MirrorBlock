@@ -83,12 +83,17 @@ namespace MirrorBlock.Mobile {
       }
       const elem = getElemByEntry(entry)!
       const badge = new Badge(quotedUser)
-      const quoteLink = elem.querySelector(`a[href^="${qUrl.pathname}" i]`)!
+      // 가끔 날 차단한 사람의 인용트윗이 보인다.
+      // 이 때 보이는 인용트윗은 div[role=blockquote]다.
+      // 안 보일 땐 트윗의 링크가 뜨는 데 그건 quoteLink
+      const quoteLink = elem.querySelector(`a[href^="${qUrl.pathname}" i]`)
+      const quotedTweet = elem.querySelector('div[role=blockquote]')
+      const indicateMe = quoteLink || quotedTweet || elem
       reflectBlockOnVisible(elem, {
         user: quotedUser,
         indicateBlock() {
-          markOutline(quoteLink)
-          badge.attachAfter(quoteLink)
+          markOutline(indicateMe)
+          badge.attachAfter(indicateMe)
         },
         indicateReflection() {
           badge.blockReflected()
