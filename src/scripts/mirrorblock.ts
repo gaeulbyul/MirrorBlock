@@ -147,8 +147,9 @@
   const observer = new MutationObserver(mutations => {
     Array.from(MirrorBlock.Utils.getAddedElementsFromMutations(mutations))
       .map(elem => extractTargetElems(elem))
-      .flat()
-      .forEach(foundTargetHandler)
+      .forEach(fts => {
+        fts.forEach(foundTargetHandler)
+      })
   })
   if (!document.getElementById('react-root')) {
     observer.observe(document.body, {
