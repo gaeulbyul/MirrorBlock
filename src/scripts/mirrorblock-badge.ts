@@ -1,5 +1,6 @@
 namespace MirrorBlock.Badge {
   export class Badge {
+    private readonly badgedAttr = 'data-mirrorblock-badged'
     private readonly baseElem = document.createElement('span')
     constructor(private user: TwitterUser | null) {
       this.baseElem.className = 'mob-badge'
@@ -33,34 +34,16 @@ namespace MirrorBlock.Badge {
       brBadge.hidden = false
     }
     public attachAfter(targetElem: Element): void {
-      if (alreadyExists(targetElem)) {
-        return
+      if (!targetElem.hasAttribute(this.badgedAttr)) {
+        targetElem.after(this.baseElem)
+        targetElem.setAttribute(this.badgedAttr, '1')
       }
-      targetElem.after(this.baseElem)
     }
     public appendTo(targetElem: Element): void {
-      if (alreadyExists(targetElem)) {
-        return
-      }
-      targetElem.appendChild(this.baseElem)
-    }
-  }
-  function alreadyExists(elem: Element): boolean {
-    if (elem.querySelector('.mob-badge')) {
-      return true
-    }
-    let nelem = elem.nextElementSibling
-    let count = 10
-    while (nelem) {
-      if (--count <= 10) {
-        break
-      }
-      if (nelem.matches('.mob-badge')) {
-        return true
-      } else {
-        nelem = nelem.nextElementSibling
+      if (!targetElem.hasAttribute(this.badgedAttr)) {
+        targetElem.appendChild(this.baseElem)
+        targetElem.setAttribute(this.badgedAttr, '1')
       }
     }
-    return false
   }
 }
