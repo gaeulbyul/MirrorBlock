@@ -199,6 +199,53 @@ interface FollowsScraperOptions {
   delay: number
 }
 
+type ConnectionType =
+  | 'following'
+  | 'following_requested'
+  | 'followed_by'
+  | 'blocking'
+  | 'blocked_by'
+  | 'muting'
+  | 'none'
+
+interface Friendship {
+  name: string
+  screen_name: string
+  id_str: string
+  connections: ConnectionType[]
+}
+
+type FriendshipResponse = Friendship[]
+
+interface Relationship {
+  source: {
+    id_str: string
+    screen_name: string
+    following: boolean
+    followed_by: boolean
+    live_following: boolean
+    following_received: boolean
+    following_requested: boolean
+    notifications_enabled: boolean
+    can_dm: boolean
+    can_media_tag: boolean
+    blocking: boolean
+    blocked_by: boolean
+    muting: boolean
+    want_retweets: boolean
+    all_replies: boolean
+    marked_spam: boolean
+  }
+  target: {
+    id_str: string
+    screen_name: string
+    following: boolean
+    followed_by: boolean
+    following_received: boolean
+    following_requested: boolean
+  }
+}
+
 interface Limit {
   limit: number
   remaining: number

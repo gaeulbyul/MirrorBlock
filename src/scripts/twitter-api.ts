@@ -243,6 +243,44 @@ namespace TwitterAPI {
     }
   }
 
+  export async function getFriendships(
+    users: TwitterUser[]
+  ): Promise<FriendshipResponse> {
+    const userIds = users.map(user => user.id_str)
+    if (userIds.length === 0) {
+      return []
+    }
+    if (userIds.length > 100) {
+      throw new Error('too many users! (> 100)')
+    }
+    const joinedIds = Array.from(new Set(userIds)).join(',')
+    const response = await requestAPI('get', '/friendships/lookup.json', {
+      user_id: joinedIds,
+    })
+    if (response.ok) {
+      return response.json() as Promise<FriendshipResponse>
+    } else {
+      throw new Error('response is not ok')
+    }
+  }
+
+  export async function getRelationship(
+    sourceUser: TwitterUser,
+    targetUser: TwitterUser
+  ): Promise<Relationship> {
+    const source_id = sourceUser.id_str
+    const target_id = targetUser.id_str
+    const response = await requestAPI('get', '/friendships/show.json', {
+      source_id,
+      target_id,
+    })
+    if (response.ok) {
+      return (await response.json()).relationship as Promise<Relationship>
+    } else {
+      throw new Error('response is not ok')
+    }
+  }
+
   export async function getMyself(): Promise<TwitterUser> {
     const response = await requestAPI('get', '/account/verify_credentials.json')
     if (response.ok) {
