@@ -61,6 +61,44 @@ namespace TwitterAPI {
     path: string,
     paramsObj: URLParamsObj = {}
   ): Promise<APIResponse<T>> {
+    const nonce = String(Date.now() + Math.random())
+    const origin =
+      location.hostname === 'mobile.twitter.com'
+        ? 'https://mobile.twitter.com'
+        : 'https://twitter.com'
+    return new Promise((resolve, _reject) => {
+      document.addEventListener(
+        `TwitterAPI->[nonce:${nonce}]`,
+        ev => {
+          const event = ev as CustomEvent
+          const response = event.detail.response as APIResponse<T>
+          console.debug('received %o', [nonce, response])
+          resolve(response)
+        },
+        { once: true }
+      )
+      window.postMessage(
+        {
+          '>_< mirrorblock': true,
+          action: 'requestAPI',
+          data: {
+            nonce,
+            method,
+            path,
+            params: paramsObj,
+          },
+        },
+        origin
+      )
+    })
+  }
+
+  // @ts-ignore
+  async function requestAPIDirect<T>(
+    method: HTTPMethods,
+    path: string,
+    paramsObj: URLParamsObj = {}
+  ): Promise<APIResponse<T>> {
     const fetchOptions = generateTwitterAPIOptions({
       method,
     })
