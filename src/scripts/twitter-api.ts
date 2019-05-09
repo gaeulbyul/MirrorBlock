@@ -2,7 +2,7 @@ namespace TwitterAPI {
   const BEARER_TOKEN = `AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA`
 
   export class APIError extends Error {
-    constructor(public readonly response: Response) {
+    constructor(public readonly response: any) {
       super('Received non-OK response from Twitter API')
       Object.setPrototypeOf(this, new.target.prototype)
     }
@@ -56,11 +56,11 @@ namespace TwitterAPI {
     params.set('include_can_dm', '1')
   }
 
-  async function requestAPI(
+  async function requestAPI<T>(
     method: HTTPMethods,
     path: string,
     paramsObj: URLParamsObj = {}
-  ): Promise<Response> {
+  ): Promise<APIResponse<T>> {
     const fetchOptions = generateTwitterAPIOptions({
       method,
     })
@@ -80,7 +80,17 @@ namespace TwitterAPI {
     if (rateLimited(response)) {
       throw new RateLimitError(response)
     }
-    return response
+    const headers = Array.from(response.headers).reduce(
+      (obj, [name, value]) => ((obj[name] = value), obj),
+      {} as { [name: string]: string }
+    )
+    const apiResponse = {
+      ok: response.ok,
+      headers,
+      body: (await response.json()) as T,
+    }
+    return apiResponse
+    // return response
   }
 
   export async function blockUser(user: TwitterUser): Promise<boolean> {
@@ -107,7 +117,6 @@ namespace TwitterAPI {
       include_entities: false,
       skip_status: true,
     })
-    void response.text()
     return response.ok
   }
 
@@ -115,15 +124,19 @@ namespace TwitterAPI {
     user: TwitterUser,
     cursor: string = '-1'
   ): Promise<FollowsListResponse> {
-    const response = await requestAPI('get', '/friends/list.json', {
-      user_id: user.id_str,
-      count: 200,
-      skip_status: true,
-      include_user_entities: false,
-      cursor,
-    })
+    const response = await requestAPI<FollowsListResponse>(
+      'get',
+      '/friends/list.json',
+      {
+        user_id: user.id_str,
+        count: 200,
+        skip_status: true,
+        include_user_entities: false,
+        cursor,
+      }
+    )
     if (response.ok) {
-      return response.json() as Promise<FollowsListResponse>
+      return response.body
     } else {
       throw new APIError(response)
     }
@@ -133,16 +146,20 @@ namespace TwitterAPI {
     user: TwitterUser,
     cursor: string = '-1'
   ): Promise<FollowsListResponse> {
-    const response = await requestAPI('get', '/followers/list.json', {
-      user_id: user.id_str,
-      // screen_name: userName,
-      count: 200,
-      skip_status: true,
-      include_user_entities: false,
-      cursor,
-    })
+    const response = await requestAPI<FollowsListResponse>(
+      'get',
+      '/followers/list.json',
+      {
+        user_id: user.id_str,
+        // screen_name: userName,
+        count: 200,
+        skip_status: true,
+        include_user_entities: false,
+        cursor,
+      }
+    )
     if (response.ok) {
-      return response.json() as Promise<FollowsListResponse>
+      return response.body
     } else {
       throw new APIError(response)
     }
@@ -189,13 +206,13 @@ namespace TwitterAPI {
   export async function getSingleUserById(
     userId: string
   ): Promise<TwitterUser> {
-    const response = await requestAPI('get', '/users/show.json', {
+    const response = await requestAPI<TwitterUser>('get', '/users/show.json', {
       user_id: userId,
       skip_status: true,
       include_entities: false,
     })
     if (response.ok) {
-      return response.json() as Promise<TwitterUser>
+      return response.body
     } else {
       throw new APIError(response)
     }
@@ -208,14 +225,14 @@ namespace TwitterAPI {
     if (!isValidUserName) {
       throw new Error(`Invalid user name "${userName}"!`)
     }
-    const response = await requestAPI('get', '/users/show.json', {
+    const response = await requestAPI<TwitterUser>('get', '/users/show.json', {
       // user_id: user.id_str,
       screen_name: userName,
       skip_status: true,
       include_entities: false,
     })
     if (response.ok) {
-      return response.json() as Promise<TwitterUser>
+      return response.body
     } else {
       throw new APIError(response)
     }
@@ -231,13 +248,17 @@ namespace TwitterAPI {
       throw new Error('too many users! (> 100)')
     }
     const joinedIds = Array.from(new Set(userIds)).join(',')
-    const response = await requestAPI('post', '/users/lookup.json', {
-      user_id: joinedIds,
-      include_entities: false,
-      // screen_name: ...
-    })
+    const response = await requestAPI<TwitterUser[]>(
+      'post',
+      '/users/lookup.json',
+      {
+        user_id: joinedIds,
+        include_entities: false,
+        // screen_name: ...
+      }
+    )
     if (response.ok) {
-      return response.json() as Promise<TwitterUser[]>
+      return response.body
     } else {
       throw new APIError(response)
     }
@@ -254,11 +275,15 @@ namespace TwitterAPI {
       throw new Error('too many users! (> 100)')
     }
     const joinedIds = Array.from(new Set(userIds)).join(',')
-    const response = await requestAPI('get', '/friendships/lookup.json', {
-      user_id: joinedIds,
-    })
+    const response = await requestAPI<FriendshipResponse>(
+      'get',
+      '/friendships/lookup.json',
+      {
+        user_id: joinedIds,
+      }
+    )
     if (response.ok) {
-      return response.json() as Promise<FriendshipResponse>
+      return response.body
     } else {
       throw new Error('response is not ok')
     }
@@ -268,34 +293,47 @@ namespace TwitterAPI {
     sourceUser: TwitterUser,
     targetUser: TwitterUser
   ): Promise<Relationship> {
+    interface RelationshipResponse {
+      relationship: Relationship
+    }
     const source_id = sourceUser.id_str
     const target_id = targetUser.id_str
-    const response = await requestAPI('get', '/friendships/show.json', {
-      source_id,
-      target_id,
-    })
+    const response = await requestAPI<RelationshipResponse>(
+      'get',
+      '/friendships/show.json',
+      {
+        source_id,
+        target_id,
+      }
+    )
     if (response.ok) {
-      return (await response.json()).relationship as Promise<Relationship>
+      return response.body.relationship
     } else {
       throw new Error('response is not ok')
     }
   }
 
   export async function getMyself(): Promise<TwitterUser> {
-    const response = await requestAPI('get', '/account/verify_credentials.json')
+    const response = await requestAPI<TwitterUser>(
+      'get',
+      '/account/verify_credentials.json'
+    )
     if (response.ok) {
-      return response.json() as Promise<TwitterUser>
+      return response.body
     } else {
       throw new APIError(response)
     }
   }
 
   export async function getRateLimitStatus(): Promise<LimitStatus> {
-    const response = await requestAPI(
+    interface LimitStatusResponse {
+      resources: LimitStatus
+    }
+    const response = await requestAPI<LimitStatusResponse>(
       'get',
       '/application/rate_limit_status.json'
     )
-    const resources = (await response.json()).resources as LimitStatus
+    const resources = response.body.resources
     return resources
   }
 

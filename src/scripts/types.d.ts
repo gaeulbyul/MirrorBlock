@@ -321,6 +321,12 @@ interface MirrorBlockOption {
   noDelay: boolean
 }
 
+interface APIResponse<T> {
+  ok: boolean
+  headers: { [name: string]: string }
+  body: T
+}
+
 declare function cloneInto<T>(detail: T, view: Window | null): T
 
 // r.i.c
