@@ -76,6 +76,7 @@
   "web_accessible_resources": [
     "scripts/tweetdeck-inject.js",
     "scripts/twitter-inject.js",
+    "scripts/twitter-mobile-inject.js",
     "vendor/uuid.js"
   ],
 
