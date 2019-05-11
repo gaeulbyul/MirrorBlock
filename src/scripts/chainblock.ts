@@ -1,4 +1,8 @@
 namespace MirrorBlock.ChainMirrorBlock {
+  const {
+    APICommon: { APIError },
+    Utils: { sleep, copyFrozenObject },
+  } = MirrorBlock
   class ChainMirrorBlock {
     private readonly ui = new ChainMirrorBlockUI()
     private get immediatelyBlockMode(): boolean {
@@ -101,9 +105,7 @@ namespace MirrorBlock.ChainMirrorBlock {
       this.isRunning = true
       try {
         const updateProgress = () => {
-          this.ui.updateProgress(
-            MirrorBlock.Utils.copyFrozenObject(this.progress)
-          )
+          this.ui.updateProgress(copyFrozenObject(this.progress))
         }
         const classifyUserState = (user: TwitterUser): UserState => {
           if (user.blocking) {
@@ -146,7 +148,7 @@ namespace MirrorBlock.ChainMirrorBlock {
             TwitterAPI.getFollowsScraperRateLimitStatus(followType).then(
               this.ui.rateLimited
             )
-            await MirrorBlock.Utils.sleep(1000 * 60 * 2)
+            await sleep(1000 * 60 * 2)
             continue
           }
           if (rateLimited) {
@@ -162,7 +164,7 @@ namespace MirrorBlock.ChainMirrorBlock {
           this.processImmediatelyBlockMode()
         }
         if (!this.shouldStop) {
-          this.ui.complete(MirrorBlock.Utils.copyFrozenObject(this.progress))
+          this.ui.complete(copyFrozenObject(this.progress))
         }
       } finally {
         this.isRunning = false
@@ -227,9 +229,9 @@ namespace MirrorBlock.ChainMirrorBlock {
     }
     const targetUser = await TwitterAPI.getSingleUserByName(
       targetUserName
-    ).catch(async err => {
-      if (err instanceof TwitterAPI.APIError) {
-        const json = await err.response.json().catch(() => null)
+    ).catch(err => {
+      if (err instanceof APIError) {
+        const json = err.response.body
         const jsonstr = JSON.stringify(json, null, 2)
         window.alert(`트위터 서버에서 오류가 발생했습니다:\n${jsonstr}`)
       } else if (err instanceof Error) {

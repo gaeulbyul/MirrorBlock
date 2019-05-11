@@ -47,6 +47,7 @@
         "vendor/browser-polyfill.min.js",
         "/extoption.js",
         "scripts/common.js",
+        "scripts/api-common.js",
         "scripts/twitter-api.js",
         "scripts/nightmode.js",
         "scripts/mirrorblock-badge.js",
@@ -67,6 +68,7 @@
         "vendor/browser-polyfill.min.js",
         "/extoption.js",
         "scripts/common.js",
+        "scripts/api-common.js",
         "scripts/twitter-api.js",
         "scripts/tweetdeck.js"
       ]
@@ -74,6 +76,7 @@
   ],
 
   "web_accessible_resources": [
+    "scripts/api-common.js",
     "scripts/tweetdeck-inject.js",
     "scripts/twitter-inject.js",
     "scripts/twitter-mobile-inject.js",
