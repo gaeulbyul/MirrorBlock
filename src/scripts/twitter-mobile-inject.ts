@@ -156,6 +156,24 @@ namespace MirrorBlockInject.Mobile {
     }
   }
   namespace DOMEventDispatcher {
+    function isEntry(obj: any): obj is Entry {
+      if (!(obj && typeof obj === 'object')) {
+        return false
+      }
+      if (typeof obj.entryId !== 'string') {
+        return false
+      }
+      return true
+    }
+    function isUserCell(obj: any): obj is UserCell {
+      if (!(obj && typeof obj === 'object')) {
+        return false
+      }
+      if (obj.displayMode !== 'UserDetailed') {
+        return false
+      }
+      return true
+    }
     function sendEntryToExtension() {
       const section = document.querySelector('section[role=region]')
       if (!section) {
@@ -173,18 +191,28 @@ namespace MirrorBlockInject.Mobile {
           continue
         }
         const rEventHandler = getReactEventHandler(item)!
-        const entry = dig<Entry>(
-          () => rEventHandler.children.props.children.props.entry
-        )
-        if (!entry) {
+        const props = dig(() => rEventHandler.children.props.children.props)
+        if (!props) {
           continue
         }
-        // console.debug('%o %o', item, entry)
-        item.setAttribute('data-mirrorblock-entryid', entry.entryId)
-        const customEvent = new CustomEvent('MirrorBlock<-entry', {
-          detail: entry,
-        })
-        document.dispatchEvent(customEvent)
+        const entry = dig(() => props.entry)
+        if (isEntry(entry)) {
+          // console.debug('%o %o', item, entry)
+          item.setAttribute('data-mirrorblock-entryid', entry.entryId)
+          const customEvent = new CustomEvent('MirrorBlock<-entry', {
+            detail: entry,
+          })
+          document.dispatchEvent(customEvent)
+          continue
+        }
+        if (isUserCell(props)) {
+          const userId = props.userId
+          item.setAttribute('data-mirrorblock-usercell-id', userId)
+          const customEvent = new CustomEvent('MirrorBlock<-UserCell', {
+            detail: { userId, userName: null },
+          })
+          document.dispatchEvent(customEvent)
+        }
       }
     }
     function handleUserCellsInAside(): NodeListOf<Element> | null {
