@@ -116,7 +116,7 @@ function userDataHandler(userDataElem: HTMLElement) {
 }
 
 function main() {
-  MirrorBlock.Utils.injectScript('scripts/tweetdeck-inject.js')
+  MirrorBlock.Utils.injectScript('scripts/inject/tweetdeck-inject.js')
   const observer = new MutationObserver(mutations => {
     for (const elem of MirrorBlock.Utils.getAddedElementsFromMutations(
       mutations

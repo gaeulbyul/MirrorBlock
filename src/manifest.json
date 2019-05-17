@@ -50,15 +50,15 @@
         "scripts/api-common.js",
         "scripts/twitter-api.js",
         "scripts/nightmode.js",
-        "scripts/mirrorblock-badge.js",
-        "scripts/mirrorblock.js",
-        "scripts/mirrorblock-r.js",
-        "scripts/mirrorblock-a.js",
-        "scripts/mirrorblock-dm.js",
-        "scripts/redux-store.js",
-        "scripts/mirrorblock-mobile.js",
-        "scripts/chainblock-ui.js",
-        "scripts/chainblock.js"
+        "scripts/mirrorblock/mirrorblock-badge.js",
+        "scripts/mirrorblock/mirrorblock.js",
+        "scripts/mirrorblock/mirrorblock-r.js",
+        "scripts/mirrorblock/mirrorblock-a.js",
+        "scripts/mirrorblock/mirrorblock-dm.js",
+        "scripts/mirrorblock/redux-store.js",
+        "scripts/mirrorblock/mirrorblock-mobile.js",
+        "scripts/chainblock/chainblock-ui.js",
+        "scripts/chainblock/chainblock.js"
       ]
     },
     {
@@ -70,16 +70,16 @@
         "scripts/common.js",
         "scripts/api-common.js",
         "scripts/twitter-api.js",
-        "scripts/tweetdeck.js"
+        "scripts/mirrorblock/tweetdeck.js"
       ]
     }
   ],
 
   "web_accessible_resources": [
     "scripts/api-common.js",
-    "scripts/tweetdeck-inject.js",
-    "scripts/twitter-inject.js",
-    "scripts/twitter-mobile-inject.js",
+    "scripts/inject/tweetdeck-inject.js",
+    "scripts/inject/twitter-inject.js",
+    "scripts/inject/twitter-mobile-inject.js",
     "vendor/uuid.js"
   ],
 
