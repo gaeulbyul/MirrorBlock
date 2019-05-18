@@ -33,20 +33,25 @@ namespace TwitterAPI {
         ? 'https://mobile.twitter.com'
         : 'https://twitter.com'
     return new Promise((resolve, reject) => {
-      const timeout = window.setTimeout(() => {
-        reject('time out!')
-      }, 10000)
-      document.addEventListener(
-        `TwitterAPI->[nonce:${nonce}]`,
-        ev => {
+      let timeout = 0
+      const eventName = `TwitterAPI->[nonce:${nonce}]`
+      const handleEvent = (ev: Event) => {
+        if (timeout) {
           window.clearTimeout(timeout)
-          const event = ev as CustomEvent
-          const response = event.detail.response as APIResponse<T>
-          console.debug('received %o', [nonce, response])
-          resolve(response)
-        },
-        { once: true }
-      )
+        }
+        const { response } = (ev as CustomEvent<{
+          response: APIResponse<T>
+        }>).detail
+        console.debug('received %o', [nonce, response])
+        resolve(response)
+      }
+      timeout = window.setTimeout(() => {
+        reject('time out!')
+        document.removeEventListener(eventName, handleEvent)
+      }, 10000)
+      document.addEventListener(eventName, handleEvent, {
+        once: true,
+      })
       const message: RequestAPIMessage = {
         '>_< mirrorblock': 'requestAPI',
         nonce,

@@ -74,7 +74,7 @@ namespace MirrorBlock.APICommon {
       body: (await response.json()) as T,
     }
     if (response.status === 429) {
-      throw new APIError(apiResponse)
+      throw new RateLimitError(apiResponse)
     }
     return apiResponse
   }

@@ -1,6 +1,9 @@
 type HTTPMethods = 'get' | 'delete' | 'post' | 'put'
 type URLParamsObj = { [key: string]: string | number | boolean }
 
+// ------------------------------
+// Twitter API
+// ------------------------------
 interface TwitterUser {
   id_str: string
   screen_name: string
@@ -76,6 +79,100 @@ interface UrlEntity {
   display: string
   expanded: string
 }
+
+interface FollowsListResponse {
+  next_cursor_str: string
+  users: TwitterUser[]
+}
+
+interface FollowsIdsResponse {
+  next_cursor_str: string
+  ids: string[]
+}
+
+interface FollowsScraperOptions {
+  delay: number
+}
+
+type ConnectionType =
+  | 'following'
+  | 'following_requested'
+  | 'followed_by'
+  | 'blocking'
+  | 'blocked_by'
+  | 'muting'
+  | 'none'
+
+interface Friendship {
+  name: string
+  screen_name: string
+  id_str: string
+  connections: ConnectionType[]
+}
+
+type FriendshipResponse = Friendship[]
+
+interface Relationship {
+  source: {
+    id_str: string
+    screen_name: string
+    following: boolean
+    followed_by: boolean
+    live_following: boolean
+    following_received: boolean
+    following_requested: boolean
+    notifications_enabled: boolean
+    can_dm: boolean
+    can_media_tag: boolean
+    blocking: boolean
+    blocked_by: boolean
+    muting: boolean
+    want_retweets: boolean
+    all_replies: boolean
+    marked_spam: boolean
+  }
+  target: {
+    id_str: string
+    screen_name: string
+    following: boolean
+    followed_by: boolean
+    following_received: boolean
+    following_requested: boolean
+  }
+}
+
+interface Limit {
+  limit: number
+  remaining: number
+  reset: number
+}
+
+interface LimitStatus {
+  application: {
+    '/application/rate_limit_status': Limit
+  }
+  auth: {
+    '/auth/csrf_token': Limit
+  }
+  blocks: {
+    '/blocks/list': Limit
+    '/blocks/ids': Limit
+  }
+  followers: {
+    '/followers/ids': Limit
+    '/followers/list': Limit
+  }
+  friends: {
+    '/friends/following/ids': Limit
+    '/friends/following/list': Limit
+    '/friends/list': Limit
+    '/friends/ids': Limit
+  }
+}
+
+// ------------------------------
+// Twitter Redux store entries
+// ------------------------------
 
 interface TweetEntities {
   [tweetId: string]: Tweet
@@ -183,96 +280,6 @@ type ReduxStoreEventNames =
 interface UserCellIdentifier {
   userId: string | null
   userName: string | null
-}
-
-interface FollowsListResponse {
-  next_cursor_str: string
-  users: TwitterUser[]
-}
-
-interface FollowsIdsResponse {
-  next_cursor_str: string
-  ids: string[]
-}
-
-interface FollowsScraperOptions {
-  delay: number
-}
-
-type ConnectionType =
-  | 'following'
-  | 'following_requested'
-  | 'followed_by'
-  | 'blocking'
-  | 'blocked_by'
-  | 'muting'
-  | 'none'
-
-interface Friendship {
-  name: string
-  screen_name: string
-  id_str: string
-  connections: ConnectionType[]
-}
-
-type FriendshipResponse = Friendship[]
-
-interface Relationship {
-  source: {
-    id_str: string
-    screen_name: string
-    following: boolean
-    followed_by: boolean
-    live_following: boolean
-    following_received: boolean
-    following_requested: boolean
-    notifications_enabled: boolean
-    can_dm: boolean
-    can_media_tag: boolean
-    blocking: boolean
-    blocked_by: boolean
-    muting: boolean
-    want_retweets: boolean
-    all_replies: boolean
-    marked_spam: boolean
-  }
-  target: {
-    id_str: string
-    screen_name: string
-    following: boolean
-    followed_by: boolean
-    following_received: boolean
-    following_requested: boolean
-  }
-}
-
-interface Limit {
-  limit: number
-  remaining: number
-  reset: number
-}
-
-interface LimitStatus {
-  application: {
-    '/application/rate_limit_status': Limit
-  }
-  auth: {
-    '/auth/csrf_token': Limit
-  }
-  blocks: {
-    '/blocks/list': Limit
-    '/blocks/ids': Limit
-  }
-  followers: {
-    '/followers/ids': Limit
-    '/followers/list': Limit
-  }
-  friends: {
-    '/friends/following/ids': Limit
-    '/friends/following/list': Limit
-    '/friends/list': Limit
-    '/friends/ids': Limit
-  }
 }
 
 interface FollowsScraperOptions {
