@@ -175,43 +175,46 @@ namespace MirrorBlockInject.Mobile {
       return true
     }
     function sendEntryToExtension() {
-      const section = document.querySelector('section[role=region]')
-      if (!section) {
-        return
-      }
-      const children = dig(
-        () => section.children[1].children[0].children[0].children
-      )
-      if (!children) {
-        return
-      }
-      const items = Array.from(children, el => el as HTMLElement)
-      for (const item of items) {
-        if (item.hasAttribute('data-mirrorblock-entryid')) {
+      const sections = document.querySelectorAll('section[role=region]')
+      for (const section of sections) {
+        // 설정 창의 왼쪽 사이드바 부분
+        // 사용자가 뜨는 부분이 아니므로 스킵한다.
+        if (section.matches('section[aria-labelledby="master-header"]')) {
           continue
         }
-        const rEventHandler = getReactEventHandler(item)!
-        const props = dig(() => rEventHandler.children.props.children.props)
-        if (!props) {
-          continue
+        const children = dig(
+          () => section.children[1].children[0].children[0].children
+        )
+        if (!children) {
+          return
         }
-        const entry = dig(() => props.entry)
-        if (isEntry(entry)) {
-          // console.debug('%o %o', item, entry)
-          item.setAttribute('data-mirrorblock-entryid', entry.entryId)
-          const customEvent = new CustomEvent('MirrorBlock<-entry', {
-            detail: entry,
-          })
-          document.dispatchEvent(customEvent)
-          continue
-        }
-        if (isUserCell(props)) {
-          const userId = props.userId
-          item.setAttribute('data-mirrorblock-usercell-id', userId)
-          const customEvent = new CustomEvent('MirrorBlock<-UserCell', {
-            detail: { userId, userName: null },
-          })
-          document.dispatchEvent(customEvent)
+        for (const item of children) {
+          if (item.hasAttribute('data-mirrorblock-entryid')) {
+            continue
+          }
+          const rEventHandler = getReactEventHandler(item)!
+          const props = dig(() => rEventHandler.children.props.children.props)
+          if (!props) {
+            continue
+          }
+          const entry = dig(() => props.entry)
+          if (isEntry(entry)) {
+            // console.debug('%o %o', item, entry)
+            item.setAttribute('data-mirrorblock-entryid', entry.entryId)
+            const customEvent = new CustomEvent('MirrorBlock<-entry', {
+              detail: entry,
+            })
+            document.dispatchEvent(customEvent)
+            continue
+          }
+          if (isUserCell(props)) {
+            const userId = props.userId
+            item.setAttribute('data-mirrorblock-usercell-id', userId)
+            const customEvent = new CustomEvent('MirrorBlock<-UserCell', {
+              detail: { userId, userName: null },
+            })
+            document.dispatchEvent(customEvent)
+          }
         }
       }
     }
