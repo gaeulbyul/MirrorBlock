@@ -163,7 +163,7 @@ namespace MirrorBlock.Mobile {
         const qtweet = tweet as TweetWithQuote
         handleQuotedTweet(qtweet, tweetEntry)
       }
-      handleMentionsInTweet(tweet, tweetEntry)
+      return handleMentionsInTweet(tweet, tweetEntry)
     }
     export async function handleUser(userEntry: UserEntry) {
       const user = StoreRetriever.getUserById(userEntry.content.id)!
@@ -300,6 +300,25 @@ namespace MirrorBlock.Mobile {
       }
     }
   }
+  const entryQueue = new class {
+    private promise = Promise.resolve()
+    private async handleEntry(entry: Entry): Promise<void> {
+      switch (entry.type) {
+        case 'tweet': {
+          return EntryHandler.handleTweet(entry)
+        }
+        case 'user': {
+          return EntryHandler.handleUser(entry)
+        }
+        case 'tombstone': {
+          return EntryHandler.handleTombstone(entry)
+        }
+      }
+    }
+    public push(entry: Entry) {
+      this.promise = this.promise.then(() => this.handleEntry(entry))
+    }
+  }()
   function startObserve(reactRoot: HTMLElement): void {
     new MutationObserver(mutations => {
       for (const elem of Utils.getAddedElementsFromMutations(mutations)) {
@@ -309,27 +328,10 @@ namespace MirrorBlock.Mobile {
       subtree: true,
       childList: true,
     })
-    // TweetDetector.startTweetItemObserver()
     document.addEventListener('MirrorBlock<-entry', event => {
       const customEvent = event as CustomEvent<Entry>
       const entry = customEvent.detail
-      switch (entry.type) {
-        case 'tweet': {
-          EntryHandler.handleTweet(entry)
-          break
-        }
-        case 'user': {
-          EntryHandler.handleUser(entry)
-          break
-        }
-        case 'tombstone': {
-          EntryHandler.handleTombstone(entry)
-          break
-        }
-        default: {
-          // console.debug('entry: %o', entry)
-        }
-      }
+      entryQueue.push(entry)
     })
     document.addEventListener('MirrorBlock<-UserCell', event => {
       const customEvent = event as CustomEvent<UserCellIdentifier>
