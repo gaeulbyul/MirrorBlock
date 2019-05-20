@@ -106,7 +106,10 @@ namespace MirrorBlock.Mobile {
       if (mentionedUserEntities.length <= 0) {
         return
       }
-      const tweetElem = getElemByEntry(entry)!
+      const tweetElem = getElemByEntry(entry)
+      if (!tweetElem) {
+        return
+      }
       const links = Array.from(
         tweetElem.querySelectorAll<HTMLAnchorElement>('a[role=link][href^="/"]')
       )
@@ -356,11 +359,8 @@ namespace MirrorBlock.Mobile {
     } catch (err) {
       console.warn('warning. login-check logic should update.')
       console.warn('error: %o', err)
-      const checkViaAPI = await TwitterAPI.getMyself().then(
-        () => true,
-        () => false
-      )
-      return checkViaAPI
+      const checkViaAPI = await TwitterAPI.getMyself().catch(() => null)
+      return !!checkViaAPI
     }
   }
   export async function initialize() {
