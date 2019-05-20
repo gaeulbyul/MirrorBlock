@@ -162,16 +162,26 @@ namespace MirrorBlock.Mobile.Redux {
         const userFromStore = StoreRetriever.getUserById(userId)
         if (userFromStore) {
           userMap.addUser(userFromStore)
-          continue
+        } else {
+          idsToRequestAPI.push(userId)
         }
-        idsToRequestAPI.push(userId)
       }
-      const usersFromAPI = await TwitterAPI.getMultipleUsersById(
-        idsToRequestAPI
-      ).then(users => TwitterUserMap.fromUsersArray(users))
-      StoreUpdater.insertMultipleUsersIntoStore(usersFromAPI)
-      for (const apiUser of usersFromAPI.values()) {
-        userMap.addUser(apiUser)
+      if (idsToRequestAPI.length === 1) {
+        const requestedUser = await TwitterAPI.getSingleUserById(
+          idsToRequestAPI[0]
+        ).catch(() => null)
+        if (requestedUser) {
+          StoreUpdater.insertSingleUserIntoStore(requestedUser)
+          userMap.addUser(requestedUser)
+        }
+      } else if (idsToRequestAPI.length > 1) {
+        const requestedUsers = await TwitterAPI.getMultipleUsersById(
+          idsToRequestAPI
+        )
+          .catch((): TwitterUser[] => [])
+          .then(users => TwitterUserMap.fromUsersArray(users))
+        StoreUpdater.insertMultipleUsersIntoStore(requestedUsers)
+        requestedUsers.forEach(rUser => userMap.addUser(rUser))
       }
       return userMap
     }
