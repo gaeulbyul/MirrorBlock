@@ -1,9 +1,14 @@
 namespace MirrorBlock.Badge {
+  const { validateTwitterUserName } = MirrorBlock.Utils
   export class Badge {
     private readonly badgedAttr = 'data-mirrorblock-badged'
     private readonly baseElem = document.createElement('span')
-    constructor(private user: TwitterUser | null) {
-      const tooltipUserName = user ? `@${user.screen_name}` : '이 사용자'
+    constructor(private user?: TwitterUser) {
+      let userName = user ? user.screen_name : ''
+      if (!validateTwitterUserName(userName)) {
+        userName = ''
+      }
+      const tooltipUserName = userName ? `@${userName}` : '이 사용자'
       this.baseElem.className = 'mob-badge'
       this.baseElem.style.whiteSpace = 'initial'
       this.baseElem.innerHTML = `\

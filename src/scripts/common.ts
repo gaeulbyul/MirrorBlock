@@ -152,15 +152,11 @@ namespace MirrorBlock.Utils {
   }
 
   export function validateTwitterUserName(userName: string): boolean {
-    const unl = userName.length
-    const userNameIsValidLength = 1 <= unl && unl <= 15
-    if (!userNameIsValidLength) {
-      return false
-    }
     if (isInNameBlacklist(userName)) {
       return false
     }
-    return true
+    const pattern = /^[0-9a-z_]{1,15}$/i
+    return pattern.test(userName)
   }
 
   export function getUserNameFromTweetUrl(

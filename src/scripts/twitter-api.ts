@@ -4,11 +4,8 @@ namespace TwitterAPI {
     APIError,
     RateLimitError,
   } = MirrorBlock.APICommon
+  const { validateTwitterUserName } = MirrorBlock.Utils
   type RequestAPIMessage = MirrorBlockInject.Messaging.RequestAPIMessage
-
-  export function validateTwitterUserName(userName: string): boolean {
-    return MirrorBlock.Utils.validateTwitterUserName(userName)
-  }
 
   async function requestAPI<T>(
     method: HTTPMethods,
