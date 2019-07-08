@@ -1,6 +1,6 @@
 namespace MirrorBlock.ChainMirrorBlock {
+  const { APIError } = TwitterAPI
   const {
-    APICommon: { APIError },
     Utils: { sleep, copyFrozenObject },
   } = MirrorBlock
   class ChainMirrorBlock {
@@ -134,23 +134,30 @@ namespace MirrorBlock.ChainMirrorBlock {
         }
         const total = getTotalFollows(targetUser, followType)
         this.ui.initProgress(total)
-        const delay = 950
+        const delay = total > 1e4 ? 950 : 700
         const scraper = TwitterAPI.getAllFollows(targetUser, followType, {
           delay,
         })
         let rateLimited = false
-        for await (const follower of scraper) {
+        for await (const maybeFollower of scraper) {
           if (this.shouldStop) {
             break
           }
-          if (follower === 'RateLimitError') {
-            rateLimited = true
-            TwitterAPI.getFollowsScraperRateLimitStatus(followType).then(
-              this.ui.rateLimited
-            )
-            await sleep(1000 * 60 * 2)
-            continue
+          if (!maybeFollower.ok) {
+            const { error } = maybeFollower
+            if (error.response.status === 429) {
+              rateLimited = true
+              TwitterAPI.getFollowsScraperRateLimitStatus(followType).then(
+                this.ui.rateLimited
+              )
+              await sleep(1000 * 60 * 2)
+              continue
+            } else {
+              console.error(error)
+              break
+            }
           }
+          const follower = maybeFollower.value
           if (rateLimited) {
             rateLimited = false
             this.ui.rateLimitResetted()
@@ -222,7 +229,7 @@ namespace MirrorBlock.ChainMirrorBlock {
     targetUserName: string,
     followType: FollowType
   ) {
-    const myself = await TwitterAPI.getMyself().catch(() => null)
+    const myself = await TwitterAPI.getMyself() //.catch(() => null)
     if (!myself) {
       window.alert('로그인을 해주세요')
       return

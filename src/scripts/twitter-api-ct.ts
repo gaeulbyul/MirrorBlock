@@ -1,65 +1,30 @@
 namespace TwitterAPI {
-  const {
-    requestAPI: requestAPIDirectly,
-    APIError,
-    RateLimitError,
-  } = MirrorBlock.APICommon
   const { validateTwitterUserName } = MirrorBlock.Utils
-  type RequestAPIMessage = MirrorBlockInject.Messaging.RequestAPIMessage
-
-  async function requestAPI<T>(
-    method: HTTPMethods,
-    path: string,
-    params: URLParamsObj = {}
-  ): Promise<APIResponse<T>> {
-    if (location.hostname === 'twitter.com') {
-      return requestAPIDirectly<T>(method, path, params)
-    } else {
-      return requestAPIViaProxy<T>(method, path, params)
+  export class APIError extends Error {
+    constructor(public readonly response: APIResponse) {
+      super('API Error!')
+      // from: https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-2.html#support-for-newtarget
+      Object.setPrototypeOf(this, new.target.prototype)
     }
   }
 
-  async function requestAPIViaProxy<T>(
+  async function sendRequest(
     method: HTTPMethods,
     path: string,
-    params: URLParamsObj = {}
-  ): Promise<APIResponse<T>> {
-    const nonce = String(Date.now() + Math.random())
-    const origin =
-      location.hostname === 'mobile.twitter.com'
-        ? 'https://mobile.twitter.com'
-        : 'https://twitter.com'
-    return new Promise((resolve, reject) => {
-      let timeout = 0
-      const eventName = `TwitterAPI->[nonce:${nonce}]`
-      const handleEvent = (ev: Event) => {
-        if (timeout) {
-          window.clearTimeout(timeout)
-        }
-        const { response } = (ev as CustomEvent<{
-          response: APIResponse<T>
-        }>).detail
-        console.debug('received %o', [nonce, response])
-        resolve(response)
-      }
-      timeout = window.setTimeout(() => {
-        reject('time out!')
-        document.removeEventListener(eventName, handleEvent)
-      }, 10000)
-      document.addEventListener(eventName, handleEvent, {
-        once: true,
-      })
-      const message: RequestAPIMessage = {
-        '>_< mirrorblock': 'requestAPI',
-        nonce,
-        method,
-        path,
-        params,
-      }
-      window.postMessage(message, origin)
+    paramsObj: URLParamsObj = {}
+  ): Promise<APIResponse> {
+    const { response } = await browser.runtime.sendMessage<
+      MBRequestAPIMessage,
+      MBResponseAPIMessage
+    >({
+      action: Action.RequestAPI,
+      method,
+      path,
+      paramsObj,
     })
+    console.debug('response: ', response)
+    return response
   }
-
   export async function blockUser(user: TwitterUser): Promise<boolean> {
     if (user.blocking) {
       return true
@@ -70,7 +35,8 @@ namespace TwitterAPI {
       user.follow_request_sent ||
       !user.blocked_by
     if (shouldNotBlock) {
-      const fatalErrorMessage = `!!!!! FATAL!!!!!: attempted to block user that should NOT block!!
+      const fatalErrorMessage = `!!!!!FATAL!!!!!:
+attempted to block user that should NOT block!!
 (user: ${user.screen_name})`
       console.error(fatalErrorMessage)
       throw new Error(fatalErrorMessage)
@@ -79,7 +45,7 @@ namespace TwitterAPI {
   }
 
   export async function blockUserById(userId: string): Promise<boolean> {
-    const response = await requestAPI('post', '/blocks/create.json', {
+    const response = await sendRequest('post', '/blocks/create.json', {
       user_id: userId,
       include_entities: false,
       skip_status: true,
@@ -91,42 +57,33 @@ namespace TwitterAPI {
     user: TwitterUser,
     cursor: string = '-1'
   ): Promise<FollowsListResponse> {
-    const response = await requestAPI<FollowsListResponse>(
-      'get',
-      '/friends/list.json',
-      {
-        user_id: user.id_str,
-        count: 200,
-        skip_status: true,
-        include_user_entities: false,
-        cursor,
-      }
-    )
+    const response = await sendRequest('get', '/friends/list.json', {
+      user_id: user.id_str,
+      count: 200,
+      skip_status: true,
+      include_user_entities: false,
+      cursor,
+    })
     if (response.ok) {
-      return response.body
+      return response.body as FollowsListResponse
     } else {
       throw new APIError(response)
     }
   }
-
   async function getFollowersList(
     user: TwitterUser,
     cursor: string = '-1'
   ): Promise<FollowsListResponse> {
-    const response = await requestAPI<FollowsListResponse>(
-      'get',
-      '/followers/list.json',
-      {
-        user_id: user.id_str,
-        // screen_name: userName,
-        count: 200,
-        skip_status: true,
-        include_user_entities: false,
-        cursor,
-      }
-    )
+    const response = await sendRequest('get', '/followers/list.json', {
+      user_id: user.id_str,
+      // screen_name: userName,
+      count: 200,
+      skip_status: true,
+      include_user_entities: false,
+      cursor,
+    })
     if (response.ok) {
-      return response.body
+      return response.body as FollowsListResponse
     } else {
       throw new APIError(response)
     }
@@ -136,7 +93,7 @@ namespace TwitterAPI {
     user: TwitterUser,
     followType: FollowType,
     options: FollowsScraperOptions
-  ): AsyncIterableIterator<RateLimited<Readonly<TwitterUser>>> {
+  ): AsyncIterableIterator<Either<APIError, Readonly<TwitterUser>>> {
     let cursor = '-1'
     while (true) {
       try {
@@ -153,18 +110,26 @@ namespace TwitterAPI {
         }
         cursor = json.next_cursor_str
         const users = json.users as TwitterUser[]
-        yield* users.map(u => Object.freeze(u))
+        yield* users.map(user =>
+          Object.freeze({
+            ok: true as const,
+            value: user,
+          })
+        )
         if (cursor === '0') {
           break
         } else {
           await MirrorBlock.Utils.sleep(options.delay)
           continue
         }
-      } catch (e) {
-        if (e instanceof RateLimitError) {
-          yield 'RateLimitError'
+      } catch (error) {
+        if (error instanceof APIError) {
+          yield {
+            ok: false,
+            error,
+          }
         } else {
-          throw e
+          throw error
         }
       }
     }
@@ -173,13 +138,13 @@ namespace TwitterAPI {
   export async function getSingleUserById(
     userId: string
   ): Promise<TwitterUser> {
-    const response = await requestAPI<TwitterUser>('get', '/users/show.json', {
+    const response = await sendRequest('get', '/users/show.json', {
       user_id: userId,
       skip_status: true,
       include_entities: false,
     })
     if (response.ok) {
-      return response.body
+      return response.body as TwitterUser
     } else {
       throw new APIError(response)
     }
@@ -192,14 +157,14 @@ namespace TwitterAPI {
     if (!isValidUserName) {
       throw new Error(`Invalid user name "${userName}"!`)
     }
-    const response = await requestAPI<TwitterUser>('get', '/users/show.json', {
+    const response = await sendRequest('get', '/users/show.json', {
       // user_id: user.id_str,
       screen_name: userName,
       skip_status: true,
       include_entities: false,
     })
     if (response.ok) {
-      return response.body
+      return response.body as TwitterUser
     } else {
       throw new APIError(response)
     }
@@ -215,17 +180,13 @@ namespace TwitterAPI {
       throw new Error('too many users! (> 100)')
     }
     const joinedIds = Array.from(new Set(userIds)).join(',')
-    const response = await requestAPI<TwitterUser[]>(
-      'post',
-      '/users/lookup.json',
-      {
-        user_id: joinedIds,
-        include_entities: false,
-        // screen_name: ...
-      }
-    )
+    const response = await sendRequest('post', '/users/lookup.json', {
+      user_id: joinedIds,
+      include_entities: false,
+      // screen_name: ...
+    })
     if (response.ok) {
-      return response.body
+      return response.body as TwitterUser[]
     } else {
       throw new APIError(response)
     }
@@ -242,15 +203,11 @@ namespace TwitterAPI {
       throw new Error('too many users! (> 100)')
     }
     const joinedIds = Array.from(new Set(userIds)).join(',')
-    const response = await requestAPI<FriendshipResponse>(
-      'get',
-      '/friendships/lookup.json',
-      {
-        user_id: joinedIds,
-      }
-    )
+    const response = await sendRequest('get', '/friendships/lookup.json', {
+      user_id: joinedIds,
+    })
     if (response.ok) {
-      return response.body
+      return response.body as FriendshipResponse
     } else {
       throw new Error('response is not ok')
     }
@@ -260,47 +217,42 @@ namespace TwitterAPI {
     sourceUser: TwitterUser,
     targetUser: TwitterUser
   ): Promise<Relationship> {
-    interface RelationshipResponse {
-      relationship: Relationship
-    }
     const source_id = sourceUser.id_str
     const target_id = targetUser.id_str
-    const response = await requestAPI<RelationshipResponse>(
-      'get',
-      '/friendships/show.json',
-      {
-        source_id,
-        target_id,
-      }
-    )
+    const response = await sendRequest('get', '/friendships/show.json', {
+      source_id,
+      target_id,
+    })
     if (response.ok) {
-      return response.body.relationship
+      const { relationship } = (await response.body) as {
+        relationship: Relationship
+      }
+      return relationship
     } else {
       throw new Error('response is not ok')
     }
   }
 
   export async function getMyself(): Promise<TwitterUser> {
-    const response = await requestAPI<TwitterUser>(
+    const response = await sendRequest(
       'get',
       '/account/verify_credentials.json'
     )
     if (response.ok) {
-      return response.body
+      return response.body as TwitterUser
     } else {
       throw new APIError(response)
     }
   }
 
   export async function getRateLimitStatus(): Promise<LimitStatus> {
-    interface LimitStatusResponse {
-      resources: LimitStatus
-    }
-    const response = await requestAPI<LimitStatusResponse>(
+    const response = await sendRequest(
       'get',
       '/application/rate_limit_status.json'
     )
-    const resources = response.body.resources
+    const { resources } = response.body as {
+      resources: LimitStatus
+    }
     return resources
   }
 

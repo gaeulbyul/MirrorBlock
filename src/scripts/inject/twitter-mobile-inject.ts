@@ -342,13 +342,13 @@ namespace MirrorBlockInject.Mobile {
     if (!reduxStore) {
       return
     }
-    // XXX debug
-    Object.assign(window, {
-      $$store: reduxStore,
-    })
     ReduxSubscriber.subscribe(reduxStore)
     ReduxDispatcher.listenEvent(reduxStore)
     DOMEventDispatcher.observe(reactRoot)
+    // XXX debug
+    // Object.assign(window, {
+    //   $$store: reduxStore,
+    // })
   }
   export function initialize() {
     const reactRoot = document.getElementById('react-root')!

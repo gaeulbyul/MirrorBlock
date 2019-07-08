@@ -1,22 +1,21 @@
-namespace MirrorBlock.APICommon {
+namespace MirrorBlockBackground.TwitterAPI {
   const BEARER_TOKEN = `AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA`
 
-  export class APIError<T = any> extends Error {
-    constructor(public readonly response: APIResponse<T>) {
-      super('Received non-OK response from Twitter API')
-      Object.setPrototypeOf(this, new.target.prototype)
+  async function getCsrfTokenFromCookies(): Promise<string> {
+    const csrfTokenCookie = await browser.cookies.get({
+      url: 'https://twitter.com',
+      name: 'ct0',
+    })
+    if (!csrfTokenCookie) {
+      throw new Error('failed to get csrf token!')
     }
+    return csrfTokenCookie.value
   }
-  export class RateLimitError extends APIError {}
 
-  function generateTwitterAPIOptions(obj?: RequestInit): RequestInit {
-    let csrfToken: string
-    const match = /\bct0=([0-9a-f]{32})\b/.exec(document.cookie)
-    if (match && match[1]) {
-      csrfToken = match[1]
-    } else {
-      throw new Error('Failed to get CSRF token.')
-    }
+  async function generateTwitterAPIOptions(
+    obj?: RequestInit
+  ): Promise<RequestInit> {
+    const csrfToken = await getCsrfTokenFromCookies()
     const headers = new Headers()
     headers.set('authorization', `Bearer ${BEARER_TOKEN}`)
     headers.set('x-csrf-token', csrfToken)
@@ -26,7 +25,7 @@ namespace MirrorBlock.APICommon {
       method: 'get',
       mode: 'cors',
       credentials: 'include',
-      referrer: location.href,
+      referrer: 'https://twitter.com/',
       headers,
     }
     Object.assign(result, obj)
@@ -43,12 +42,12 @@ namespace MirrorBlock.APICommon {
     params.set('include_can_dm', '1')
   }
 
-  export async function requestAPI<T>(
+  export async function requestAPI(
     method: HTTPMethods,
     path: string,
     paramsObj: URLParamsObj = {}
-  ): Promise<APIResponse<T>> {
-    const fetchOptions = generateTwitterAPIOptions({
+  ): Promise<APIResponse> {
+    const fetchOptions = await generateTwitterAPIOptions({
       method,
     })
     const url = new URL('https://api.twitter.com/1.1' + path)
@@ -68,13 +67,14 @@ namespace MirrorBlock.APICommon {
       (obj, [name, value]) => ((obj[name] = value), obj),
       {} as { [name: string]: string }
     )
+    const { ok, status, statusText } = response
+    const body = await response.json()
     const apiResponse = {
-      ok: response.ok,
+      ok,
+      status,
+      statusText,
       headers,
-      body: (await response.json()) as T,
-    }
-    if (response.status === 429) {
-      throw new RateLimitError(apiResponse)
+      body,
     }
     return apiResponse
   }

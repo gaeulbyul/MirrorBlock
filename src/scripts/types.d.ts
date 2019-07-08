@@ -286,8 +286,6 @@ interface FollowsScraperOptions {
   delay: number
 }
 
-type RateLimited<T> = T | 'RateLimitError'
-
 interface EventStore {
   [eventName: string]: Function[]
 }
@@ -302,7 +300,23 @@ interface MBStopChainBlockMessage {
   action: Action.StopChainBlock
 }
 
-type MBMessage = MBStartChainBlockMessage | MBStopChainBlockMessage
+interface MBRequestAPIMessage {
+  action: Action.RequestAPI
+  method: HTTPMethods
+  path: string
+  paramsObj: URLParamsObj
+}
+
+interface MBResponseAPIMessage {
+  action: Action.ResponseAPI
+  response: APIResponse
+}
+
+type MBMessage =
+  | MBStartChainBlockMessage
+  | MBStopChainBlockMessage
+  | MBRequestAPIMessage
+  | MBResponseAPIMessage
 
 type UserState = 'shouldBlock' | 'alreadyBlocked' | 'muteSkip'
 
@@ -328,11 +342,25 @@ interface MirrorBlockOption {
   noDelay: boolean
 }
 
-interface APIResponse<T> {
+interface APIResponse {
   ok: boolean
+  status: number
+  statusText: string
   headers: { [name: string]: string }
-  body: T
+  body: object
 }
+
+interface EitherRight<T> {
+  ok: true
+  value: T
+}
+
+interface EitherLeft<E> {
+  ok: false
+  error: E
+}
+
+type Either<E, T> = EitherLeft<E> | EitherRight<T>
 
 declare function cloneInto<T>(detail: T, view: Window | null): T
 

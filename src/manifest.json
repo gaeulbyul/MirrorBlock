@@ -20,6 +20,7 @@
     "https://twitter.com/*",
     "https://api.twitter.com/*",
     "storage",
+    "cookies",
     "activeTab"
   ],
 
@@ -31,6 +32,7 @@
     "scripts": [
       "vendor/browser-polyfill.min.js",
       "extoption.js",
+      "scripts-bg/twitter-api-bg.js",
       "scripts-bg/background.js"
     ]
   },
@@ -47,9 +49,8 @@
         "vendor/browser-polyfill.min.js",
         "/extoption.js",
         "scripts/common.js",
-        "scripts/api-common.js",
-        "scripts/twitter-api.js",
         "scripts/nightmode.js",
+        "scripts/twitter-api-ct.js",
         "scripts/mirrorblock/mirrorblock-badge.js",
         "scripts/mirrorblock/mirrorblock.js",
         "scripts/mirrorblock/mirrorblock-r.js",
@@ -68,17 +69,14 @@
         "vendor/browser-polyfill.min.js",
         "/extoption.js",
         "scripts/common.js",
-        "scripts/api-common.js",
-        "scripts/twitter-api.js",
+        "scripts/twitter-api-ct.js",
         "scripts/mirrorblock/tweetdeck.js"
       ]
     }
   ],
 
   "web_accessible_resources": [
-    "scripts/api-common.js",
     "scripts/inject/tweetdeck-inject.js",
-    "scripts/inject/twitter-inject.js",
     "scripts/inject/twitter-mobile-inject.js",
     "vendor/uuid.js"
   ],

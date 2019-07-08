@@ -6,6 +6,8 @@ const enum FollowType {
 const enum Action {
   StartChainBlock = 'MirrorBlock/Start',
   StopChainBlock = 'MirrorBlock/Stop',
+  RequestAPI = 'MirrorBlock/RequestAPI',
+  ResponseAPI = 'MirrorBlock/ResponseAPI',
 }
 
 const USER_NAME_BLACKLIST = Object.freeze([

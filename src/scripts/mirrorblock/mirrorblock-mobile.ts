@@ -373,8 +373,6 @@ namespace MirrorBlock.Mobile {
       return
     }
     await Utils.injectScript('vendor/uuid.js')
-    await Utils.injectScript('scripts/api-common.js')
-    await Utils.injectScript('scripts/inject/twitter-inject.js')
     await Utils.injectScript('scripts/inject/twitter-mobile-inject.js')
     StoreRetriever.subcribeEvent()
     startObserve(reactRoot)

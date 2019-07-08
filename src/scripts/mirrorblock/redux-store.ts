@@ -103,6 +103,17 @@ namespace MirrorBlock.Mobile.Redux {
         return null
       }
     }
+    // 2019-07-08
+    // reduxStore.dispatch('rweb/BATCH', ...)를 통해 들어온 사용자 정보엔
+    // id_str 과 screen_name 만 들어있는 경우가 있다.
+    // 정보값이 불충분하므로 store에 없는 사용자로 취급
+    function checkObjectKeys(obj: object | null, n: number): boolean {
+      if (!obj) {
+        return false
+      }
+      const keys = Object.keys(obj)
+      return keys.length > n
+    }
     export async function getUserById(
       userId: string,
       useAPI: boolean
@@ -111,7 +122,7 @@ namespace MirrorBlock.Mobile.Redux {
         return null
       }
       const userFromStore = StoreRetriever.getUserById(userId)
-      if (userFromStore) {
+      if (userFromStore && checkObjectKeys(userFromStore, 3)) {
         return userFromStore
       } else if (useAPI) {
         console.log('request api "%s"', userId)
@@ -135,7 +146,7 @@ namespace MirrorBlock.Mobile.Redux {
         return null
       }
       const userFromStore = StoreRetriever.getUserByName(loweredName)
-      if (userFromStore) {
+      if (userFromStore && checkObjectKeys(userFromStore, 3)) {
         return userFromStore
       } else if (useAPI) {
         console.log('request api "@%s"', userName)
@@ -160,7 +171,7 @@ namespace MirrorBlock.Mobile.Redux {
       const idsToRequestAPI: string[] = []
       for (const userId of userIds) {
         const userFromStore = StoreRetriever.getUserById(userId)
-        if (userFromStore) {
+        if (userFromStore && checkObjectKeys(userFromStore, 3)) {
           userMap.addUser(userFromStore)
         } else {
           idsToRequestAPI.push(userId)
