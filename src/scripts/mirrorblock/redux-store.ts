@@ -94,13 +94,10 @@ namespace MirrorBlock.Mobile.Redux {
     // API호출 실패한 사용자이름을 저장하여 API호출을 반복하지 않도록 한다.
     // (예: 지워지거나 정지걸린 계정)
     const failedUserParams = new Set<string>()
-    function errorHandler(failedParam: string): (err: any) => null {
+    function errorHandler(failedIdOrNames: string[]): (err: any) => void {
       return (err: any) => {
-        failedUserParams.add(failedParam)
-        if (err instanceof Response) {
-          console.error(err)
-        }
-        return null
+        failedIdOrNames.forEach(idOrName => failedUserParams.add(idOrName))
+        console.error(err)
       }
     }
     // 2019-07-08
@@ -127,12 +124,12 @@ namespace MirrorBlock.Mobile.Redux {
       } else if (useAPI) {
         console.log('request api "%s"', userId)
         const user = await TwitterAPI.getSingleUserById(userId).catch(
-          errorHandler(userId)
+          errorHandler([userId])
         )
         if (user) {
           StoreUpdater.insertSingleUserIntoStore(user)
         }
-        return user
+        return user || null
       } else {
         return null
       }
@@ -151,12 +148,12 @@ namespace MirrorBlock.Mobile.Redux {
       } else if (useAPI) {
         console.log('request api "@%s"', userName)
         const user = await TwitterAPI.getSingleUserByName(userName).catch(
-          errorHandler(userName)
+          errorHandler([userName])
         )
         if (user) {
           StoreUpdater.insertSingleUserIntoStore(user)
         }
-        return user
+        return user || null
       } else {
         return null
       }
@@ -173,14 +170,14 @@ namespace MirrorBlock.Mobile.Redux {
         const userFromStore = StoreRetriever.getUserById(userId)
         if (userFromStore && checkObjectKeys(userFromStore, 3)) {
           userMap.addUser(userFromStore)
-        } else {
+        } else if (!failedUserParams.has(userId)) {
           idsToRequestAPI.push(userId)
         }
       }
       if (idsToRequestAPI.length === 1) {
         const requestedUser = await TwitterAPI.getSingleUserById(
           idsToRequestAPI[0]
-        ).catch(() => null)
+        ).catch(errorHandler(idsToRequestAPI))
         if (requestedUser) {
           StoreUpdater.insertSingleUserIntoStore(requestedUser)
           userMap.addUser(requestedUser)
@@ -189,10 +186,12 @@ namespace MirrorBlock.Mobile.Redux {
         const requestedUsers = await TwitterAPI.getMultipleUsersById(
           idsToRequestAPI
         )
-          .catch((): TwitterUser[] => [])
           .then(users => TwitterUserMap.fromUsersArray(users))
-        StoreUpdater.insertMultipleUsersIntoStore(requestedUsers)
-        requestedUsers.forEach(rUser => userMap.addUser(rUser))
+          .catch(errorHandler(idsToRequestAPI))
+        if (requestedUsers) {
+          StoreUpdater.insertMultipleUsersIntoStore(requestedUsers)
+          requestedUsers.forEach(rUser => userMap.addUser(rUser))
+        }
       }
       return userMap
     }
