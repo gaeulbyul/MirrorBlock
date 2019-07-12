@@ -19,8 +19,10 @@
   "permissions": [
     "https://twitter.com/*",
     "https://api.twitter.com/*",
+    "https://mobile.twitter.com/*",
     "storage",
     "cookies",
+    "contextMenus",
     "activeTab"
   ],
 
@@ -32,6 +34,7 @@
     "scripts": [
       "vendor/browser-polyfill.min.js",
       "extoption.js",
+      "scripts/common.js",
       "scripts-bg/twitter-api-bg.js",
       "scripts-bg/background.js"
     ]
