@@ -256,7 +256,7 @@ namespace MirrorBlock.ChainMirrorBlock {
     }
     if (targetUser.protected) {
       const relationship = await TwitterAPI.getRelationship(myself, targetUser)
-      const following = relationship.source.following
+      const { following } = relationship.source
       if (!following) {
         window.alert(
           `@${targetUserName}님은 프로텍트가 걸려있어서 팔로워 목록을 가져올 수 없습니다.`
@@ -264,7 +264,6 @@ namespace MirrorBlock.ChainMirrorBlock {
         return
       }
     }
-    const options = await MirrorBlock.Options.load()
     const followTypeKor =
       followType === FollowType.followers ? '팔로워' : '팔로잉'
     let confirmed = window.confirm(
@@ -277,6 +276,7 @@ namespace MirrorBlock.ChainMirrorBlock {
       confirmed = window.confirm(`${a} ${b}`)
     }
     if (confirmed) {
+      const options = await MirrorBlock.Options.load()
       const chainblocker = new ChainMirrorBlock(options)
       chainblocker.start(targetUser, followType)
     }
