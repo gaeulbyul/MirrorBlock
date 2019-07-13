@@ -1,11 +1,7 @@
-if (!('menus' in browser)) {
-  browser.menus = browser.contextMenus
-}
-
 namespace MirrorBlockBackground.Menu {
   const { getUserNameFromTweetUrl } = MirrorBlock.Utils
   function getUserNameFromClickInfo(
-    info: browser.menus.OnClickData
+    info: browser.contextMenus.OnClickData
   ): string | null {
     const { linkUrl } = info
     if (!linkUrl) {
@@ -15,13 +11,13 @@ namespace MirrorBlockBackground.Menu {
     return getUserNameFromTweetUrl(url)
   }
   export function initialize() {
-    const contexts: browser.menus.ContextType[] = ['link']
+    const contexts: browser.contextMenus.ContextType[] = ['link']
     const documentUrlPatterns = [
       'https://twitter.com/*',
       'https://mobile.twitter.com/*',
     ]
     const targetUrlPatterns = documentUrlPatterns
-    browser.menus.create({
+    browser.contextMenus.create({
       contexts,
       documentUrlPatterns,
       targetUrlPatterns,
@@ -39,7 +35,7 @@ namespace MirrorBlockBackground.Menu {
         })
       },
     })
-    browser.menus.create({
+    browser.contextMenus.create({
       contexts,
       documentUrlPatterns,
       targetUrlPatterns,
