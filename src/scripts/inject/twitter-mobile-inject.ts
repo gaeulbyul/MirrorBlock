@@ -72,12 +72,33 @@ namespace MirrorBlockInject.Mobile {
     return null
   }
   namespace ReduxSubscriber {
+    const sentTweetId = new Set<string>()
     function sendEntitiesToExtension(state: any) {
-      const users = dig(() => state.entities.users.entities)
-      const tweets = dig(() => state.entities.tweets.entities)
+      const userEntities = dig<TwitterUserEntities>(
+        () => state.entities.users.entities
+      )
+      const tweetEntities = dig<TweetEntities>(
+        () => state.entities.tweets.entities
+      )
       const conversations = dig(() => state.directMessages.conversations)
-      if (!(users && tweets)) {
+      if (!(userEntities && tweetEntities)) {
         return
+      }
+      const users = userEntities
+      const tweets: TweetEntities = {}
+      // 2019-07-21
+      // 멘션이나 인용 등 날 차단한 사용자를 발견할만한 트윗만 보낸다
+      for (const tweetId of Object.keys(tweetEntities)) {
+        const tweet = tweetEntities[tweetId]
+        if (sentTweetId.has(tweetId)) {
+          continue
+        }
+        sentTweetId.add(tweetId)
+        const hasMentions = (tweet.entities.user_mentions || []).length > 0
+        const interestingTweet = tweet.is_quote_status || hasMentions
+        if (interestingTweet) {
+          tweets[tweetId] = tweet
+        }
       }
       const detail: SubscribedEntities = {
         users,
@@ -87,11 +108,15 @@ namespace MirrorBlockInject.Mobile {
       if (!conversations) {
         delete detail.conversations
       }
-      document.dispatchEvent(
-        new CustomEvent<SubscribedEntities>('MirrorBlock<-subscribe', {
+      const customEvent = new CustomEvent<SubscribedEntities>(
+        'MirrorBlock<-subscribe',
+        {
           detail,
-        })
+        }
       )
+      requestIdleCallback(() => document.dispatchEvent(customEvent), {
+        timeout: 5000,
+      })
     }
     export function subscribe(reduxStore: ReduxStore): void {
       reduxStore.subscribe(() => {
@@ -364,12 +389,7 @@ namespace MirrorBlockInject.Mobile {
 
 {
   const { initialize } = MirrorBlockInject.Mobile
-  if ('requestIdleCallback' in window) {
-    requestIdleCallback(initialize, {
-      timeout: 3000,
-    })
-  } else {
-    console.warn('requestIdleCallback not found. fallback')
-    initialize()
-  }
+  requestIdleCallback(initialize, {
+    timeout: 10000,
+  })
 }

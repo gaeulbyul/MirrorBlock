@@ -161,7 +161,10 @@ namespace MirrorBlock.Mobile {
       }
     }
     export async function handleTweet(tweetEntry: TweetEntry) {
-      const tweet = StoreRetriever.getTweet(tweetEntry.content.id)!
+      const tweet = StoreRetriever.getTweet(tweetEntry.content.id)
+      if (!tweet) {
+        return
+      }
       if (tweet.is_quote_status) {
         const qtweet = tweet as TweetWithQuote
         handleQuotedTweet(qtweet, tweetEntry)
@@ -169,8 +172,8 @@ namespace MirrorBlock.Mobile {
       return handleMentionsInTweet(tweet, tweetEntry)
     }
     export async function handleUser(userEntry: UserEntry) {
-      const user = StoreRetriever.getUserById(userEntry.content.id)!
-      if (!user.blocked_by) {
+      const user = StoreRetriever.getUserById(userEntry.content.id)
+      if (!(user && user.blocked_by)) {
         return
       }
       const elem = getElemByEntry(userEntry)!

@@ -20,19 +20,23 @@ namespace MirrorBlock.Mobile.Redux {
     export function subcribeEvent() {
       document.addEventListener('MirrorBlock<-subscribe', event => {
         const customEvent = event as CustomEvent<SubscribedEntities>
-        const users = Object.entries(customEvent.detail.users)
-        const tweets = Object.entries(customEvent.detail.tweets)
-        for (const [userId, user] of users) {
+        const { users, tweets, conversations } = customEvent.detail
+        // Object.entries는 꽤 느리더라.
+        // 따라서, Object.keys로 대체함
+        // https://bugs.chromium.org/p/v8/issues/detail?id=6804
+        for (const userId of Object.keys(users)) {
+          const user = users[userId]
           const loweredName = user.screen_name.toLowerCase()
           userMapById.set(userId, user)
           userMapByName.set(loweredName, user)
         }
-        for (const [tweetId, tweet] of tweets) {
+        for (const tweetId of Object.keys(tweets)) {
+          const tweet = tweets[tweetId]
           tweetMap.set(tweetId, tweet)
         }
-        if (customEvent.detail.conversations) {
-          const conversations = Object.entries(customEvent.detail.conversations)
-          for (const [convId, convData] of conversations) {
+        if (conversations) {
+          for (const convId of Object.keys(conversations)) {
+            const convData = conversations[convId]
             conversationMap.set(convId, convData.data)
           }
         }
@@ -59,7 +63,9 @@ namespace MirrorBlock.Mobile.Redux {
       const requestEvent = new CustomEvent(`MirrorBlock->${eventName}`, {
         detail,
       })
-      document.dispatchEvent(requestEvent)
+      requestIdleCallback(() => document.dispatchEvent(requestEvent), {
+        timeout: 5000,
+      })
     }
     export async function insertSingleUserIntoStore(
       user: TwitterUser
