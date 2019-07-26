@@ -51,9 +51,7 @@ namespace MirrorBlock.ChainMirrorBlock {
           user => user.state === 'shouldBlock'
         )
         if (shouldBlocks.length > 0) {
-          const confirmMessage = `발견한 사용자 ${
-            shouldBlocks.length
-          }명을 맞차단하시겠습니까?`
+          const confirmMessage = `발견한 사용자 ${shouldBlocks.length}명을 맞차단하시겠습니까?`
           if (!window.confirm(confirmMessage)) {
             return
           }
@@ -118,9 +116,7 @@ namespace MirrorBlock.ChainMirrorBlock {
             return 'shouldBlock'
           }
           throw new Error(
-            `unreachable: invalid user state? (${user.id_str}:@${
-              user.screen_name
-            })`
+            `unreachable: invalid user state? (${user.id_str}:@${user.screen_name})`
           )
         }
         const addUserToFounded = (follower: TwitterUser) => {
@@ -236,7 +232,7 @@ namespace MirrorBlock.ChainMirrorBlock {
     }
     const myself = await TwitterAPI.getMyself() //.catch(() => null)
     if (!myself) {
-      window.alert('로그인을 해주세요')
+      window.alert('로그인을 해주세요.')
       return
     }
     const targetUser = await TwitterAPI.getSingleUserByName(
@@ -245,9 +241,9 @@ namespace MirrorBlock.ChainMirrorBlock {
       if (err instanceof APIError) {
         const json = err.response.body
         const jsonstr = JSON.stringify(json, null, 2)
-        window.alert(`트위터 서버에서 오류가 발생했습니다:\n${jsonstr}`)
+        window.alert(`트위터 서버에서 오류가 발생했습니다.:\n${jsonstr}`)
       } else if (err instanceof Error) {
-        window.alert(`오류가 발생했습니다:\n${err.message}`)
+        window.alert(`오류가 발생했습니다.:\n${err.message}`)
       }
       return null
     })

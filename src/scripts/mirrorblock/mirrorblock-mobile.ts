@@ -116,12 +116,10 @@ namespace MirrorBlock.Mobile {
       const mentionElemsMap = new Map<string, HTMLAnchorElement[]>(
         mentionedUserEntities
           .map(ent => ent.screen_name.toLowerCase())
-          .map(
-            (loweredName): [string, HTMLAnchorElement[]] => [
-              loweredName,
-              links.filter(a => a.pathname.toLowerCase() === `/${loweredName}`),
-            ]
-          )
+          .map((loweredName): [string, HTMLAnchorElement[]] => [
+            loweredName,
+            links.filter(a => a.pathname.toLowerCase() === `/${loweredName}`),
+          ])
       )
       const overflowed = tweetElem.querySelector(
         'a[aria-label][href$="/people"]'
@@ -306,7 +304,7 @@ namespace MirrorBlock.Mobile {
       }
     }
   }
-  const entryQueue = new class {
+  const entryQueue = new (class {
     private promise = Promise.resolve()
     private async handleEntry(entry: Entry): Promise<void> {
       switch (entry.type) {
@@ -324,7 +322,7 @@ namespace MirrorBlock.Mobile {
     public push(entry: Entry) {
       this.promise = this.promise.then(() => this.handleEntry(entry))
     }
-  }()
+  })()
   function startObserve(reactRoot: HTMLElement): void {
     new MutationObserver(mutations => {
       for (const elem of Utils.getAddedElementsFromMutations(mutations)) {
