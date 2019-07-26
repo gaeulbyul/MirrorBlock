@@ -229,6 +229,11 @@ namespace MirrorBlock.ChainMirrorBlock {
     targetUserName: string,
     followType: FollowType
   ) {
+    const alreadyRunning = document.querySelector('.mobcg-bg')
+    if (alreadyRunning) {
+      window.alert('이미 체인맞블락이 실행중입니다.')
+      return
+    }
     const myself = await TwitterAPI.getMyself() //.catch(() => null)
     if (!myself) {
       window.alert('로그인을 해주세요')
