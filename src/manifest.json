@@ -3,7 +3,7 @@
   "manifest_version": 2,
   "name": "Mirror Block",
   "author": "Gaeulbyul <aeiou256@gmail.com>",
-  "version": "0.13.1",
+  "version": "0.13.2",
   "homepage_url": "https://github.com/gaeulbyul/MirrorOfBlock",
   "icons": {
     "48": "icons/icon.png"
