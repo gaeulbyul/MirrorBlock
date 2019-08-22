@@ -255,12 +255,18 @@ namespace MirrorBlock.ChainMirrorBlock {
       window.alert('팔로잉/팔로워가 0명이므로 아무것도 하지 않았습니다.')
       return
     }
+    if (targetUser.blocked_by) {
+      window.alert(
+        `@${targetUserName}님에게 차단당하여 체인맞블락을 진행할 수 없습니다.`
+      )
+      return
+    }
     if (targetUser.protected) {
       const relationship = await TwitterAPI.getRelationship(myself, targetUser)
       const { following } = relationship.source
       if (!following) {
         window.alert(
-          `@${targetUserName}님은 프로텍트가 걸려있어서 팔로워 목록을 가져올 수 없습니다.`
+          `@${targetUserName}님은 프로텍트가 걸려있어서 체인맞블락을 진행할 수 없습니다.`
         )
         return
       }
