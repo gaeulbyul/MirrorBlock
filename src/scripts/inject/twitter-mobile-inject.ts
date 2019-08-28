@@ -199,7 +199,33 @@ namespace MirrorBlockInject.Mobile {
       }
       return true
     }
-    function sendEntryToExtension() {
+    function getDataFromEntry(entry: Entry, state: any) {
+      switch (entry.type) {
+        case 'user':
+          {
+            const userId = entry.content.id
+            const userData = dig(() => state.entities.users.entities[userId])
+            return userData
+          }
+          break
+        case 'tweet':
+          {
+            const tweetId = entry.content.id
+            const tweetData = dig(() => state.entities.tweets.entities[tweetId])
+            return tweetData
+          }
+          break
+        case 'tombstone': {
+          const tweetId = dig(() => entry.content.tweet!.id)
+          if (tweetId) {
+            const tweetData = dig(() => state.entities.tweets.entities[tweetId])
+            return tweetData
+          }
+          return null
+        }
+      }
+    }
+    function sendEntryToExtension(state: any) {
       const sections = document.querySelectorAll('section[role=region]')
       for (const section of sections) {
         // 설정 창의 왼쪽 사이드바 부분
@@ -225,10 +251,17 @@ namespace MirrorBlockInject.Mobile {
           const entry = dig(() => props.entry)
           if (isEntry(entry)) {
             // console.debug('%o %o', item, entry)
+            const entryData = getDataFromEntry(entry, state)
             item.setAttribute('data-mirrorblock-entryid', entry.entryId)
-            const customEvent = new CustomEvent('MirrorBlock<-entry', {
-              detail: entry,
-            })
+            const customEvent = new CustomEvent<EntryWithData>(
+              'MirrorBlock<-entry',
+              {
+                detail: {
+                  entry,
+                  entryData,
+                },
+              }
+            )
             document.dispatchEvent(customEvent)
             continue
           }
@@ -349,9 +382,10 @@ namespace MirrorBlockInject.Mobile {
         document.dispatchEvent(customEvent)
       }
     }
-    export function observe(reactRoot: Element): void {
+    export function observe(reactRoot: Element, reduxStore: ReduxStore): void {
       new MutationObserver(() => {
-        sendEntryToExtension()
+        const state = reduxStore.getState()
+        sendEntryToExtension(state)
         sendUserCellToExtension()
         sendDMConversationsToExtension()
       }).observe(reactRoot, {
@@ -369,11 +403,7 @@ namespace MirrorBlockInject.Mobile {
     }
     ReduxSubscriber.subscribe(reduxStore)
     ReduxDispatcher.listenEvent(reduxStore)
-    DOMEventDispatcher.observe(reactRoot)
-    // XXX debug
-    // Object.assign(window, {
-    //   $$store: reduxStore,
-    // })
+    DOMEventDispatcher.observe(reactRoot, reduxStore)
   }
   export function initialize() {
     const reactRoot = document.getElementById('react-root')!

@@ -158,8 +158,7 @@ namespace MirrorBlock.Mobile {
         })
       }
     }
-    export async function handleTweet(tweetEntry: TweetEntry) {
-      const tweet = StoreRetriever.getTweet(tweetEntry.content.id)
+    export async function handleTweet(tweetEntry: TweetEntry, tweet: Tweet) {
       if (!tweet) {
         return
       }
@@ -169,8 +168,7 @@ namespace MirrorBlock.Mobile {
       }
       return handleMentionsInTweet(tweet, tweetEntry)
     }
-    export async function handleUser(userEntry: UserEntry) {
-      const user = StoreRetriever.getUserById(userEntry.content.id)
+    export async function handleUser(userEntry: UserEntry, user: TwitterUser) {
       if (!(user && user.blocked_by)) {
         return
       }
@@ -194,13 +192,10 @@ namespace MirrorBlock.Mobile {
         },
       })
     }
-    export async function handleTombstone(tombstoneEntry: TombstoneEntry) {
-      const contentTweet = tombstoneEntry.content.tweet
-      if (!contentTweet) {
-        return
-      }
-      const tweetId = contentTweet.id
-      const tweet = StoreRetriever.getTweet(tweetId)
+    export async function handleTombstone(
+      tombstoneEntry: TombstoneEntry,
+      tweet: Tweet | null
+    ) {
       if (!tweet) {
         return
       }
@@ -306,21 +301,25 @@ namespace MirrorBlock.Mobile {
   }
   const entryQueue = new (class {
     private promise = Promise.resolve()
-    private async handleEntry(entry: Entry): Promise<void> {
+    private async handleEntry(entryWithData: EntryWithData): Promise<void> {
+      const { entry, entryData } = entryWithData
       switch (entry.type) {
         case 'tweet': {
-          return EntryHandler.handleTweet(entry)
+          const tweet = entryData as Tweet
+          return EntryHandler.handleTweet(entry, tweet)
         }
         case 'user': {
-          return EntryHandler.handleUser(entry)
+          const user = entryData as TwitterUser
+          return EntryHandler.handleUser(entry, user)
         }
         case 'tombstone': {
-          return EntryHandler.handleTombstone(entry)
+          const tweet = entryData as (Tweet | null)
+          return EntryHandler.handleTombstone(entry, tweet)
         }
       }
     }
-    public push(entry: Entry) {
-      this.promise = this.promise.then(() => this.handleEntry(entry))
+    public push(entryWithData: EntryWithData) {
+      this.promise = this.promise.then(() => this.handleEntry(entryWithData))
     }
   })()
   function startObserve(reactRoot: HTMLElement): void {
@@ -333,9 +332,9 @@ namespace MirrorBlock.Mobile {
       childList: true,
     })
     document.addEventListener('MirrorBlock<-entry', event => {
-      const customEvent = event as CustomEvent<Entry>
-      const entry = customEvent.detail
-      entryQueue.push(entry)
+      const customEvent = event as CustomEvent<EntryWithData>
+      const entryWithData = customEvent.detail
+      entryQueue.push(entryWithData)
     })
     document.addEventListener('MirrorBlock<-UserCell', event => {
       const customEvent = event as CustomEvent<UserCellIdentifier>

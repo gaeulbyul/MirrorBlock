@@ -240,6 +240,8 @@ interface TombstoneEntry extends BaseEntry {
 interface TombstoneEntryContent extends BaseEntryContent {
   id: undefined
   displayType: 'TweetUnavailable' | 'Inline'
+  // epitaph: 내가 차단한 경우는 이 속성이 없더라.
+  epitaph?: 'BlockedBy' | 'Protected'
   tombstoneInfo: {
     text: string
     richText: {
@@ -263,6 +265,32 @@ interface UserEntryContent extends BaseEntryContent {
 }
 
 type Entry = TweetEntry | TombstoneEntry | UserEntry
+
+interface TweetEntryWithData {
+  entry: TweetEntry
+  entryData: Tweet
+}
+
+interface UserEntryWithData {
+  entry: UserEntry
+  entryData: TwitterUser
+}
+
+interface TombstoneEntryWithData {
+  entry: TombstoneEntry
+  entryData: Tweet | null
+}
+
+interface UnknownEntryWithData {
+  entry: Entry
+  entryData: null
+}
+
+type EntryWithData =
+  | TweetEntryWithData
+  | UserEntryWithData
+  | TombstoneEntryWithData
+  | UnknownEntryWithData
 
 interface UserCell {
   displayMode: string
