@@ -71,60 +71,6 @@ namespace MirrorBlockInject.Mobile {
     )
     return null
   }
-  namespace ReduxSubscriber {
-    const sentTweetId = new Set<string>()
-    function sendEntitiesToExtension(state: any) {
-      const userEntities = dig<TwitterUserEntities>(
-        () => state.entities.users.entities
-      )
-      const tweetEntities = dig<TweetEntities>(
-        () => state.entities.tweets.entities
-      )
-      const conversations = dig(() => state.directMessages.conversations)
-      if (!(userEntities && tweetEntities)) {
-        return
-      }
-      const users = userEntities
-      const tweets: TweetEntities = {}
-      // 2019-07-21
-      // 멘션이나 인용 등 날 차단한 사용자를 발견할만한 트윗만 보낸다
-      for (const tweetId of Object.keys(tweetEntities)) {
-        const tweet = tweetEntities[tweetId]
-        if (sentTweetId.has(tweetId)) {
-          continue
-        }
-        sentTweetId.add(tweetId)
-        const hasMentions = (tweet.entities.user_mentions || []).length > 0
-        const interestingTweet = tweet.is_quote_status || hasMentions
-        if (interestingTweet) {
-          tweets[tweetId] = tweet
-        }
-      }
-      const detail: SubscribedEntities = {
-        users,
-        tweets,
-        conversations,
-      }
-      if (!conversations) {
-        delete detail.conversations
-      }
-      const customEvent = new CustomEvent<SubscribedEntities>(
-        'MirrorBlock<-subscribe',
-        {
-          detail,
-        }
-      )
-      requestIdleCallback(() => document.dispatchEvent(customEvent), {
-        timeout: 5000,
-      })
-    }
-    export function subscribe(reduxStore: ReduxStore): void {
-      reduxStore.subscribe(() => {
-        const state = reduxStore.getState()
-        sendEntitiesToExtension(state)
-      })
-    }
-  }
   namespace ReduxDispatcher {
     function addEvent(
       name: ReduxStoreEventNames,
@@ -177,6 +123,62 @@ namespace MirrorBlockInject.Mobile {
           type: 'rweb/toasts/ADD_TOAST',
           payload: { text },
         })
+      })
+    }
+  }
+  namespace ReduxFetcher {
+    function addEventWithResponse(
+      name: ReduxStoreEventNames,
+      callback: (event: CustomEvent) => any
+    ): void {
+      document.addEventListener(`MirrorBlock-->${name}`, event => {
+        const customEvent = event as CustomEvent
+        const { nonce } = customEvent.detail
+        const response = callback(customEvent)
+        const responseEvent = new CustomEvent(
+          `MirrorBlock<--${name}.${nonce}`,
+          {
+            detail: response,
+          }
+        )
+        document.dispatchEvent(responseEvent)
+      })
+    }
+    export function listenEvent(reduxStore: ReduxStore): void {
+      addEventWithResponse('getMultipleUsersByIds', event => {
+        const state = reduxStore.getState()
+        const { userIds } = event.detail
+        const result: { [id: string]: TwitterUser } = {}
+        const userEntities: TwitterUserEntities =
+          dig(() => state.entities.users.entities) || []
+        for (const userId of userIds) {
+          result[userId] = userEntities[userId]
+        }
+        return result
+      })
+      addEventWithResponse('getUserByName', event => {
+        const state = reduxStore.getState()
+        const { userName } = event.detail
+        const targetUserName = userName.toLowerCase()
+        const userEntities: TwitterUserEntities =
+          dig(() => state.entities.users.entities) || []
+        for (const userEntity of Object.values(userEntities)) {
+          const name = userEntity.screen_name.toLowerCase()
+          if (targetUserName === name) {
+            return userEntity
+          }
+        }
+        return null
+      })
+      addEventWithResponse('getDMData', event => {
+        const state = reduxStore.getState()
+        const { convId } = event.detail
+        const conversations = dig(() => state.directMessages.conversations)
+        if (!conversations) {
+          return null
+        }
+        const convData = dig(() => conversations[convId])
+        return convData || null
       })
     }
   }
@@ -401,8 +403,8 @@ namespace MirrorBlockInject.Mobile {
     if (!reduxStore) {
       return
     }
-    ReduxSubscriber.subscribe(reduxStore)
     ReduxDispatcher.listenEvent(reduxStore)
+    ReduxFetcher.listenEvent(reduxStore)
     DOMEventDispatcher.observe(reactRoot, reduxStore)
   }
   export function initialize() {

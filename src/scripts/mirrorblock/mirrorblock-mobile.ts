@@ -264,7 +264,7 @@ namespace MirrorBlock.Mobile {
   }
   namespace DMHandler {
     export async function handleDMConversation(convId: string) {
-      const dmData = StoreRetriever.getDMData(convId)
+      const dmData = await StoreRetriever.getDMData(convId)
       if (!dmData) {
         throw new Error('unreachable')
       }
@@ -374,7 +374,6 @@ namespace MirrorBlock.Mobile {
     }
     await Utils.injectScript('vendor/uuid.js')
     await Utils.injectScript('scripts/inject/twitter-mobile-inject.js')
-    StoreRetriever.subcribeEvent()
     startObserve(reactRoot)
   }
 }

@@ -304,6 +304,9 @@ type ReduxStoreEventNames =
   | 'insertMultipleUsersIntoStore'
   | 'afterBlockUser'
   | 'toastMessage'
+  | 'getMultipleUsersByIds'
+  | 'getUserByName'
+  | 'getDMData'
 
 interface UserCellIdentifier {
   userId: string | null

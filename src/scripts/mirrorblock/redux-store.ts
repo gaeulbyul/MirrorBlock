@@ -1,51 +1,7 @@
 namespace MirrorBlock.Mobile.Redux {
-  const tweetMap = new Map<string, Tweet>()
-  const userMapById = new Map<string, TwitterUser>()
-  const userMapByName = new Map<string, TwitterUser>()
-  const conversationMap = new Map<string, DMData>()
-  export namespace StoreRetriever {
-    export function getUserByName(userName: string): TwitterUser | null {
-      const loweredName = userName.toLowerCase()
-      return userMapByName.get(loweredName) || null
-    }
-    export function getUserById(userId: string): TwitterUser | null {
-      return userMapById.get(userId) || null
-    }
-    export function getTweet(tweetId: string): Tweet | null {
-      return tweetMap.get(tweetId) || null
-    }
-    export function getDMData(convId: string): DMData | null {
-      return conversationMap.get(convId) || null
-    }
-    export function subcribeEvent() {
-      document.addEventListener('MirrorBlock<-subscribe', event => {
-        const customEvent = event as CustomEvent<SubscribedEntities>
-        const { users, tweets, conversations } = customEvent.detail
-        // Object.entries는 꽤 느리더라.
-        // 따라서, Object.keys로 대체함
-        // https://bugs.chromium.org/p/v8/issues/detail?id=6804
-        for (const userId of Object.keys(users)) {
-          const user = users[userId]
-          const loweredName = user.screen_name.toLowerCase()
-          userMapById.set(userId, user)
-          userMapByName.set(loweredName, user)
-        }
-        for (const tweetId of Object.keys(tweets)) {
-          const tweet = tweets[tweetId]
-          tweetMap.set(tweetId, tweet)
-        }
-        if (conversations) {
-          for (const convId of Object.keys(conversations)) {
-            const convData = conversations[convId]
-            conversationMap.set(convId, convData.data)
-          }
-        }
-      })
-    }
-  }
   export namespace StoreUpdater {
     // 파이어폭스에서 CustomEvent의 detail 개체 전달용
-    function cloneDetail<T>(detail: T): T {
+    export function cloneDetail<T>(detail: T): T {
       if (typeof detail !== 'object') {
         return detail
       }
@@ -96,7 +52,74 @@ namespace MirrorBlock.Mobile.Redux {
       })
     }
   }
+  export namespace StoreRetriever {
+    const { cloneDetail } = StoreUpdater
+    async function triggerPageEventWithResponse(
+      eventName: ReduxStoreEventNames,
+      eventDetail?: object
+    ): Promise<any> {
+      const detail = cloneDetail(eventDetail)
+      const nonce = Math.random()
+      Object.assign(detail, {
+        nonce,
+      })
+      const requestEvent = new CustomEvent(`MirrorBlock-->${eventName}`, {
+        detail,
+      })
+      return new Promise((resolve, reject) => {
+        let timeouted = false
+        const timeout = window.setTimeout(() => {
+          timeouted = true
+          reject('timeout!')
+        }, 10000)
+        document.addEventListener(
+          `MirrorBlock<--${eventName}.${nonce}`,
+          event => {
+            window.clearTimeout(timeout)
+            if (timeouted) {
+              return
+            }
+            const customEvent = event as CustomEvent
+            resolve(customEvent.detail)
+          },
+          { once: true }
+        )
+        document.dispatchEvent(requestEvent)
+      })
+    }
+    export async function getMultipleUsersByIds(
+      userIds: string[]
+    ): Promise<TwitterUser[]> {
+      return triggerPageEventWithResponse('getMultipleUsersByIds', {
+        userIds,
+      })
+    }
+    export async function getUserById(
+      userId: string
+    ): Promise<TwitterUser | null> {
+      const users = await triggerPageEventWithResponse(
+        'getMultipleUsersByIds',
+        {
+          userIds: [userId],
+        }
+      ).catch(() => {})
+      return users[userId] || null
+    }
+    export async function getUserByName(
+      userName: string
+    ): Promise<TwitterUser | null> {
+      return triggerPageEventWithResponse('getUserByName', {
+        userName,
+      })
+    }
+    export async function getDMData(convId: string): Promise<DMData | null> {
+      return triggerPageEventWithResponse('getDMData', {
+        convId,
+      })
+    }
+  }
   export namespace UserGetter {
+    const { isTwitterUser } = MirrorBlock.Utils
     // API호출 실패한 사용자이름을 저장하여 API호출을 반복하지 않도록 한다.
     // (예: 지워지거나 정지걸린 계정)
     const failedUserParams = new Set<string>()
@@ -110,12 +133,18 @@ namespace MirrorBlock.Mobile.Redux {
     // reduxStore.dispatch('rweb/BATCH', ...)를 통해 들어온 사용자 정보엔
     // id_str 과 screen_name 만 들어있는 경우가 있다.
     // 정보값이 불충분하므로 store에 없는 사용자로 취급
-    function checkObjectKeys(obj: object | null, n: number): boolean {
+    function checkObjectIsUser(
+      obj: object | null,
+      n: number
+    ): obj is TwitterUser {
       if (!obj) {
         return false
       }
       const keys = Object.keys(obj)
-      return keys.length > n
+      if (keys.length <= n) {
+        return false
+      }
+      return isTwitterUser(obj)
     }
     export async function getUserById(
       userId: string,
@@ -124,8 +153,8 @@ namespace MirrorBlock.Mobile.Redux {
       if (failedUserParams.has(userId)) {
         return null
       }
-      const userFromStore = StoreRetriever.getUserById(userId)
-      if (userFromStore && checkObjectKeys(userFromStore, 3)) {
+      const userFromStore = await StoreRetriever.getUserById(userId)
+      if (userFromStore && checkObjectIsUser(userFromStore, 3)) {
         return userFromStore
       } else if (useAPI) {
         console.log('request api "%s"', userId)
@@ -148,8 +177,8 @@ namespace MirrorBlock.Mobile.Redux {
       if (failedUserParams.has(loweredName)) {
         return null
       }
-      const userFromStore = StoreRetriever.getUserByName(loweredName)
-      if (userFromStore && checkObjectKeys(userFromStore, 3)) {
+      const userFromStore = await StoreRetriever.getUserByName(loweredName)
+      if (userFromStore && checkObjectIsUser(userFromStore, 3)) {
         return userFromStore
       } else if (useAPI) {
         console.log('request api "@%s"', userName)
@@ -173,8 +202,8 @@ namespace MirrorBlock.Mobile.Redux {
       const userMap = new TwitterUserMap()
       const idsToRequestAPI: string[] = []
       for (const userId of userIds) {
-        const userFromStore = StoreRetriever.getUserById(userId)
-        if (userFromStore && checkObjectKeys(userFromStore, 3)) {
+        const userFromStore = await StoreRetriever.getUserById(userId)
+        if (userFromStore && checkObjectIsUser(userFromStore, 3)) {
           userMap.addUser(userFromStore)
         } else if (!failedUserParams.has(userId)) {
           idsToRequestAPI.push(userId)
