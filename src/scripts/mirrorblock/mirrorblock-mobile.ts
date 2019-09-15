@@ -76,6 +76,10 @@ namespace MirrorBlock.Mobile {
       }
       const qUrlString = tweet.quoted_status_permalink.expanded
       const qUrl = new URL(qUrlString)
+      // 드물게 인용 트윗 주소가 t.co 링크일 경우도 있더라.
+      if (qUrl.hostname === 't.co') {
+        return
+      }
       const quotedUserName = Utils.getUserNameFromTweetUrl(qUrl)!
       const quotedUser = await UserGetter.getUserByName(quotedUserName, true)
       if (!quotedUser || !quotedUser.blocked_by) {
