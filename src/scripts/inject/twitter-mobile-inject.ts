@@ -40,21 +40,7 @@ namespace MirrorBlockInject.Mobile {
     }
     return true
   }
-  function findReduxStore(reactRoot: Element): ReduxStore | null {
-    {
-      const reactRoot1 = reactRoot as any
-      const store1 = dig(
-        () =>
-          reactRoot1._reactRootContainer._internalRoot.current.memoizedState
-            .element.props.store
-      )
-      if (isReduxStore(store1)) {
-        return store1
-      }
-    }
-    // 2019-04-08: store 위치 바뀐 듯
-    // do-while: 유사 GOTO문
-    // $.__reactEventHandlers$???????????.children.props.store
+  function findReduxStore(): ReduxStore | null {
     do {
       const reactRoot2 = document.querySelector('[data-reactroot]')!.children[0]
       const rEventHandler = getReactEventHandler(reactRoot2)
@@ -399,7 +385,7 @@ namespace MirrorBlockInject.Mobile {
   }
   function inject(): void {
     const reactRoot = document.getElementById('react-root')!
-    const reduxStore = findReduxStore(reactRoot)
+    const reduxStore = findReduxStore()
     if (!reduxStore) {
       return
     }
