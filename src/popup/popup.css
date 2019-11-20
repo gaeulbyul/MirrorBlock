@@ -25,9 +25,11 @@ hr {
 }
 
 .whole .title {
+  margin-bottom: 5px;
   text-align: center;
   font-size: 14px;
   user-select: none;
+  color: black;
 }
 
 .menu {
@@ -36,9 +38,9 @@ hr {
 
 .menu-item {
   width: 100%;
-  padding: 5px 10px;
+  padding: 7px 10px;
   margin: 3px 0;
-  border-radius: 3px;
+  border-radius: 99px;
   border: 2px solid crimson;
   font-size: var(--default-font-size);
   background-color: white;
@@ -60,7 +62,7 @@ hr {
 
 .option-item {
   margin: 5px 0;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: #666;
 }
 
@@ -76,4 +78,35 @@ hr {
 .warning {
   padding: 0.25em 1em;
   font-size: 14px;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #10171e;
+  }
+
+  hr {
+    border-top: 1px solid #333;
+  }
+
+  .whole .title {
+    color: white;
+  }
+
+  .menu-item {
+    background-color: #10171e;
+    color: white;
+  }
+
+  .option-item {
+    color: #999;
+  }
+
+  .option-item.on {
+    color: palegreen;
+  }
+
+  .option-item.currentVersion {
+    color: #999;
+  }
 }

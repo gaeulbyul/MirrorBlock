@@ -11,6 +11,9 @@
 body {
   font-size: var(--default-font-size);
   font-family: 'NanumGothic', 'Malgun Gothic', sans-serif;
+  background-color: white;
+  color: black;
+  line-height: 120%;
 }
 
 a,
@@ -44,7 +47,16 @@ kbd {
   user-select: none;
 }
 
-.field input[type='checkbox']:checked + span {
+.checkbox-field {
+  display: flex;
+}
+
+.checkbox-field input[type='checkbox'] + span {
+  flex-grow: 1;
+  margin-left: 0.3em;
+}
+
+.checkbox-field input[type='checkbox']:checked + span {
   font-weight: bold;
 }
 
@@ -70,4 +82,19 @@ kbd {
   padding: 1em;
   background-color: #ffc;
   color: #330;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #10171e;
+    color: white;
+  }
+
+  fieldset {
+    border: 1px solid #333;
+  }
+
+  hr {
+    border-top: 1px solid #333;
+  }
 }
