@@ -6,6 +6,7 @@ const enum FollowType {
 const enum Action {
   StartChainBlock = 'MirrorBlock/Start',
   StopChainBlock = 'MirrorBlock/Stop',
+  Alert = 'MirrorBlock/Alert',
   RequestAPI = 'MirrorBlock/RequestAPI',
   ResponseAPI = 'MirrorBlock/ResponseAPI',
 }

@@ -331,6 +331,11 @@ interface MBStopChainBlockMessage {
   action: Action.StopChainBlock
 }
 
+interface MBAlertMessage {
+  action: Action.Alert
+  message: string
+}
+
 interface MBRequestAPIMessage {
   action: Action.RequestAPI
   method: HTTPMethods
@@ -346,6 +351,7 @@ interface MBResponseAPIMessage {
 type MBMessage =
   | MBStartChainBlockMessage
   | MBStopChainBlockMessage
+  | MBAlertMessage
   | MBRequestAPIMessage
   | MBResponseAPIMessage
 

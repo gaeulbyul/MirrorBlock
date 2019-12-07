@@ -6,11 +6,10 @@ namespace MirrorBlock.Popup {
   const { getUserNameFromTweetUrl } = MirrorBlock.Utils
   type Tab = browser.tabs.Tab
 
-  function alertToTab(tabId: number, message: string) {
-    const messageWithoutSpecialChars = message.replace(/['"\\]/g, '')
-    const code = `window.alert('${messageWithoutSpecialChars}')`
-    return browser.tabs.executeScript(tabId, {
-      code,
+  async function alertToTab(tabId: number, message: string) {
+    return browser.tabs.sendMessage<MBAlertMessage>(tabId, {
+      action: Action.Alert,
+      message,
     })
   }
 
@@ -31,10 +30,11 @@ namespace MirrorBlock.Popup {
     const tabId = currentTab.id
     const url = new URL(currentTab.url!)
     if (url.hostname === 'tweetdeck.twitter.com') {
-      const a = `Mirror Block: 트윗덱에선 작동하지 않습니다.`
-      const b = `트위터(https://twitter.com)에서 실행해주세요.`
-      const message = String.raw`${a}\n${b}`
-      alertToTab(tabId, message).then(closePopup)
+      const a = 'Mirror Block: 트윗덱에선 작동하지 않습니다.'
+      const b = '트위터(https://twitter.com)에서 실행해주세요.'
+      const message = `${a}\n${b}`
+      alertToTab(tabId, message)
+      closePopup()
       return
     }
     const userName = getUserNameFromTweetUrl(url)
@@ -42,8 +42,9 @@ namespace MirrorBlock.Popup {
       const a =
         'Mirror Block: 체인맞블락을 사용하시려면 사용자의 프로필페이지로 이동해주세요.'
       const b = '( 예: https://twitter.com/(사용자이름) )'
-      const message = String.raw`${a}\n${b}`
-      alertToTab(tabId, message).then(closePopup)
+      const message = `${a}\n${b}`
+      alertToTab(tabId, message)
+      closePopup()
       return
     }
     browser.tabs

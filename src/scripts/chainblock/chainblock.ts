@@ -297,5 +297,8 @@ browser.runtime.onMessage.addListener((msg: object) => {
       message.userName,
       message.followType
     )
+  } else if (message.action === Action.Alert) {
+    const msg = message.message
+    window.alert(msg)
   }
 })
