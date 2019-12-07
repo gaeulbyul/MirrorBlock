@@ -56,6 +56,10 @@ kbd {
   margin-left: 0.3em;
 }
 
+.checkbox-field input[type='checkbox'] + span:hover {
+  text-decoration: underline;
+}
+
 .checkbox-field input[type='checkbox']:checked + span {
   font-weight: bold;
 }
