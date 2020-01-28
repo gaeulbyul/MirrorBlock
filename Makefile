@@ -23,7 +23,7 @@ clean:
 
 zip:
 	mkdir -p dist/
-	fd --type f .ts build/ --exec rm
+	fd --type f -e ts . build/ --exec rm
 	cd build && zip -9 -X -r ../dist/$(NAME)-v$(VERSION).zip .
 
 srczip:
