@@ -224,7 +224,7 @@ attempted to block user that should NOT block!!
       target_id,
     })
     if (response.ok) {
-      const { relationship } = (await response.body) as {
+      const { relationship } = response.body as {
         relationship: Relationship
       }
       return relationship

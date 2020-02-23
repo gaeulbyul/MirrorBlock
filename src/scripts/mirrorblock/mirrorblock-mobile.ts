@@ -70,7 +70,10 @@ namespace MirrorBlock.Mobile {
     }
   }
   namespace EntryHandler {
-    async function handleQuotedTweet(tweet: TweetWithQuote, entry: TweetEntry) {
+    async function handleQuotedTweet(
+      tweet: TweetWithQuote,
+      tweetElem: HTMLElement
+    ) {
       if (!tweet.quoted_status_permalink) {
         return
       }
@@ -85,15 +88,14 @@ namespace MirrorBlock.Mobile {
       if (!quotedUser || !quotedUser.blocked_by) {
         return
       }
-      const elem = getElemByEntry(entry)!
       const badge = new Badge(quotedUser)
       // 가끔 날 차단한 사람의 인용트윗이 보인다.
       // 이 때 보이는 인용트윗은 div[role=blockquote]다.
       // 안 보일 땐 트윗의 링크가 뜨는 데 그건 quoteLink
-      const quoteLink = elem.querySelector(`a[href^="${qUrl.pathname}" i]`)
-      const quotedTweet = elem.querySelector('div[role=blockquote]')
-      const indicateMe = quoteLink || quotedTweet || elem
-      reflectBlockOnVisible(elem, {
+      const quoteLink = tweetElem.querySelector(`a[href^="${qUrl.pathname}" i]`)
+      const quotedTweet = tweetElem.querySelector('div[role=blockquote]')
+      const indicateMe = quoteLink || quotedTweet || tweetElem
+      reflectBlockOnVisible(tweetElem, {
         user: quotedUser,
         indicateBlock() {
           markOutline(indicateMe)
@@ -105,13 +107,9 @@ namespace MirrorBlock.Mobile {
         },
       })
     }
-    async function handleMentionsInTweet(tweet: Tweet, entry: TweetEntry) {
+    async function handleMentionsInTweet(tweet: Tweet, tweetElem: HTMLElement) {
       const mentionedUserEntities = tweet.entities.user_mentions || []
       if (mentionedUserEntities.length <= 0) {
-        return
-      }
-      const tweetElem = getElemByEntry(entry)
-      if (!tweetElem) {
         return
       }
       const links = Array.from(
@@ -166,11 +164,18 @@ namespace MirrorBlock.Mobile {
       if (!tweet) {
         return
       }
+      const tweetElem = getElemByEntry(tweetEntry)
+      if (!tweetElem) {
+        return
+      }
       if (tweet.is_quote_status) {
         const qtweet = tweet as TweetWithQuote
-        handleQuotedTweet(qtweet, tweetEntry)
+        handleQuotedTweet(qtweet, tweetElem)
       }
-      return handleMentionsInTweet(tweet, tweetEntry)
+      await handleMentionsInTweet(tweet, tweetElem)
+      // 대화트리 UI에서, 다른 트윗을 선택하면 차단표시된 게 지워지는 현상이 있다.
+      // 따라서, 처리 완료 후 attr을 지워서 다시 처리할 수 있도록 함.
+      tweetElem.removeAttribute('data-mirrorblock-entryid')
     }
     export async function handleUser(userEntry: UserEntry, user: TwitterUser) {
       if (!(user && user.blocked_by)) {

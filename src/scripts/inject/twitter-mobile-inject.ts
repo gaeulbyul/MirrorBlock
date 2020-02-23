@@ -240,16 +240,27 @@ namespace MirrorBlockInject.Mobile {
           if (isEntry(entry)) {
             // console.debug('%o %o', item, entry)
             const entryData = getDataFromEntry(entry, state)
+            if (!entryData) {
+              continue
+            }
             item.setAttribute('data-mirrorblock-entryid', entry.entryId)
-            const customEvent = new CustomEvent<EntryWithData>(
-              'MirrorBlock<-entry',
-              {
-                detail: {
-                  entry,
-                  entryData,
-                },
-              }
+            // 개체에 함수가 섞여있으면 contents_script에 이벤트로 전달할 수 없다.
+            // (보안문제로)
+            // 여기에서 함수를 뺀 새 개체를 만들어낸다.
+            const entryJson = JSON.parse(
+              JSON.stringify(
+                entry,
+                (_key, value) => (typeof value === 'function' ? null : value),
+                0
+              )
             )
+            const detail = {
+              entry: entryJson,
+              entryData,
+            }
+            const customEvent = new CustomEvent('MirrorBlock<-entry', {
+              detail,
+            })
             document.dispatchEvent(customEvent)
             continue
           }

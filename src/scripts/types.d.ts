@@ -281,16 +281,10 @@ interface TombstoneEntryWithData {
   entryData: Tweet | null
 }
 
-interface UnknownEntryWithData {
-  entry: Entry
-  entryData: null
-}
-
 type EntryWithData =
   | TweetEntryWithData
   | UserEntryWithData
   | TombstoneEntryWithData
-  | UnknownEntryWithData
 
 interface UserCell {
   displayMode: string
