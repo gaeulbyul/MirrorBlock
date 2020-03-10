@@ -14,7 +14,7 @@ namespace MirrorBlock.Options {
     >({}, defaults, newOption)
     return browser.storage.local.set({
       option,
-    })
+    } as any)
   }
   export async function load(): Promise<MirrorBlockOption> {
     const loaded = await browser.storage.local.get('option')
