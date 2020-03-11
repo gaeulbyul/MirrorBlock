@@ -31,13 +31,7 @@
   },
 
   "background": {
-    "scripts": [
-      "vendor/browser-polyfill.min.js",
-      "extoption.js",
-      "scripts/common.js",
-      "scripts-bg/twitter-api-bg.js",
-      "scripts-bg/background.js"
-    ]
+    "scripts": ["vendor/browser-polyfill.min.js", "bundled/background.bun.js"]
   },
 
   "content_scripts": [
@@ -48,40 +42,18 @@
         "styles/mob-badge.css",
         "styles/chainblock.css"
       ],
-      "js": [
-        "vendor/browser-polyfill.min.js",
-        "/extoption.js",
-        "scripts/common.js",
-        "scripts/nightmode.js",
-        "scripts/twitter-api-ct.js",
-        "scripts/mirrorblock/mirrorblock-badge.js",
-        "scripts/mirrorblock/mirrorblock.js",
-        "scripts/mirrorblock/mirrorblock-r.js",
-        "scripts/mirrorblock/mirrorblock-a.js",
-        "scripts/mirrorblock/mirrorblock-dm.js",
-        "scripts/mirrorblock/redux-store.js",
-        "scripts/mirrorblock/mirrorblock-mobile.js",
-        "scripts/chainblock/chainblock-ui.js",
-        "scripts/chainblock/chainblock.js"
-      ]
+      "js": ["vendor/browser-polyfill.min.js", "bundled/twitter.bun.js"]
     },
     {
       "matches": ["*://tweetdeck.twitter.com/*"],
       "css": ["styles/tweetdeck.css"],
-      "js": [
-        "vendor/browser-polyfill.min.js",
-        "/extoption.js",
-        "scripts/common.js",
-        "scripts/twitter-api-ct.js",
-        "scripts/mirrorblock/tweetdeck.js"
-      ]
+      "js": ["vendor/browser-polyfill.min.js", "bundled/tweetdeck.bun.js"]
     }
   ],
 
   "web_accessible_resources": [
-    "scripts/inject/tweetdeck-inject.js",
-    "scripts/inject/twitter-mobile-inject.js",
-    "vendor/uuid.js"
+    "bundled/tweetdeck_inject.bun.js",
+    "bundled/twitter_inject.bun.js"
   ],
 
   "browser_action": {

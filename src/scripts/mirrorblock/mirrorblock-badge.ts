@@ -1,17 +1,17 @@
-namespace MirrorBlock.Badge {
-  const { validateTwitterUserName } = MirrorBlock.Utils
-  export class Badge {
-    private readonly badgedAttr = 'data-mirrorblock-badged'
-    private readonly baseElem = document.createElement('span')
-    constructor(private user?: TwitterUser) {
-      let userName = user ? user.screen_name : ''
-      if (!validateTwitterUserName(userName)) {
-        userName = ''
-      }
-      const tooltipUserName = userName ? `@${userName}` : '이 사용자'
-      this.baseElem.className = 'mob-badge'
-      this.baseElem.style.whiteSpace = 'initial'
-      this.baseElem.innerHTML = `\
+import { validateTwitterUserName } from '../common'
+
+export default class Badge {
+  private readonly badgedAttr = 'data-mirrorblock-badged'
+  private readonly baseElem = document.createElement('span')
+  constructor(private user?: TwitterUser) {
+    let userName = user ? user.screen_name : ''
+    if (!validateTwitterUserName(userName)) {
+      userName = ''
+    }
+    const tooltipUserName = userName ? `@${userName}` : '이 사용자'
+    this.baseElem.className = 'mob-badge'
+    this.baseElem.style.whiteSpace = 'initial'
+    this.baseElem.innerHTML = `\
 <span class="badge-wrapper">
   <span class="badge blocks-you"
   title="나를 차단함: ${tooltipUserName}이(가) 나를 차단하고 있습니다.">
@@ -23,35 +23,34 @@ namespace MirrorBlock.Badge {
     차단반사 발동!
   </span>
 </span>`
+  }
+  public showUserName() {
+    if (!this.user) {
+      return
     }
-    public showUserName() {
-      if (!this.user) {
-        return
-      }
-      const name = this.user.screen_name
-      const userNameElem = this.baseElem.querySelector<HTMLElement>(
-        '.badge-username'
-      )!
-      userNameElem.textContent = `(@${name})`
-      userNameElem.hidden = false
+    const name = this.user.screen_name
+    const userNameElem = this.baseElem.querySelector<HTMLElement>(
+      '.badge-username'
+    )!
+    userNameElem.textContent = `(@${name})`
+    userNameElem.hidden = false
+  }
+  public blockReflected() {
+    const brBadge = this.baseElem.querySelector<HTMLElement>(
+      '.block-reflected[hidden]'
+    )!
+    brBadge.hidden = false
+  }
+  public attachAfter(targetElem: Element): void {
+    if (!targetElem.hasAttribute(this.badgedAttr)) {
+      targetElem.after(this.baseElem)
+      targetElem.setAttribute(this.badgedAttr, '1')
     }
-    public blockReflected() {
-      const brBadge = this.baseElem.querySelector<HTMLElement>(
-        '.block-reflected[hidden]'
-      )!
-      brBadge.hidden = false
-    }
-    public attachAfter(targetElem: Element): void {
-      if (!targetElem.hasAttribute(this.badgedAttr)) {
-        targetElem.after(this.baseElem)
-        targetElem.setAttribute(this.badgedAttr, '1')
-      }
-    }
-    public appendTo(targetElem: Element): void {
-      if (!targetElem.hasAttribute(this.badgedAttr)) {
-        targetElem.appendChild(this.baseElem)
-        targetElem.setAttribute(this.badgedAttr, '1')
-      }
+  }
+  public appendTo(targetElem: Element): void {
+    if (!targetElem.hasAttribute(this.badgedAttr)) {
+      targetElem.appendChild(this.baseElem)
+      targetElem.setAttribute(this.badgedAttr, '1')
     }
   }
 }

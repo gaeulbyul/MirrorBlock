@@ -13,10 +13,9 @@ default:
 	@echo 'requirements: node, typescript'
 
 build:
-	tsc --version
 	mkdir -p build/
 	cp -r src/. build/
-	tsc
+	yarn webpack
 
 clean:
 	rm -rf build/ dist/

@@ -1,3 +1,5 @@
+import { EventEmitter, sleep } from '../common'
+
 const CHAINBLOCK_UI_HTML = `
   <div class="mobcb-bg modal-container block-dialog" style="display:flex">
     <div class="mobcb-dialog modal modal-content is-autoPosition">
@@ -115,7 +117,7 @@ class UserList {
   }
 }
 
-class ChainMirrorBlockUI extends EventEmitter {
+export default class ChainMirrorBlockUI extends EventEmitter {
   private rootElem = document.createElement('div')
   private skippedUserList: UserList
   private blockedbyUserList: UserList
@@ -254,7 +256,7 @@ class ChainMirrorBlockUI extends EventEmitter {
     this.completeProgressUI(progress)
     if (progress.foundUsers.length <= 0) {
       // sleep: progress가 100%되기 전에 메시지가 뜨며 닫히는 현상 방지
-      MirrorBlock.Utils.sleep(100).then(() => {
+      sleep(100).then(() => {
         window.alert('여기에선 아무도 나를 차단하지 않았습니다.')
         this.emit('ui:close-without-confirm')
       })

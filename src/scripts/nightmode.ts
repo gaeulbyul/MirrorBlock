@@ -1,4 +1,6 @@
-{
+import { getAddedElementsFromMutations } from './common'
+
+export function handleDarkMode() {
   const isDarkMode = /\bnight_mode=1\b/.test(document.cookie)
   function toggleNightMode(isDarkMode: boolean): void {
     document.documentElement.classList.toggle('mob-nightmode', isDarkMode)
@@ -26,9 +28,7 @@
     }
   } else {
     const nightModeObserver = new MutationObserver(mutations => {
-      for (const elem of MirrorBlock.Utils.getAddedElementsFromMutations(
-        mutations
-      )) {
+      for (const elem of getAddedElementsFromMutations(mutations)) {
         if (elem.matches('link.coreCSSBundles')) {
           const css = elem as HTMLLinkElement
           const nightMode = /nightmode/.test(css.href)

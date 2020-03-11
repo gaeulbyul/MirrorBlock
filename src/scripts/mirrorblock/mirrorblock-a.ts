@@ -1,8 +1,7 @@
+import * as TwitterAPI from '../twitter-api-ct'
+import Badge from './mirrorblock-badge'
+import { reflectBlock } from './mirrorblock-r'
 {
-  const {
-    Badge: { Badge },
-    Reflection: { reflectBlock },
-  } = MirrorBlock
   // 보이지 않는 인용트윗은 트위터에서 내부적으로 Tombstone이란 클래스네임이 붙는다.
   async function tombstoneHandler(ts: HTMLElement): Promise<void> {
     const parent = ts.parentElement

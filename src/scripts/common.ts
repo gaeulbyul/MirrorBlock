@@ -1,9 +1,6 @@
-const enum FollowType {
-  followers = 'followers',
-  following = 'following',
-}
+import * as TwitterAPI from './twitter-api-ct'
 
-const enum Action {
+export const enum Action {
   StartChainBlock = 'MirrorBlock/Start',
   StopChainBlock = 'MirrorBlock/Stop',
   Alert = 'MirrorBlock/Alert',
@@ -31,7 +28,7 @@ const USER_NAME_BLACKLIST = Object.freeze([
   'explore',
 ])
 
-class TwitterUserMap extends Map<string, TwitterUser> {
+export class TwitterUserMap extends Map<string, TwitterUser> {
   public addUser(user: TwitterUser, forceUpdate = false) {
     const shouldUpdate = forceUpdate || !this.has(user.id_str)
     if (shouldUpdate) {
@@ -73,7 +70,7 @@ class TwitterUserMap extends Map<string, TwitterUser> {
   }
 }
 
-abstract class EventEmitter {
+export abstract class EventEmitter {
   protected events: EventStore = {}
   on<T>(eventName: string, handler: (t: T) => any) {
     console.debug('handle %s event', eventName)
@@ -91,94 +88,92 @@ abstract class EventEmitter {
   }
 }
 
-namespace MirrorBlock.Utils {
-  export function sleep(time: number): Promise<void> {
-    return new Promise(resolve => window.setTimeout(resolve, time))
-  }
+export function sleep(time: number): Promise<void> {
+  return new Promise(resolve => window.setTimeout(resolve, time))
+}
 
-  export function injectScript(path: string): Promise<void> {
-    return new Promise(resolve => {
-      const script = document.createElement('script')
-      script.addEventListener('load', () => {
-        resolve()
-      })
-      script.src = browser.runtime.getURL(path)
-      const appendTarget = document.head || document.documentElement
-      appendTarget!.appendChild(script)
+export function injectScript(path: string): Promise<void> {
+  return new Promise(resolve => {
+    const script = document.createElement('script')
+    script.addEventListener('load', () => {
+      resolve()
     })
-  }
+    script.src = browser.runtime.getURL(path)
+    const appendTarget = document.head || document.documentElement
+    appendTarget!.appendChild(script)
+  })
+}
 
-  export function copyFrozenObject<T extends object>(obj: T): Readonly<T> {
-    return Object.freeze(Object.assign({}, obj))
-  }
+export function copyFrozenObject<T extends object>(obj: T): Readonly<T> {
+  return Object.freeze(Object.assign({}, obj))
+}
 
-  export function* getAddedElementsFromMutations(
-    mutations: MutationRecord[]
-  ): IterableIterator<HTMLElement> {
-    for (const mut of mutations) {
-      for (const node of mut.addedNodes) {
-        if (node instanceof HTMLElement) {
-          yield node
-        }
+export function* getAddedElementsFromMutations(
+  mutations: MutationRecord[]
+): IterableIterator<HTMLElement> {
+  for (const mut of mutations) {
+    for (const node of mut.addedNodes) {
+      if (node instanceof HTMLElement) {
+        yield node
       }
     }
   }
+}
 
-  export function filterElements<T extends HTMLElement>(
-    elems: Iterable<T> | ArrayLike<T>
-  ): T[] {
-    return Array.from(elems)
-      .filter(elem => !elem.classList.contains('mob-checked'))
-      .map(elem => {
-        elem.classList.add('mob-checked')
-        return elem
-      })
+export function filterElements<T extends HTMLElement>(
+  elems: Iterable<T> | ArrayLike<T>
+): T[] {
+  return Array.from(elems)
+    .filter(elem => !elem.classList.contains('mob-checked'))
+    .map(elem => {
+      elem.classList.add('mob-checked')
+      return elem
+    })
+}
+
+// naive check given object is TwitterUser
+export function isTwitterUser(obj: any): obj is TwitterUser {
+  if (typeof obj !== 'object' || obj === null) {
+    return false
   }
-
-  // naive check given object is TwitterUser
-  export function isTwitterUser(obj: any): obj is TwitterUser {
-    if (typeof obj !== 'object' || obj === null) {
-      return false
-    }
-    if (typeof obj.id_str !== 'string') {
-      return false
-    }
-    if (typeof obj.screen_name !== 'string') {
-      return false
-    }
-    return true
+  if (typeof obj.id_str !== 'string') {
+    return false
   }
-
-  export function isInNameBlacklist(name: string): boolean {
-    const lowerCasedName = name.toLowerCase()
-    return USER_NAME_BLACKLIST.includes(lowerCasedName)
+  if (typeof obj.screen_name !== 'string') {
+    return false
   }
+  return true
+}
 
-  export function validateTwitterUserName(userName: string): boolean {
-    if (isInNameBlacklist(userName)) {
-      return false
-    }
-    const pattern = /^[0-9a-z_]{1,15}$/i
-    return pattern.test(userName)
+export function isInNameBlacklist(name: string): boolean {
+  const lowerCasedName = name.toLowerCase()
+  return USER_NAME_BLACKLIST.includes(lowerCasedName)
+}
+
+export function validateTwitterUserName(userName: string): boolean {
+  if (isInNameBlacklist(userName)) {
+    return false
   }
+  const pattern = /^[0-9a-z_]{1,15}$/i
+  return pattern.test(userName)
+}
 
-  export function getUserNameFromTweetUrl(
-    extractMe: HTMLAnchorElement | URL | Location
-  ): string | null {
-    const { hostname, pathname } = extractMe
-    const supportingHostname = ['twitter.com', 'mobile.twitter.com']
-    if (!supportingHostname.includes(hostname)) {
-      return null
-    }
-    const matches = /^\/([0-9a-z_]{1,15})/i.exec(pathname)
-    if (!matches) {
-      return null
-    }
-    const name = matches[1]
-    if (validateTwitterUserName(name)) {
-      return name
-    } else {
-      return null
-    }
+export function getUserNameFromTweetUrl(
+  extractMe: HTMLAnchorElement | URL | Location
+): string | null {
+  const { hostname, pathname } = extractMe
+  const supportingHostname = ['twitter.com', 'mobile.twitter.com']
+  if (!supportingHostname.includes(hostname)) {
+    return null
+  }
+  const matches = /^\/([0-9a-z_]{1,15})/i.exec(pathname)
+  if (!matches) {
+    return null
+  }
+  const name = matches[1]
+  if (validateTwitterUserName(name)) {
+    return name
+  } else {
+    return null
   }
 }

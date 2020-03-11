@@ -1,3 +1,7 @@
+import * as Options from '../../extoption'
+import { injectScript, getAddedElementsFromMutations } from '../common'
+import * as TwitterAPI from '../twitter-api-ct'
+
 type TDUserDataSet = DOMStringMap & { [i in keyof TDUserData]: string }
 
 interface TDUserData {
@@ -81,7 +85,7 @@ function findBadgeTarget(elem: HTMLElement): HTMLElement | null {
   return null
 }
 
-function userDataHandler(userDataElem: HTMLElement) {
+async function userDataHandler(userDataElem: HTMLElement) {
   if (userDataElem.classList.contains('mob-checked')) {
     return
   }
@@ -94,33 +98,30 @@ function userDataHandler(userDataElem: HTMLElement) {
   if (!badgeTarget) {
     return
   }
+  const options = await Options.load()
   const badge = makeBlockedBadge()
   badgeTarget.appendChild(badge)
-  MirrorBlock.Options.load().then(option => {
-    const muteSkip = userData.muting && !option.blockMutedUser
-    const shouldBlock =
-      option.enableBlockReflection && !userData.blocking && !muteSkip
-    if (shouldBlock) {
-      TwitterAPI.blockUserById(userData.id).then(result => {
-        if (result) {
-          const profileElem = userDataElem.closest('.s-profile.prf')
-          if (profileElem) {
-            changeFollowButtonToBlocked(profileElem)
-          }
-          const reflectedBadge = makeBlockReflectedBadge()
-          badgeTarget!.appendChild(reflectedBadge)
+  const muteSkip = userData.muting && !options.blockMutedUser
+  const shouldBlock =
+    options.enableBlockReflection && !userData.blocking && !muteSkip
+  if (shouldBlock) {
+    TwitterAPI.blockUserById(userData.id).then(result => {
+      if (result) {
+        const profileElem = userDataElem.closest('.s-profile.prf')
+        if (profileElem) {
+          changeFollowButtonToBlocked(profileElem)
         }
-      })
-    }
-  })
+        const reflectedBadge = makeBlockReflectedBadge()
+        badgeTarget!.appendChild(reflectedBadge)
+      }
+    })
+  }
 }
 
 function main() {
-  MirrorBlock.Utils.injectScript('scripts/inject/tweetdeck-inject.js')
+  injectScript('bundled/tweetdeck_inject.bun.js')
   const observer = new MutationObserver(mutations => {
-    for (const elem of MirrorBlock.Utils.getAddedElementsFromMutations(
-      mutations
-    )) {
+    for (const elem of getAddedElementsFromMutations(mutations)) {
       const elementsToHandle = [
         ...elem.querySelectorAll<HTMLElement>('span.mob-user-data'),
       ]

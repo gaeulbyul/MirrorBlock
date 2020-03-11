@@ -1,5 +1,9 @@
+type Action = typeof import('./common').Action
+
 type HTTPMethods = 'get' | 'delete' | 'post' | 'put'
 type URLParamsObj = { [key: string]: string | number | boolean }
+
+type FollowType = 'followers' | 'following'
 
 // ------------------------------
 // Twitter API
@@ -316,29 +320,29 @@ interface EventStore {
 }
 
 interface MBStartChainBlockMessage {
-  action: Action.StartChainBlock
+  action: Action['StartChainBlock']
   userName: string
   followType: FollowType
 }
 
 interface MBStopChainBlockMessage {
-  action: Action.StopChainBlock
+  action: Action['StopChainBlock']
 }
 
 interface MBAlertMessage {
-  action: Action.Alert
+  action: Action['Alert']
   message: string
 }
 
 interface MBRequestAPIMessage {
-  action: Action.RequestAPI
+  action: Action['RequestAPI']
   method: HTTPMethods
   path: string
   paramsObj: URLParamsObj
 }
 
 interface MBResponseAPIMessage {
-  action: Action.ResponseAPI
+  action: Action['ResponseAPI']
   response: APIResponse
 }
 
@@ -370,7 +374,6 @@ interface MirrorBlockOption {
   enableBlockReflection: boolean
   blockMutedUser: boolean
   alwaysImmediatelyBlockMode: boolean
-  noDelay: boolean
 }
 
 interface APIResponse {
