@@ -420,6 +420,6 @@ declare namespace browser {
   export import contextMenus = browser.menus
 }
 
-declare namespace uuid {
+declare module 'uuid' {
   function v1(): string
 }
