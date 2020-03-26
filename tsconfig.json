@@ -8,7 +8,7 @@
     "allowJs": true,
     "checkJs": false,
     "outDir": "build/",
-    "rootDir": "src/",
+    "rootDir": "/",
     "strict": true,
     "alwaysStrict": true,
     "noUnusedLocals": true,
