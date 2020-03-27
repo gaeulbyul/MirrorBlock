@@ -110,6 +110,7 @@ class ChainMirrorBlock {
           window.alert(
             `@${targetUser.screen_name}님에게 차단당하여 체인맞블락을 진행할 수 없습니다.`
           )
+          this.stopAndClose()
           return
         }
       }
