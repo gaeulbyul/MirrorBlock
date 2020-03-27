@@ -96,6 +96,7 @@ interface FollowsIdsResponse {
 
 interface FollowsScraperOptions {
   delay: number
+  actAsUserId?: string
 }
 
 type ConnectionType =
@@ -347,12 +348,24 @@ interface MBResponseAPIMessage {
   response: APIResponse
 }
 
+interface MBExamineChainBlockableActor {
+  action: Action['ExamineChainBlockableActor']
+  targetUserId: string
+}
+
+interface MBChainBlockableActorResult {
+  action: Action['ChainBlockableActorResult']
+  actorId: string | null
+}
+
 type MBMessage =
   | MBStartChainBlockMessage
   | MBStopChainBlockMessage
   | MBAlertMessage
   | MBRequestAPIMessage
   | MBResponseAPIMessage
+  | MBExamineChainBlockableActor
+  | MBChainBlockableActorResult
 
 type UserState = 'shouldBlock' | 'alreadyBlocked' | 'muteSkip'
 

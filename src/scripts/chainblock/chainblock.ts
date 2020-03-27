@@ -99,8 +99,20 @@ class ChainMirrorBlock {
     Promise.all(immBlockPromises)
   }
   public async start(targetUser: TwitterUser, followType: FollowType) {
+    let actAsUserId = ''
     this.isRunning = true
     try {
+      if (targetUser.blocked_by) {
+        const actorId = await TwitterAPI.examineChainBlockableActor(targetUser)
+        if (actorId) {
+          actAsUserId = actorId
+        } else {
+          window.alert(
+            `@${targetUser.screen_name}님에게 차단당하여 체인맞블락을 진행할 수 없습니다.`
+          )
+          return
+        }
+      }
       const updateProgress = () => {
         this.ui.updateProgress(copyFrozenObject(this.progress))
       }
@@ -131,6 +143,7 @@ class ChainMirrorBlock {
       this.ui.initProgress(total)
       const delay = total > 1e4 ? 950 : 300
       const scraper = TwitterAPI.getAllFollows(targetUser, followType, {
+        actAsUserId,
         delay,
       })
       let rateLimited = false
@@ -252,12 +265,6 @@ export async function startChainBlock(
   const followsCount = getTotalFollows(targetUser, followType)
   if (followsCount <= 0) {
     window.alert('팔로잉/팔로워가 0명이므로 아무것도 하지 않았습니다.')
-    return
-  }
-  if (targetUser.blocked_by) {
-    window.alert(
-      `@${targetUserName}님에게 차단당하여 체인맞블락을 진행할 수 없습니다.`
-    )
     return
   }
   if (targetUser.protected) {

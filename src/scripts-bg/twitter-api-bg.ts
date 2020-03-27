@@ -113,3 +113,38 @@ export async function requestAPI(
   }
   return apiResponse
 }
+
+async function getSingleUserByIdAsActor(
+  userId: string,
+  actAsUserId: string
+): Promise<TwitterUser | null> {
+  const response = await requestAPI(
+    'get',
+    '/users/show.json',
+    {
+      user_id: userId,
+      skip_status: true,
+      include_entities: false,
+    },
+    actAsUserId
+  )
+  if (response.ok) {
+    return response.body as TwitterUser
+  } else {
+    return null
+  }
+}
+
+export async function examineChainBlockableActor(
+  targetUserId: string
+): Promise<string | null> {
+  const multiCookies = await getMultiAccountCookies()
+  const actorUserIds = Object.keys(multiCookies)
+  for (const actorId of actorUserIds) {
+    const target = await getSingleUserByIdAsActor(targetUserId, actorId)
+    if (target && !target.blocked_by) {
+      return actorId
+    }
+  }
+  return null
+}
