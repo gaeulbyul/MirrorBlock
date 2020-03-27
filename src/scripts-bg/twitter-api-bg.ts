@@ -1,5 +1,9 @@
 const BEARER_TOKEN = `AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA`
 
+interface MultiAccountCookies {
+  [userId: string]: string
+}
+
 async function getCsrfTokenFromCookies(): Promise<string> {
   const csrfTokenCookie = await browser.cookies.get({
     url: 'https://twitter.com',
@@ -11,8 +15,30 @@ async function getCsrfTokenFromCookies(): Promise<string> {
   return csrfTokenCookie.value
 }
 
+async function getMultiAccountCookies(): Promise<MultiAccountCookies> {
+  const url = 'https://twitter.com'
+  const authMultiCookie = await browser.cookies.get({
+    url,
+    name: 'auth_multi',
+  })
+  if (!authMultiCookie) {
+    return {}
+  }
+  return parseAuthMultiCookie(authMultiCookie.value)
+}
+
+function parseAuthMultiCookie(authMulti: string): MultiAccountCookies {
+  // "{userid}:{token}|{userid}:{token}|..."
+  const userTokenPairs = authMulti
+    .replace(/^"|"$/g, '')
+    .split('|')
+    .map(pair => pair.split(':') as [string, string])
+  return Object.fromEntries(userTokenPairs)
+}
+
 async function generateTwitterAPIOptions(
-  obj?: RequestInit
+  obj: RequestInit,
+  actAsUserId = ''
 ): Promise<RequestInit> {
   const csrfToken = await getCsrfTokenFromCookies()
   const headers = new Headers()
@@ -20,6 +46,12 @@ async function generateTwitterAPIOptions(
   headers.set('x-csrf-token', csrfToken)
   headers.set('x-twitter-active-user', 'yes')
   headers.set('x-twitter-auth-type', 'OAuth2Session')
+  if (actAsUserId) {
+    const multiCookies = await getMultiAccountCookies()
+    const token = multiCookies[actAsUserId]
+    headers.set('x-act-as-user-id', actAsUserId)
+    headers.set('x-act-as-user-token', token)
+  }
   const result: RequestInit = {
     method: 'get',
     mode: 'cors',
@@ -44,11 +76,15 @@ function setDefaultParams(params: URLSearchParams): void {
 export async function requestAPI(
   method: HTTPMethods,
   path: string,
-  paramsObj: URLParamsObj = {}
+  paramsObj: URLParamsObj = {},
+  actAsUserId = ''
 ): Promise<APIResponse> {
-  const fetchOptions = await generateTwitterAPIOptions({
-    method,
-  })
+  const fetchOptions = await generateTwitterAPIOptions(
+    {
+      method,
+    },
+    actAsUserId
+  )
   const url = new URL('https://api.twitter.com/1.1' + path)
   let params: URLSearchParams
   if (method === 'get') {

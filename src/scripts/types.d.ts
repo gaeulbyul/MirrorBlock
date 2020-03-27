@@ -339,6 +339,7 @@ interface MBRequestAPIMessage {
   method: HTTPMethods
   path: string
   paramsObj: URLParamsObj
+  actAsUserId: string
 }
 
 interface MBResponseAPIMessage {

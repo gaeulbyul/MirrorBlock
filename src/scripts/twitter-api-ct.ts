@@ -11,7 +11,8 @@ export class APIError extends Error {
 async function sendRequest(
   method: HTTPMethods,
   path: string,
-  paramsObj: URLParamsObj = {}
+  paramsObj: URLParamsObj = {},
+  actAsUserId = ''
 ): Promise<APIResponse> {
   const { response } = await browser.runtime.sendMessage<
     MBRequestAPIMessage,
@@ -21,6 +22,7 @@ async function sendRequest(
     method,
     path,
     paramsObj,
+    actAsUserId,
   })
   console.debug('response: ', response)
   return response

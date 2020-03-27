@@ -23,7 +23,9 @@
     "storage",
     "cookies",
     "contextMenus",
-    "activeTab"
+    "activeTab",
+    "webRequest",
+    "webRequestBlocking"
   ],
 
   "options_ui": {

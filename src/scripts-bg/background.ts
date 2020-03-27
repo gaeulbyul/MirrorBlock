@@ -2,6 +2,7 @@ import * as Options from '../extoption'
 import { Action } from '../scripts/common'
 import { initializeContextMenus } from './context-menus'
 import * as TWApiBG from './twitter-api-bg'
+import { initializeWebRequests } from './webrequest'
 
 async function updateBadge(option: MirrorBlockOption) {
   const { enableBlockReflection } = option
@@ -37,8 +38,13 @@ async function initialize() {
       const message = msg as MBMessage
       switch (message.action) {
         case Action.RequestAPI: {
-          const { method, path, paramsObj } = message
-          const response = await TWApiBG.requestAPI(method, path, paramsObj)
+          const { method, path, paramsObj, actAsUserId } = message
+          const response = await TWApiBG.requestAPI(
+            method,
+            path,
+            paramsObj,
+            actAsUserId
+          )
           return Promise.resolve<MBResponseAPIMessage>({
             action: Action.ResponseAPI,
             response,
@@ -51,3 +57,4 @@ async function initialize() {
 
 initialize()
 initializeContextMenus()
+initializeWebRequests()
