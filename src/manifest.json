@@ -42,7 +42,11 @@
         "styles/mob-badge.css",
         "styles/chainblock.css"
       ],
-      "js": ["vendor/browser-polyfill.min.js", "bundled/twitter.bun.js"]
+      "js": [
+        "vendor/browser-polyfill.min.js",
+        "bundled/twitter.bun.js",
+        "bundled/chainblock.bun.js"
+      ]
     },
     {
       "matches": ["*://tweetdeck.twitter.com/*"],

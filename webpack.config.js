@@ -9,7 +9,7 @@ module.exports = {
     tweetdeck: './src/scripts/mirrorblock/tweetdeck.ts',
     twitter_inject: './src/scripts/inject/twitter-mobile-inject.ts',
     tweetdeck_inject: './src/scripts/inject/tweetdeck-inject.ts',
-    // chainblock?
+    chainblock: './src/scripts/chainblock/chainblock.ts',
     popup: './src/popup/popup.ts',
     options_ui: './src/options/options.ts',
   },
@@ -33,5 +33,8 @@ module.exports = {
   ],
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
+  },
+  watchOptions: {
+    poll: 400,
   },
 }
