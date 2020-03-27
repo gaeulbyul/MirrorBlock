@@ -37,7 +37,7 @@ export async function getUserById(
   if (userFromStore && checkObjectIsUser(userFromStore, 3)) {
     return userFromStore
   } else if (useAPI) {
-    console.log('request api "%s"', userId)
+    // console.log('request api "%s"', userId)
     const user = await TwitterAPI.getSingleUserById(userId).catch(
       errorHandler([userId])
     )
@@ -61,7 +61,7 @@ export async function getUserByName(
   if (userFromStore && checkObjectIsUser(userFromStore, 3)) {
     return userFromStore
   } else if (useAPI) {
-    console.log('request api "@%s"', userName)
+    // console.log('request api "@%s"', userName)
     const user = await TwitterAPI.getSingleUserByName(userName).catch(
       errorHandler([userName])
     )
