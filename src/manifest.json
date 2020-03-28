@@ -6,7 +6,9 @@
   "version": "0.14.0",
   "homepage_url": "https://github.com/gaeulbyul/MirrorOfBlock",
   "icons": {
-    "48": "icons/icon.png"
+    "48": "icons/icon-48.png",
+    "64": "icons/icon-64.png",
+    "128": "icons/icon-128.png"
   },
 
   "browser_specific_settings": {
