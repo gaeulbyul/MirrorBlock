@@ -16,23 +16,20 @@ async function sendRequest(
   paramsObj: URLParamsObj = {},
   actAsUserId = ''
 ): Promise<APIResponse> {
-  const { response } = await browser.runtime.sendMessage<
-    MBRequestAPIMessage,
-    MBResponseAPIMessage
-  >({
-    action: Action.RequestAPI,
-    method,
-    path,
-    paramsObj,
-    actAsUserId,
-  })
+  const { response } = await browser.runtime.sendMessage<MBRequestAPIMessage, MBResponseAPIMessage>(
+    {
+      action: Action.RequestAPI,
+      method,
+      path,
+      paramsObj,
+      actAsUserId,
+    }
+  )
   console.debug('response: ', response)
   return response
 }
 
-export async function examineChainBlockableActor(
-  user: TwitterUser
-): Promise<string | null> {
+export async function examineChainBlockableActor(user: TwitterUser): Promise<string | null> {
   const { actorId } = await browser.runtime.sendMessage<
     MBExamineChainBlockableActor,
     MBChainBlockableActorResult
@@ -48,10 +45,7 @@ export async function blockUser(user: TwitterUser): Promise<boolean> {
     return true
   }
   const shouldNotBlock =
-    user.following ||
-    user.followed_by ||
-    user.follow_request_sent ||
-    !user.blocked_by
+    user.following || user.followed_by || user.follow_request_sent || !user.blocked_by
   if (shouldNotBlock) {
     const fatalErrorMessage = `!!!!!FATAL!!!!!:
 attempted to block user that should NOT block!!
@@ -262,9 +256,7 @@ export async function getSingleUserById(userId: string): Promise<TwitterUser> {
   }
 }
 
-export async function getSingleUserByName(
-  userName: string
-): Promise<TwitterUser> {
+export async function getSingleUserByName(userName: string): Promise<TwitterUser> {
   const isValidUserName = validateTwitterUserName(userName)
   if (!isValidUserName) {
     throw new Error(`Invalid user name "${userName}"!`)
@@ -282,9 +274,7 @@ export async function getSingleUserByName(
   }
 }
 
-export async function getMultipleUsersById(
-  userIds: string[]
-): Promise<TwitterUser[]> {
+export async function getMultipleUsersById(userIds: string[]): Promise<TwitterUser[]> {
   if (userIds.length === 0) {
     return []
   }
@@ -304,9 +294,7 @@ export async function getMultipleUsersById(
   }
 }
 
-export async function getFriendships(
-  users: TwitterUser[]
-): Promise<FriendshipResponse> {
+export async function getFriendships(users: TwitterUser[]): Promise<FriendshipResponse> {
   const userIds = users.map(user => user.id_str)
   if (userIds.length === 0) {
     return []
@@ -355,19 +343,14 @@ export async function getMyself(): Promise<TwitterUser> {
 }
 
 export async function getRateLimitStatus(): Promise<LimitStatus> {
-  const response = await sendRequest(
-    'get',
-    '/application/rate_limit_status.json'
-  )
+  const response = await sendRequest('get', '/application/rate_limit_status.json')
   const { resources } = response.body as {
     resources: LimitStatus
   }
   return resources
 }
 
-export async function getFollowsScraperRateLimitStatus(
-  followType: FollowType
-): Promise<Limit> {
+export async function getFollowsScraperRateLimitStatus(followType: FollowType): Promise<Limit> {
   const limitStatus = await getRateLimitStatus()
   if (followType === 'followers') {
     return limitStatus.followers['/followers/list']

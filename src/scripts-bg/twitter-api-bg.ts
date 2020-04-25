@@ -36,10 +36,7 @@ function parseAuthMultiCookie(authMulti: string): MultiAccountCookies {
   return Object.fromEntries(userTokenPairs)
 }
 
-async function generateTwitterAPIOptions(
-  obj: RequestInit,
-  actAsUserId = ''
-): Promise<RequestInit> {
+async function generateTwitterAPIOptions(obj: RequestInit, actAsUserId = ''): Promise<RequestInit> {
   const csrfToken = await getCsrfTokenFromCookies()
   const headers = new Headers()
   headers.set('authorization', `Bearer ${BEARER_TOKEN}`)
@@ -135,9 +132,7 @@ async function getSingleUserByIdAsActor(
   }
 }
 
-export async function examineChainBlockableActor(
-  targetUserId: string
-): Promise<string | null> {
+export async function examineChainBlockableActor(targetUserId: string): Promise<string | null> {
   const multiCookies = await getMultiAccountCookies()
   const actorUserIds = Object.keys(multiCookies)
   for (const actorId of actorUserIds) {

@@ -102,8 +102,7 @@ async function userDataHandler(userDataElem: HTMLElement) {
   const badge = makeBlockedBadge()
   badgeTarget.appendChild(badge)
   const muteSkip = userData.muting && !options.blockMutedUser
-  const shouldBlock =
-    options.enableBlockReflection && !userData.blocking && !muteSkip
+  const shouldBlock = options.enableBlockReflection && !userData.blocking && !muteSkip
   if (shouldBlock) {
     TwitterAPI.blockUserById(userData.id).then(result => {
       if (result) {
@@ -122,9 +121,7 @@ function main() {
   injectScript('bundled/tweetdeck_inject.bun.js')
   const observer = new MutationObserver(mutations => {
     for (const elem of getAddedElementsFromMutations(mutations)) {
-      const elementsToHandle = [
-        ...elem.querySelectorAll<HTMLElement>('span.mob-user-data'),
-      ]
+      const elementsToHandle = [...elem.querySelectorAll<HTMLElement>('span.mob-user-data')]
       if (elem.matches('span.mob-user-data')) {
         elementsToHandle.push(elem)
       }

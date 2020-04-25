@@ -26,10 +26,7 @@ function checkObjectIsUser(obj: object | null, n: number): obj is TwitterUser {
   }
   return isTwitterUser(obj)
 }
-export async function getUserById(
-  userId: string,
-  useAPI: boolean
-): Promise<TwitterUser | null> {
+export async function getUserById(userId: string, useAPI: boolean): Promise<TwitterUser | null> {
   if (failedUserParams.has(userId)) {
     return null
   }
@@ -38,9 +35,7 @@ export async function getUserById(
     return userFromStore
   } else if (useAPI) {
     // console.log('request api "%s"', userId)
-    const user = await TwitterAPI.getSingleUserById(userId).catch(
-      errorHandler([userId])
-    )
+    const user = await TwitterAPI.getSingleUserById(userId).catch(errorHandler([userId]))
     if (user) {
       StoreUpdater.insertSingleUserIntoStore(user)
     }
@@ -62,9 +57,7 @@ export async function getUserByName(
     return userFromStore
   } else if (useAPI) {
     // console.log('request api "@%s"', userName)
-    const user = await TwitterAPI.getSingleUserByName(userName).catch(
-      errorHandler([userName])
-    )
+    const user = await TwitterAPI.getSingleUserByName(userName).catch(errorHandler([userName]))
     if (user) {
       StoreUpdater.insertSingleUserIntoStore(user)
     }
@@ -73,9 +66,7 @@ export async function getUserByName(
     return null
   }
 }
-export async function getMultipleUsersById(
-  userIds: string[]
-): Promise<TwitterUserMap> {
+export async function getMultipleUsersById(userIds: string[]): Promise<TwitterUserMap> {
   if (userIds.length > 100) {
     throw new Error('too many user!')
   }
@@ -90,17 +81,15 @@ export async function getMultipleUsersById(
     }
   }
   if (idsToRequestAPI.length === 1) {
-    const requestedUser = await TwitterAPI.getSingleUserById(
-      idsToRequestAPI[0]
-    ).catch(errorHandler(idsToRequestAPI))
+    const requestedUser = await TwitterAPI.getSingleUserById(idsToRequestAPI[0]).catch(
+      errorHandler(idsToRequestAPI)
+    )
     if (requestedUser) {
       StoreUpdater.insertSingleUserIntoStore(requestedUser)
       userMap.addUser(requestedUser)
     }
   } else if (idsToRequestAPI.length > 1) {
-    const requestedUsers = await TwitterAPI.getMultipleUsersById(
-      idsToRequestAPI
-    )
+    const requestedUsers = await TwitterAPI.getMultipleUsersById(idsToRequestAPI)
       .then(users => TwitterUserMap.fromUsersArray(users))
       .catch(errorHandler(idsToRequestAPI))
     if (requestedUsers) {

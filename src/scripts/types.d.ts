@@ -286,10 +286,7 @@ interface TombstoneEntryWithData {
   entryData: Tweet | null
 }
 
-type EntryWithData =
-  | TweetEntryWithData
-  | UserEntryWithData
-  | TombstoneEntryWithData
+type EntryWithData = TweetEntryWithData | UserEntryWithData | TombstoneEntryWithData
 
 interface UserCell {
   displayMode: string

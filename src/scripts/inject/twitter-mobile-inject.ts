@@ -1,10 +1,7 @@
 import { v1 as uuidv1 } from 'uuid'
 
 namespace ReduxDispatcher {
-  function addEvent(
-    name: ReduxStoreEventNames,
-    callback: (event: CustomEvent) => void
-  ): void {
+  function addEvent(name: ReduxStoreEventNames, callback: (event: CustomEvent) => void): void {
     document.addEventListener(`MirrorBlock->${name}`, event => {
       const customEvent = event as CustomEvent
       callback(customEvent)
@@ -76,8 +73,7 @@ namespace ReduxFetcher {
       const state = reduxStore.getState()
       const { userIds } = event.detail
       const result: { [id: string]: TwitterUser } = {}
-      const userEntities: TwitterUserEntities =
-        dig(() => state.entities.users.entities) || []
+      const userEntities: TwitterUserEntities = dig(() => state.entities.users.entities) || []
       for (const userId of userIds) {
         result[userId] = userEntities[userId]
       }
@@ -87,8 +83,7 @@ namespace ReduxFetcher {
       const state = reduxStore.getState()
       const { userName } = event.detail
       const targetUserName = userName.toLowerCase()
-      const userEntities: TwitterUserEntities =
-        dig(() => state.entities.users.entities) || []
+      const userEntities: TwitterUserEntities = dig(() => state.entities.users.entities) || []
       for (const userEntity of Object.values(userEntities)) {
         const name = userEntity.screen_name.toLowerCase()
         if (targetUserName === name) {
@@ -162,9 +157,7 @@ namespace DOMEventDispatcher {
       if (section.matches('section[aria-labelledby="master-header"]')) {
         continue
       }
-      const children = dig(
-        () => section.children[1].children[0].children[0].children
-      )
+      const children = dig(() => section.children[1].children[0].children[0].children)
       if (!children) {
         return
       }
@@ -189,11 +182,7 @@ namespace DOMEventDispatcher {
           // (보안문제로)
           // 여기에서 함수를 뺀 새 개체를 만들어낸다.
           const entryJson = JSON.parse(
-            JSON.stringify(
-              entry,
-              (_key, value) => (typeof value === 'function' ? null : value),
-              0
-            )
+            JSON.stringify(entry, (_key, value) => (typeof value === 'function' ? null : value), 0)
           )
           const detail = {
             entry: entryJson,
@@ -238,9 +227,7 @@ namespace DOMEventDispatcher {
     return userCells
   }
   function handleUserCellsInRepliers(): NodeListOf<Element> | null {
-    const rootElem = document.querySelector(
-      '[aria-modal=true], main[role=main]'
-    )
+    const rootElem = document.querySelector('[aria-modal=true], main[role=main]')
     if (!rootElem) {
       return null
     }
@@ -306,9 +293,7 @@ namespace DOMEventDispatcher {
     for (const elem of convElems) {
       const parent = elem.parentElement!
       const rEventHandler = getReactEventHandler(parent)!
-      const convId = dig<string>(
-        () => rEventHandler.children[0].props.conversationId
-      )
+      const convId = dig<string>(() => rEventHandler.children[0].props.conversationId)
       if (!convId) {
         throw new Error('failed to get conv. id')
       }

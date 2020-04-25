@@ -28,9 +28,7 @@ type FoundTarget = FoundTargetJAU | FoundTargetProfile
 function transformJAU(elem: HTMLElement): FoundTargetJAU {
   // dummy elem
   let badgeElem = document.createElement('div') as HTMLElement
-  const cardUserName = elem.querySelector<HTMLElement>(
-    '.ProfileCard-screenname'
-  )
+  const cardUserName = elem.querySelector<HTMLElement>('.ProfileCard-screenname')
   // 리스트나 차단/뮤트목록의 항목
   const itemContent = elem.querySelector<HTMLElement>('.content')
   if (cardUserName) {
@@ -81,9 +79,7 @@ function transformProfile(elem: HTMLElement): FoundTargetProfile {
         actions.classList.remove('not-following')
         actions.classList.add('blocked')
       }
-      const profileActionsElem = elem.querySelector(
-        '.ProfileNav-item--userActions'
-      )
+      const profileActionsElem = elem.querySelector('.ProfileNav-item--userActions')
       if (profileActionsElem) {
         profileActionsElem.classList.add('profile-blocks-you')
       }
@@ -107,8 +103,7 @@ async function foundTargetHandler(ft: FoundTarget): Promise<void> {
   badge.appendTo(ft.badgeElem)
   const options = await Options.load()
   const muteSkip = ft.muted && !options.blockMutedUser
-  const shouldBlock =
-    options.enableBlockReflection && !ft.alreadyBlocked && !muteSkip
+  const shouldBlock = options.enableBlockReflection && !ft.alreadyBlocked && !muteSkip
   if (shouldBlock) {
     const blockResult = await blockReflectionToFt(ft)
     if (blockResult) {

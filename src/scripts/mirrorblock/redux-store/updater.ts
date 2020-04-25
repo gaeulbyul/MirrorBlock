@@ -12,10 +12,7 @@ export function cloneDetail<T>(detail: T): T {
   }
 }
 
-function triggerPageEvent(
-  eventName: ReduxStoreEventNames,
-  eventDetail?: object
-): void {
+function triggerPageEvent(eventName: ReduxStoreEventNames, eventDetail?: object): void {
   const detail = cloneDetail(eventDetail)
   const requestEvent = new CustomEvent(`MirrorBlock->${eventName}`, {
     detail,
@@ -25,17 +22,13 @@ function triggerPageEvent(
   })
 }
 
-export async function insertSingleUserIntoStore(
-  user: TwitterUser
-): Promise<void> {
+export async function insertSingleUserIntoStore(user: TwitterUser): Promise<void> {
   triggerPageEvent('insertSingleUserIntoStore', {
     user,
   })
 }
 
-export async function insertMultipleUsersIntoStore(
-  usersMap: TwitterUserMap
-): Promise<void> {
+export async function insertMultipleUsersIntoStore(usersMap: TwitterUserMap): Promise<void> {
   const usersObj = usersMap.toUserObject()
   triggerPageEvent('insertMultipleUsersIntoStore', {
     users: usersObj,

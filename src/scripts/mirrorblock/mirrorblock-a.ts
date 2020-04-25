@@ -18,9 +18,7 @@ import { reflectBlock } from './mirrorblock-r'
     for (const link of links) {
       const realUrl = new URL(link.getAttribute('data-expanded-url')!)
       const userName = realUrl.pathname.split('/')[1]
-      const targetUser = await TwitterAPI.getSingleUserByName(userName).catch(
-        () => null
-      )
+      const targetUser = await TwitterAPI.getSingleUserByName(userName).catch(() => null)
       if (!targetUser) {
         return
       }
@@ -39,9 +37,7 @@ import { reflectBlock } from './mirrorblock-r'
     }
   }
   function applyToRendered() {
-    document
-      .querySelectorAll<HTMLElement>('.Tombstone')
-      .forEach(tombstoneHandler)
+    document.querySelectorAll<HTMLElement>('.Tombstone').forEach(tombstoneHandler)
   }
   const observer = new MutationObserver(() => {
     applyToRendered()

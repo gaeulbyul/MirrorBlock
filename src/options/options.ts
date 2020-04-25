@@ -1,12 +1,8 @@
 import * as Options from '../extoption'
 
 const elements: { [key in keyof MirrorBlockOption]: HTMLInputElement } = {
-  outlineBlockUser: document.getElementById(
-    'outlineBlockUser'
-  ) as HTMLInputElement,
-  enableBlockReflection: document.getElementById(
-    'enableBlockReflection'
-  ) as HTMLInputElement,
+  outlineBlockUser: document.getElementById('outlineBlockUser') as HTMLInputElement,
+  enableBlockReflection: document.getElementById('enableBlockReflection') as HTMLInputElement,
   blockMutedUser: document.getElementById('blockMutedUser') as HTMLInputElement,
   alwaysImmediatelyBlockMode: document.getElementById(
     'alwaysImmediatelyBlockMode'

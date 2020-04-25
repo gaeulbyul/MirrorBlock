@@ -22,11 +22,7 @@ function filterInvalidHeaders(headers: HttpHeaders): HttpHeaders {
   return headers.filter(({ name }) => name.length > 0)
 }
 
-function changeActor(
-  cookies: string,
-  _actAsUserId: string,
-  actAsUserToken: string
-): string {
+function changeActor(cookies: string, _actAsUserId: string, actAsUserToken: string): string {
   const authTokenPattern = /\bauth_token=([0-9a-f]+)\b/
   const authTokenMatch = authTokenPattern.exec(cookies)
   authTokenPattern.lastIndex = 0

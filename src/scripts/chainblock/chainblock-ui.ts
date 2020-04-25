@@ -156,98 +156,64 @@ export default class ChainMirrorBlockUI extends EventEmitter {
     })
   }
   public get immediatelyBlockModeChecked() {
-    return this.rootElem.querySelector<HTMLInputElement>(
-      '#mobcb-block-immediately'
-    )!.checked
+    return this.rootElem.querySelector<HTMLInputElement>('#mobcb-block-immediately')!.checked
   }
   public set immediatelyBlockModeChecked(value: boolean) {
-    this.rootElem.querySelector<HTMLInputElement>(
-      '#mobcb-block-immediately'
-    )!.checked = value
+    this.rootElem.querySelector<HTMLInputElement>('#mobcb-block-immediately')!.checked = value
   }
   public initProgress(total: number) {
     this.total = total
-    const progressBar = this.rootElem.querySelector<HTMLProgressElement>(
-      '.mobcb-progress-bar'
-    )!
+    const progressBar = this.rootElem.querySelector<HTMLProgressElement>('.mobcb-progress-bar')!
     progressBar.max = total
-    this.rootElem.querySelector(
-      '.mobcb-prg-total'
-    )!.textContent = total.toLocaleString()
+    this.rootElem.querySelector('.mobcb-prg-total')!.textContent = total.toLocaleString()
   }
   public updateBlockResult(user: TwitterUser, success: boolean) {
     this.blockedbyUserList.updateBlockResult(user, success)
   }
   public rateLimited(limit: Limit) {
-    this.rootElem
-      .querySelectorAll<HTMLElement>('.mobcb-rate-limited')
-      .forEach(elem => {
-        elem.hidden = false
-      })
+    this.rootElem.querySelectorAll<HTMLElement>('.mobcb-rate-limited').forEach(elem => {
+      elem.hidden = false
+    })
     const resettime = getLimitResetTime(limit)
-    this.rootElem.querySelector(
-      '.mobcb-limit-status .resettime'
-    )!.textContent = resettime
+    this.rootElem.querySelector('.mobcb-limit-status .resettime')!.textContent = resettime
   }
   public rateLimitResetted() {
-    this.rootElem
-      .querySelectorAll<HTMLElement>('.mobcb-rate-limited')
-      .forEach(elem => {
-        elem.hidden = true
-      })
+    this.rootElem.querySelectorAll<HTMLElement>('.mobcb-rate-limited').forEach(elem => {
+      elem.hidden = true
+    })
   }
   public updateProgress(progress: ChainMirrorBlockProgress) {
-    this.rootElem.querySelector('.mobcb-title-status')!.textContent =
-      '(진행 중...)'
+    this.rootElem.querySelector('.mobcb-title-status')!.textContent = '(진행 중...)'
     progress.foundUsers
       .filter(found => found.state === 'shouldBlock')
       .forEach(found => this.blockedbyUserList.add(found))
     progress.foundUsers
-      .filter(
-        found => found.state === 'muteSkip' || found.state === 'alreadyBlocked'
-      )
+      .filter(found => found.state === 'muteSkip' || found.state === 'alreadyBlocked')
       .forEach(found => this.skippedUserList.add(found))
-    const progressBar = this.rootElem.querySelector<HTMLProgressElement>(
-      '.mobcb-progress-bar'
-    )!
+    const progressBar = this.rootElem.querySelector<HTMLProgressElement>('.mobcb-progress-bar')!
     progressBar.value = progress.scraped
     const percentage = Math.round((progress.scraped / this.total) * 100)
-    this.rootElem.querySelector(
-      '.mobcb-prg-percentage'
-    )!.textContent = percentage.toString()
+    this.rootElem.querySelector('.mobcb-prg-percentage')!.textContent = percentage.toString()
     this.rootElem.querySelector(
       '.mobcb-prg-scraped'
     )!.textContent = progress.scraped.toLocaleString()
     this.rootElem.querySelector(
       '.mobcb-prg-found'
     )!.textContent = progress.foundUsers.length.toLocaleString()
-    this.rootElem.querySelector<HTMLElement>(
-      '.mobcb-progress-text'
-    )!.hidden = false
+    this.rootElem.querySelector<HTMLElement>('.mobcb-progress-text')!.hidden = false
   }
   private completeProgressUI(progress: ChainMirrorBlockProgress) {
-    this.rootElem.querySelector('.mobcb-title-status')!.textContent =
-      '(수집 완료)'
-    const shouldBlocks = progress.foundUsers.filter(
-      user => user.state === 'shouldBlock'
-    )
-    const executeButton = this.rootElem.querySelector<HTMLButtonElement>(
-      '.mobcb-execute'
-    )!
+    this.rootElem.querySelector('.mobcb-title-status')!.textContent = '(수집 완료)'
+    const shouldBlocks = progress.foundUsers.filter(user => user.state === 'shouldBlock')
+    const executeButton = this.rootElem.querySelector<HTMLButtonElement>('.mobcb-execute')!
     if (shouldBlocks.length > 0) {
       executeButton.disabled = false
     } else {
       executeButton.title = `맞차단할 사용자가 없습니다.`
     }
-    this.rootElem.querySelector<HTMLInputElement>(
-      '#mobcb-block-immediately'
-    )!.disabled = true
-    this.rootElem.querySelector(
-      '.mobcb-prg-scraped'
-    )!.textContent = this.total.toLocaleString()
-    const progressBar = this.rootElem.querySelector<HTMLProgressElement>(
-      '.mobcb-progress-bar'
-    )!
+    this.rootElem.querySelector<HTMLInputElement>('#mobcb-block-immediately')!.disabled = true
+    this.rootElem.querySelector('.mobcb-prg-scraped')!.textContent = this.total.toLocaleString()
+    const progressBar = this.rootElem.querySelector<HTMLProgressElement>('.mobcb-progress-bar')!
     progressBar.value = progressBar.max
     this.rootElem.querySelector('.mobcb-prg-percentage')!.textContent = '100'
   }
@@ -263,14 +229,10 @@ export default class ChainMirrorBlockUI extends EventEmitter {
     }
   }
   public startMutualBlock() {
-    this.rootElem.querySelector('.mobcb-title-status')!.textContent =
-      '(맞차단 진행 중...)'
-    this.rootElem.querySelector<HTMLButtonElement>(
-      '.mobcb-execute.btn'
-    )!.disabled = true
+    this.rootElem.querySelector('.mobcb-title-status')!.textContent = '(맞차단 진행 중...)'
+    this.rootElem.querySelector<HTMLButtonElement>('.mobcb-execute.btn')!.disabled = true
   }
   public completeMutualBlock() {
-    this.rootElem.querySelector('.mobcb-title-status')!.textContent =
-      '(맞차단 완료)'
+    this.rootElem.querySelector('.mobcb-title-status')!.textContent = '(맞차단 완료)'
   }
 }

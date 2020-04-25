@@ -1,8 +1,6 @@
 import { getUserNameFromTweetUrl, Action } from '../scripts/common'
 
-function getUserNameFromClickInfo(
-  info: browser.contextMenus.OnClickData
-): string | null {
+function getUserNameFromClickInfo(info: browser.contextMenus.OnClickData): string | null {
   const { linkUrl } = info
   if (!linkUrl) {
     return null
@@ -13,10 +11,7 @@ function getUserNameFromClickInfo(
 
 export function initializeContextMenus() {
   const contexts: browser.contextMenus.ContextType[] = ['link']
-  const documentUrlPatterns = [
-    'https://twitter.com/*',
-    'https://mobile.twitter.com/*',
-  ]
+  const documentUrlPatterns = ['https://twitter.com/*', 'https://mobile.twitter.com/*']
   const targetUrlPatterns = documentUrlPatterns
   browser.contextMenus.create({
     contexts,

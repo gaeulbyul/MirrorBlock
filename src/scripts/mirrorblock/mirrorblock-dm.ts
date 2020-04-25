@@ -7,13 +7,9 @@ async function handleDM(elem: HTMLElement) {
   if (!header) {
     return
   }
-  const profileLink = header.querySelector<HTMLAnchorElement>(
-    'a.js-user-profile-link'
-  )
+  const profileLink = header.querySelector<HTMLAnchorElement>('a.js-user-profile-link')
   const userName = profileLink!.pathname.replace(/^\//, '')
-  const targetUser = await TwitterAPI.getSingleUserByName(userName).catch(
-    () => null
-  )
+  const targetUser = await TwitterAPI.getSingleUserByName(userName).catch(() => null)
   if (!targetUser) {
     return
   }

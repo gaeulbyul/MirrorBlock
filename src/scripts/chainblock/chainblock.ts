@@ -36,8 +36,7 @@ class ChainMirrorBlock {
       return message
     })
     this.ui.on('ui:close', () => {
-      const confirmMessage =
-        '체인맞블락이 아직 진행중입니다. 그래도 닫으시겠습니까?'
+      const confirmMessage = '체인맞블락이 아직 진행중입니다. 그래도 닫으시겠습니까?'
       if (this.isRunning && window.confirm(confirmMessage)) {
         this.stopAndClose()
       } else if (!this.isRunning) {
@@ -48,9 +47,7 @@ class ChainMirrorBlock {
       this.stopAndClose()
     })
     this.ui.on('ui:execute-mutual-block', () => {
-      const shouldBlocks = this.progress.foundUsers.filter(
-        user => user.state === 'shouldBlock'
-      )
+      const shouldBlocks = this.progress.foundUsers.filter(user => user.state === 'shouldBlock')
       if (shouldBlocks.length > 0) {
         const confirmMessage = `발견한 사용자 ${shouldBlocks.length}명을 맞차단하시겠습니까?`
         if (!window.confirm(confirmMessage)) {
@@ -72,10 +69,7 @@ class ChainMirrorBlock {
       return
     }
     const usersToBlock = this.progress.foundUsers.filter(found => {
-      return (
-        found.state === 'shouldBlock' &&
-        this.blockResults.get(found.user.id_str) === 'notYet'
-      )
+      return found.state === 'shouldBlock' && this.blockResults.get(found.user.id_str) === 'notYet'
     })
     usersToBlock.forEach(({ user }) => {
       this.blockResults.set(user.id_str, 'pending')
@@ -127,9 +121,7 @@ class ChainMirrorBlock {
         if (user.blocked_by) {
           return 'shouldBlock'
         }
-        throw new Error(
-          `unreachable: invalid user state? (${user.id_str}:@${user.screen_name})`
-        )
+        throw new Error(`unreachable: invalid user state? (${user.id_str}:@${user.screen_name})`)
       }
       const addUserToFounded = (follower: TwitterUser) => {
         const userState = classifyUserState(follower)
@@ -156,9 +148,7 @@ class ChainMirrorBlock {
           const { error } = maybeFollower
           if (error.response.status === 429) {
             rateLimited = true
-            TwitterAPI.getFollowsScraperRateLimitStatus(followType).then(
-              this.ui.rateLimited
-            )
+            TwitterAPI.getFollowsScraperRateLimitStatus(followType).then(this.ui.rateLimited)
             await sleep(1000 * 60 * 2)
             continue
           } else {
@@ -199,9 +189,7 @@ class ChainMirrorBlock {
         usersToBlock.map(user => {
           return TwitterAPI.blockUser(user)
             .then(blocked => {
-              const bresult: BlockResult = blocked
-                ? 'blockSuccess'
-                : 'blockFailed'
+              const bresult: BlockResult = blocked ? 'blockSuccess' : 'blockFailed'
               this.blockResults.set(user.id_str, bresult)
               return blocked
             })
@@ -234,10 +222,7 @@ function getTotalFollows(user: TwitterUser, followType: FollowType): number {
   }
 }
 
-export async function startChainBlock(
-  targetUserName: string,
-  followType: FollowType
-) {
+export async function startChainBlock(targetUserName: string, followType: FollowType) {
   const alreadyRunning = document.querySelector('.mobcg-bg')
   if (alreadyRunning) {
     window.alert('이미 체인맞블락이 실행중입니다.')
@@ -248,18 +233,16 @@ export async function startChainBlock(
     window.alert('로그인을 해주세요.')
     return
   }
-  const targetUser = await TwitterAPI.getSingleUserByName(targetUserName).catch(
-    err => {
-      if (err instanceof APIError) {
-        const json = err.response.body
-        const jsonstr = JSON.stringify(json, null, 2)
-        window.alert(`트위터 서버에서 오류가 발생했습니다.:\n${jsonstr}`)
-      } else if (err instanceof Error) {
-        window.alert(`오류가 발생했습니다.:\n${err.message}`)
-      }
-      return null
+  const targetUser = await TwitterAPI.getSingleUserByName(targetUserName).catch(err => {
+    if (err instanceof APIError) {
+      const json = err.response.body
+      const jsonstr = JSON.stringify(json, null, 2)
+      window.alert(`트위터 서버에서 오류가 발생했습니다.:\n${jsonstr}`)
+    } else if (err instanceof Error) {
+      window.alert(`오류가 발생했습니다.:\n${err.message}`)
     }
-  )
+    return null
+  })
   if (!targetUser) {
     return
   }
@@ -272,9 +255,7 @@ export async function startChainBlock(
     const relationship = await TwitterAPI.getRelationship(myself, targetUser)
     const { following } = relationship.source
     if (!following) {
-      window.alert(
-        `@${targetUserName}님은 프로텍트가 걸려있어서 체인맞블락을 진행할 수 없습니다.`
-      )
+      window.alert(`@${targetUserName}님은 프로텍트가 걸려있어서 체인맞블락을 진행할 수 없습니다.`)
       return
     }
   }

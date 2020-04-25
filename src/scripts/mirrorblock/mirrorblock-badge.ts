@@ -29,16 +29,12 @@ export default class Badge {
       return
     }
     const name = this.user.screen_name
-    const userNameElem = this.baseElem.querySelector<HTMLElement>(
-      '.badge-username'
-    )!
+    const userNameElem = this.baseElem.querySelector<HTMLElement>('.badge-username')!
     userNameElem.textContent = `(@${name})`
     userNameElem.hidden = false
   }
   public blockReflected() {
-    const brBadge = this.baseElem.querySelector<HTMLElement>(
-      '.block-reflected[hidden]'
-    )!
+    const brBadge = this.baseElem.querySelector<HTMLElement>('.block-reflected[hidden]')!
     brBadge.hidden = false
   }
   public attachAfter(targetElem: Element): void {

@@ -27,9 +27,7 @@ function getElemsByUserCell(idOrName: UserCellIdentifier): HTMLElement[] {
   return Utils.filterElements(elems)
 }
 function getElemByDmData(dmData: DMData): HTMLElement | null {
-  return document.querySelector(
-    `[data-mirrorblock-conversation-id="${dmData.conversation_id}"]`
-  )
+  return document.querySelector(`[data-mirrorblock-conversation-id="${dmData.conversation_id}"]`)
 }
 namespace ProfileDetector {
   export async function detectProfile(rootElem: DOMQueryable) {
@@ -64,10 +62,7 @@ namespace ProfileDetector {
   }
 }
 namespace EntryHandler {
-  async function handleQuotedTweet(
-    tweet: TweetWithQuote,
-    tweetElem: HTMLElement
-  ) {
+  async function handleQuotedTweet(tweet: TweetWithQuote, tweetElem: HTMLElement) {
     if (!tweet.quoted_status_permalink) {
       return
     }
@@ -175,9 +170,7 @@ namespace EntryHandler {
     }
     const elem = getElemByEntry(userEntry)!
     const badge = new Badge(user)
-    const badgeTarget = elem.querySelector(
-      `a[role=link][href^="/${user.screen_name}" i] [dir=ltr]`
-    )
+    const badgeTarget = elem.querySelector(`a[role=link][href^="/${user.screen_name}" i] [dir=ltr]`)
     if (!badgeTarget) {
       throw new Error('unreachable')
     }
@@ -193,10 +186,7 @@ namespace EntryHandler {
       },
     })
   }
-  export async function handleTombstone(
-    tombstoneEntry: TombstoneEntry,
-    tweet: Tweet | null
-  ) {
+  export async function handleTombstone(tombstoneEntry: TombstoneEntry, tweet: Tweet | null) {
     if (!tweet) {
       return
     }
@@ -223,9 +213,7 @@ namespace EntryHandler {
   }
 }
 namespace UserCellHandler {
-  async function getUser(
-    idOrName: UserCellIdentifier
-  ): Promise<TwitterUser | null> {
+  async function getUser(idOrName: UserCellIdentifier): Promise<TwitterUser | null> {
     const { userId, userName } = idOrName
     if (userId) {
       return UserGetter.getUserById(userId, false)
@@ -314,7 +302,7 @@ const entryQueue = new (class {
         return EntryHandler.handleUser(entry, user)
       }
       case 'tombstone': {
-        const tweet = entryData as (Tweet | null)
+        const tweet = entryData as Tweet | null
         return EntryHandler.handleTombstone(entry, tweet)
       }
     }

@@ -18,8 +18,7 @@ export async function reflectBlock({
   indicateBlock()
   const extOptions = await Options.load()
   const muteSkip = user.muting && !extOptions.blockMutedUser
-  const shouldBlock =
-    extOptions.enableBlockReflection && !muteSkip && !user.blocking
+  const shouldBlock = extOptions.enableBlockReflection && !muteSkip && !user.blocking
   if (shouldBlock) {
     const blockResult = await TwitterAPI.blockUser(user).catch(err => {
       console.error(err)
@@ -31,10 +30,7 @@ export async function reflectBlock({
   }
 }
 
-export function reflectBlockOnVisible(
-  elem: HTMLElement,
-  reflOptions: ReflectionOptions
-) {
+export function reflectBlockOnVisible(elem: HTMLElement, reflOptions: ReflectionOptions) {
   const intob = new IntersectionObserver((entries, observer) => {
     const execute = () => reflectBlock(reflOptions)
     const visibleEntries = entries.filter(ent => ent.isIntersecting)

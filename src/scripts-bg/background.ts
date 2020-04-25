@@ -31,21 +31,13 @@ async function initialize() {
   updateBadge(option)
 
   browser.runtime.onMessage.addListener(
-    async (
-      msg: object,
-      _sender: browser.runtime.MessageSender
-    ): Promise<any> => {
+    async (msg: object, _sender: browser.runtime.MessageSender): Promise<any> => {
       const message = msg as MBMessage
       switch (message.action) {
         case Action.RequestAPI:
           {
             const { method, path, paramsObj, actAsUserId } = message
-            const response = await TWApiBG.requestAPI(
-              method,
-              path,
-              paramsObj,
-              actAsUserId
-            )
+            const response = await TWApiBG.requestAPI(method, path, paramsObj, actAsUserId)
             return Promise.resolve<MBResponseAPIMessage>({
               action: Action.ResponseAPI,
               response,
@@ -55,9 +47,7 @@ async function initialize() {
         case Action.ExamineChainBlockableActor:
           {
             const { targetUserId } = message
-            const actorId = await TWApiBG.examineChainBlockableActor(
-              targetUserId
-            )
+            const actorId = await TWApiBG.examineChainBlockableActor(targetUserId)
             return Promise.resolve<MBChainBlockableActorResult>({
               action: Action.ChainBlockableActorResult,
               actorId,
