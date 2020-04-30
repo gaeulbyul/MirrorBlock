@@ -1,6 +1,6 @@
 {
   "name": "mirror-block",
-  "version": "0.0.0-see-manifest-json",
+  "version": "0.0.0",
   "description": "트위터에서 나를 차단한 사람을 표시하고, 맞차단(차단반사)할 수 있는 웹 브라우저용 확장기능입니다.",
   "main": "MirrorBlock/manifest.json",
   "repository": "https://github.com/gaeulbyul/MirrorBlock",
