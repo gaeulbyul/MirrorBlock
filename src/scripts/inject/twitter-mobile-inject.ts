@@ -157,7 +157,7 @@ namespace DOMEventDispatcher {
       if (section.matches('section[aria-labelledby="master-header"]')) {
         continue
       }
-      const children = dig(() => section.children[1].children[0].children[0].children)
+      const children = dig(() => section.children[1].children[0].children)
       if (!children) {
         return
       }
