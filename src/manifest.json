@@ -3,7 +3,7 @@
   "manifest_version": 2,
   "name": "Mirror Block",
   "author": "Gaeulbyul <aeiou256@gmail.com>",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "homepage_url": "https://github.com/gaeulbyul/MirrorBlock",
   "icons": {
     "48": "icons/icon-48.png",
@@ -41,11 +41,7 @@
   "content_scripts": [
     {
       "matches": ["*://twitter.com/*", "*://mobile.twitter.com/*"],
-      "css": [
-        "styles/mirrorblock.css",
-        "styles/mob-badge.css",
-        "styles/chainblock.css"
-      ],
+      "css": ["styles/mirrorblock.css", "styles/mob-badge.css", "styles/chainblock.css"],
       "js": [
         "vendor/browser-polyfill.min.js",
         "bundled/twitter.bun.js",
@@ -59,10 +55,7 @@
     }
   ],
 
-  "web_accessible_resources": [
-    "bundled/tweetdeck_inject.bun.js",
-    "bundled/twitter_inject.bun.js"
-  ],
+  "web_accessible_resources": ["bundled/tweetdeck_inject.bun.js", "bundled/twitter_inject.bun.js"],
 
   "browser_action": {
     "default_icon": "icons/icon.png",
