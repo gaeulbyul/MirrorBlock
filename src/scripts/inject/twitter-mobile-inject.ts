@@ -361,29 +361,18 @@ function isReduxStore(something: any): something is ReduxStore {
   }
   return true
 }
-function findReduxStore(): ReduxStore | null {
-  do {
-    const reactRoot2 = document.querySelector('[data-reactroot]')!.children[0]
-    const rEventHandler = getReactEventHandler(reactRoot2)
-    if (!rEventHandler) {
-      break
-    }
-    const store2 = dig(() => rEventHandler.children.props.store)
-    if (isReduxStore(store2)) {
-      return store2
-    }
-  } while (0)
-  console.warn(
-    '[Mirror Block] WARNING: failed to find redux store! Block-reflection on new UI is disabled!'
-  )
-  return null
+function findReduxStore(): ReduxStore {
+  const reactRoot = document.getElementById('react-root')!.children[0]
+  const rEventHandler = getReactEventHandler(reactRoot)
+  const reduxStore = rEventHandler.children.props.children.props.store
+  if (!isReduxStore(reduxStore)) {
+    throw new Error('fail to find redux store')
+  }
+  return reduxStore
 }
 function inject(): void {
   const reactRoot = document.getElementById('react-root')!
   const reduxStore = findReduxStore()
-  if (!reduxStore) {
-    return
-  }
   ReduxDispatcher.listenEvent(reduxStore)
   ReduxFetcher.listenEvent(reduxStore)
   DOMEventDispatcher.observe(reactRoot, reduxStore)
