@@ -67,15 +67,3 @@
 .mob-nightmode .badge.block-reflected {
   color: #fce8b3;
 }
-
-.js-user-profile-link .badge {
-  padding: 0 4px;
-}
-
-.ProfileHeaderCard .badge {
-  padding: 0 4px;
-}
-
-.mob-nightmode.ProfileHeaderCard .badge {
-  background-color: #141d26;
-}

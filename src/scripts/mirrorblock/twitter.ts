@@ -1,6 +1,4 @@
-import { detectOnLegacyTwitter } from './mirrorblock'
 import { detectOnCurrentTwitter } from './mirrorblock-mobile'
-import { detectDMOnLegacyTwitter } from './mirrorblock-dm'
 import { handleDarkMode } from '../nightmode'
 
 import * as Options from '../../extoption'
@@ -19,8 +17,7 @@ function initialize() {
   if (reactRoot) {
     detectOnCurrentTwitter(reactRoot)
   } else {
-    detectOnLegacyTwitter()
-    detectDMOnLegacyTwitter()
+    throw new Error('legacy twitter not supported')
   }
 
   handleDarkMode()

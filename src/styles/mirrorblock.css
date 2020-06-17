@@ -1,22 +1,3 @@
-/* 구 UI */
-.mob-enable-outline .ProfileCard.mob-blocks-you-outline {
-  outline: 3px solid crimson;
-}
-.mob-enable-outline .account.mob-blocks-you-outline {
-  border: 3px solid crimson !important;
-  margin: 1px 0;
-}
-.mob-enable-outline .ProfileAvatar.mob-blocks-you-outline {
-  border-color: crimson !important;
-}
-.mob-enable-outline .Tombstone.mob-blocks-you-outline {
-  outline: 3px solid crimson;
-}
-
-.mob-enable-outline .js-user-profile-link.mob-blocks-you-outline {
-  outline: 2px solid crimson;
-}
-
 /* 신 UI */
 .mob-enable-outline #react-root [data-mirrorblock-blocks-you='1'] {
   border: 2px solid crimson;
