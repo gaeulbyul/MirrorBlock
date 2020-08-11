@@ -407,6 +407,12 @@ interface EitherLeft<E> {
 
 type Either<E, T> = EitherLeft<E> | EitherRight<T>
 
+interface ReduxStore {
+  getState(): any
+  dispatch(payload: { type: string; [key: string]: any }): any
+  subscribe(callback: () => void): void
+}
+
 declare function cloneInto<T>(detail: T, view: Window | null): T
 
 // r.i.c

@@ -7,7 +7,7 @@ module.exports = {
     background: './src/scripts-bg/background.ts',
     twitter: './src/scripts/mirrorblock/twitter.ts',
     tweetdeck: './src/scripts/mirrorblock/tweetdeck.ts',
-    twitter_inject: './src/scripts/inject/twitter-mobile-inject.ts',
+    twitter_inject: './src/scripts/inject/twitter-inject.ts',
     tweetdeck_inject: './src/scripts/inject/tweetdeck-inject.ts',
     chainblock: './src/scripts/chainblock/chainblock.ts',
     popup: './src/popup/popup.ts',
