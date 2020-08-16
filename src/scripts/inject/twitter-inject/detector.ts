@@ -1,103 +1,5 @@
 import { dig, getReactEventHandler } from './inject-common'
 
-function isEntry(obj: any): obj is Entry {
-  if (!(obj && typeof obj === 'object')) {
-    return false
-  }
-  if (typeof obj.entryId !== 'string') {
-    return false
-  }
-  return true
-}
-function isUserCell(obj: any): obj is UserCell {
-  if (!(obj && typeof obj === 'object')) {
-    return false
-  }
-  if (obj.displayMode !== 'UserDetailed') {
-    return false
-  }
-  return true
-}
-function getDataFromEntry(entry: Entry, state: any) {
-  switch (entry.type) {
-    case 'user': {
-      const userId = entry.content.id
-      const userData = dig(() => state.entities.users.entities[userId])
-      return userData
-    }
-    case 'tweet': {
-      const tweetId = entry.content.id
-      const tweetData = dig(() => state.entities.tweets.entities[tweetId])
-      return tweetData
-    }
-    case 'tombstone': {
-      const tweetId = dig(() => entry.content.tweet!.id)
-      if (tweetId) {
-        const tweetData = dig(() => state.entities.tweets.entities[tweetId])
-        return tweetData
-      }
-      return null
-    }
-  }
-}
-function sendEntryToExtension(state: any) {
-  const sections = document.querySelectorAll('section[role=region]')
-  for (const section of sections) {
-    // 설정 창의 왼쪽 사이드바 부분
-    // 사용자가 뜨는 부분이 아니므로 스킵한다.
-    if (section.matches('section[aria-labelledby="master-header"]')) {
-      continue
-    }
-    // [2020-05-29] 좀 더 나은 방법 생각해보자...
-    // const children = dig(() => section.children[1].children[0].children)
-    const children = dig(() => section.children[1].children[0].children[0].children)
-    if (!children) {
-      return
-    }
-    for (const item of children) {
-      if (item.hasAttribute('data-mirrorblock-entryid')) {
-        continue
-      }
-      const rEventHandler = getReactEventHandler(item)!
-      const props = dig(() => rEventHandler.children.props.children.props)
-      if (!props) {
-        continue
-      }
-      const entry = dig(() => props.entry)
-      if (isEntry(entry)) {
-        // console.debug('%o %o', item, entry)
-        const entryData = getDataFromEntry(entry, state)
-        if (!entryData) {
-          continue
-        }
-        item.setAttribute('data-mirrorblock-entryid', entry.entryId)
-        // 개체에 함수가 섞여있으면 contents_script에 이벤트로 전달할 수 없다.
-        // (보안문제로)
-        // 여기에서 함수를 뺀 새 개체를 만들어낸다.
-        const entryJson = JSON.parse(
-          JSON.stringify(entry, (_key, value) => (typeof value === 'function' ? null : value), 0)
-        )
-        const detail = {
-          entry: entryJson,
-          entryData,
-        }
-        const customEvent = new CustomEvent('MirrorBlock<-entry', {
-          detail,
-        })
-        document.dispatchEvent(customEvent)
-        continue
-      }
-      if (isUserCell(props)) {
-        const userId = props.userId
-        item.setAttribute('data-mirrorblock-usercell-id', userId)
-        const customEvent = new CustomEvent('MirrorBlock<-UserCell', {
-          detail: { userId, userName: null },
-        })
-        document.dispatchEvent(customEvent)
-      }
-    }
-  }
-}
 function handleUserCellsInAside(): NodeListOf<Element> | null {
   const asideElem = document.querySelector(
     'div[data-testid=sidebarColumn] aside[role=complementary]'
@@ -119,6 +21,7 @@ function handleUserCellsInAside(): NodeListOf<Element> | null {
   }
   return userCells
 }
+
 function handleUserCellsInRepliers(): NodeListOf<Element> | null {
   const rootElem = document.querySelector('[aria-modal=true], main[role=main]')
   if (!rootElem) {
@@ -156,6 +59,7 @@ function handleUserCellsInRepliers(): NodeListOf<Element> | null {
   })
   return cellElems
 }
+
 function sendUserCellToExtension() {
   const userCells: Element[] = []
   const cellsInAside = handleUserCellsInAside()
@@ -167,9 +71,6 @@ function sendUserCellToExtension() {
     userCells.push(...Array.from(cellsInModal))
   }
   for (const userCell of userCells) {
-    if (userCell.closest('[data-mirrorblock-entryid]')) {
-      continue
-    }
     const userId = userCell.getAttribute('data-mirrorblock-usercell-id')
     const userName = userCell.getAttribute('data-mirrorblock-usercell-name')
     if (!(userId || userName)) {
@@ -181,6 +82,7 @@ function sendUserCellToExtension() {
     document.dispatchEvent(customEvent)
   }
 }
+
 function sendDMConversationsToExtension() {
   const convElems = document.querySelectorAll('[data-testid=conversation]')
   for (const elem of convElems) {
@@ -197,10 +99,112 @@ function sendDMConversationsToExtension() {
     document.dispatchEvent(customEvent)
   }
 }
+
+function findTweetIdFromElement(elem: HTMLElement): string | null {
+  if (!elem.matches('[data-testid=tweet]')) {
+    throw new Error('unexpected non-tweet elem?')
+  }
+  const article = elem.closest('article[role=article]')
+  if (!(article && article.parentElement)) {
+    throw new Error()
+  }
+  // tweet-detail
+  const parentReh = getReactEventHandler(article.parentElement)
+  const maybeTweetId1 = dig(() => parentReh.children.props.entry.entryId)
+  if (typeof maybeTweetId1 === 'string') {
+    const maybeTweetId1Match = /^tweet-(\d+)$/.exec(maybeTweetId1 || '')
+    if (maybeTweetId1Match) {
+      return maybeTweetId1Match[1]
+    }
+  }
+  const permalink = elem.querySelector('a[href^="/"][href*="/status/"')
+  if (!(permalink instanceof HTMLAnchorElement)) {
+    return null
+  }
+  const maybeTimeElem = permalink.children[0]
+  if (maybeTimeElem.tagName === 'TIME') {
+    const maybeTweetId2Match = /\/status\/(\d+)$/.exec(permalink.pathname)
+    if (maybeTweetId2Match) {
+      return maybeTweetId2Match[1]
+    }
+  }
+  // 신고한 트윗이나 안 보이는 트윗 등의 경우, 여기서 트윗 ID를 못 찾는다.
+  return null
+}
+
+function getTweetEntityById(state: any, tweetId: string) {
+  const entities = state.entities.tweets.entities
+  for (const entity_ of Object.values(entities)) {
+    const entity = entity_ as any
+    if (entity.id_str.toLowerCase() === tweetId) {
+      return entity as TweetEntity
+    }
+  }
+  return null
+}
+
+function getUserEntityById(state: any, userId: string): TwitterUser | null {
+  const entities = state.entities.users.entities
+  return entities[userId] || null
+}
+
+function inspectTweetElement(state: any, elem: HTMLElement) {
+  const tweetId = findTweetIdFromElement(elem)
+  if (!tweetId) {
+    return null
+  }
+  const tweetEntity = getTweetEntityById(state, tweetId)
+  if (!tweetEntity) {
+    return null
+  }
+  const user = getUserEntityById(state, tweetEntity.user)
+  if (!user) {
+    return null
+  }
+  let quotedTweet: Tweet | null = null
+  if (tweetEntity.is_quote_status) {
+    const quotedTweetEntity = getTweetEntityById(state, tweetEntity.quoted_status!)
+    if (quotedTweetEntity) {
+      const user = getUserEntityById(state, quotedTweetEntity.user)
+      if (user) {
+        quotedTweet = Object.assign({}, quotedTweetEntity, {
+          user,
+        })
+      }
+    }
+  }
+  const tweet: Tweet = Object.assign({}, tweetEntity, {
+    user,
+    quoted_status: quotedTweet,
+  })
+  return tweet
+}
+
+const touchedTweetElems = new WeakSet<HTMLElement>()
+
+function tweetDetector(state: any) {
+  const tweetElems = document.querySelectorAll<HTMLElement>('[data-testid=tweet]')
+  for (const elem of tweetElems) {
+    if (touchedTweetElems.has(elem)) {
+      continue
+    }
+    touchedTweetElems.add(elem)
+    const tweet = inspectTweetElement(state, elem)
+    if (!tweet) {
+      return
+    }
+    const event = new CustomEvent('MirrorBlock<-Tweet', {
+      bubbles: true,
+      detail: { tweet },
+    })
+    elem.dispatchEvent(event)
+  }
+}
+
 export function observe(reactRoot: Element, reduxStore: ReduxStore): void {
   new MutationObserver(() => {
     const state = reduxStore.getState()
-    sendEntryToExtension(state)
+    tweetDetector(state)
     sendUserCellToExtension()
     sendDMConversationsToExtension()
   }).observe(reactRoot, {

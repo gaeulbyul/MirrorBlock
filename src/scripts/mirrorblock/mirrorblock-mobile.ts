@@ -11,9 +11,6 @@ function markOutline(elem: Element | null): void {
     elem.setAttribute('data-mirrorblock-blocks-you', '1')
   }
 }
-function getElemByEntry(entry: Entry): HTMLElement | null {
-  return document.querySelector(`[data-mirrorblock-entryid="${entry.entryId}"]`)
-}
 function getElemsByUserCell(idOrName: UserCellIdentifier): HTMLElement[] {
   const { userId, userName } = idOrName
   let selectors: string[] = []
@@ -62,7 +59,7 @@ namespace ProfileDetector {
   }
 }
 namespace EntryHandler {
-  async function handleQuotedTweet(tweet: TweetWithQuote, tweetElem: HTMLElement) {
+  export async function handleQuotedTweet(tweet: TweetWithQuote, tweetElem: HTMLElement) {
     if (!tweet.quoted_status_permalink) {
       return
     }
@@ -96,7 +93,7 @@ namespace EntryHandler {
       },
     })
   }
-  async function handleMentionsInTweet(tweet: Tweet, tweetElem: HTMLElement) {
+  export async function handleMentionsInTweet(tweet: Tweet, tweetElem: HTMLElement) {
     const mentionedUserEntities = tweet.entities.user_mentions || []
     if (mentionedUserEntities.length <= 0) {
       return
@@ -113,13 +110,15 @@ namespace EntryHandler {
         ])
     )
     const overflowed = tweetElem.querySelector('a[aria-label][href$="/people"]')
+    const mentionedUsers = await StoreRetriever.getMultipleUsersByIds(
+      mentionedUserEntities.map(u => u.id_str)
+    )
+    /*
     const mentionedUsersMap = await UserGetter.getMultipleUsersById(
       mentionedUserEntities.map(u => u.id_str)
     ).catch(() => null)
-    if (!mentionedUsersMap) {
-      return
-    }
-    for (const mUser of mentionedUsersMap.values()) {
+    */
+    for (const mUser of Object.values(mentionedUsers)) {
       if (!mUser.blocked_by) {
         continue
       }
@@ -146,70 +145,6 @@ namespace EntryHandler {
         },
       })
     }
-  }
-  export async function handleTweet(tweetEntry: TweetEntry, tweet: Tweet) {
-    if (!tweet) {
-      return
-    }
-    const tweetElem = getElemByEntry(tweetEntry)
-    if (!tweetElem) {
-      return
-    }
-    if (tweet.is_quote_status) {
-      const qtweet = tweet as TweetWithQuote
-      handleQuotedTweet(qtweet, tweetElem)
-    }
-    await handleMentionsInTweet(tweet, tweetElem)
-    // 대화트리 UI에서, 다른 트윗을 선택하면 차단표시된 게 지워지는 현상이 있다.
-    // 따라서, 처리 완료 후 attr을 지워서 다시 처리할 수 있도록 함.
-    tweetElem.removeAttribute('data-mirrorblock-entryid')
-  }
-  export async function handleUser(userEntry: UserEntry, user: TwitterUser) {
-    if (!(user && user.blocked_by)) {
-      return
-    }
-    const elem = getElemByEntry(userEntry)!
-    const badge = new Badge(user)
-    const badgeTarget = elem.querySelector(`a[role=link][href^="/${user.screen_name}" i] [dir=ltr]`)
-    if (!badgeTarget) {
-      throw new Error('unreachable')
-    }
-    reflectBlockOnVisible(elem, {
-      user,
-      indicateBlock() {
-        markOutline(elem)
-        badge.attachAfter(badgeTarget)
-      },
-      indicateReflection() {
-        badge.blockReflected()
-        StoreUpdater.afterBlockUser(user)
-      },
-    })
-  }
-  export async function handleTombstone(tombstoneEntry: TombstoneEntry, tweet: Tweet | null) {
-    if (!tweet) {
-      return
-    }
-    const user = await UserGetter.getUserById(tweet.user, true)
-    if (!user || !user.blocked_by) {
-      return
-    }
-    const elem = getElemByEntry(tombstoneEntry)!
-    const badge = new Badge(user)
-    badge.showUserName()
-    const badgeTarget = elem.querySelector('span[dir]')!
-    const outlineTarget = badgeTarget.closest('div[dir=auto]')!.parentElement!
-    reflectBlockOnVisible(elem, {
-      user,
-      indicateBlock() {
-        markOutline(outlineTarget)
-        badge.appendTo(badgeTarget)
-      },
-      indicateReflection() {
-        badge.blockReflected()
-        StoreUpdater.afterBlockUser(user)
-      },
-    })
   }
 }
 namespace UserCellHandler {
@@ -288,29 +223,14 @@ namespace DMHandler {
     }
   }
 }
-const entryQueue = new (class {
+
+const promisesQueue = new (class {
   private promise = Promise.resolve()
-  private async handleEntry(entryWithData: EntryWithData): Promise<void> {
-    const { entry, entryData } = entryWithData
-    switch (entry.type) {
-      case 'tweet': {
-        const tweet = entryData as Tweet
-        return EntryHandler.handleTweet(entry, tweet)
-      }
-      case 'user': {
-        const user = entryData as TwitterUser
-        return EntryHandler.handleUser(entry, user)
-      }
-      case 'tombstone': {
-        const tweet = entryData as Tweet | null
-        return EntryHandler.handleTombstone(entry, tweet)
-      }
-    }
-  }
-  public push(entryWithData: EntryWithData) {
-    this.promise = this.promise.then(() => this.handleEntry(entryWithData))
+  public push(newPromise: Promise<void>) {
+    this.promise = this.promise.then(() => newPromise)
   }
 })()
+
 function startObserve(reactRoot: HTMLElement): void {
   new MutationObserver(mutations => {
     for (const elem of Utils.getAddedElementsFromMutations(mutations)) {
@@ -319,11 +239,6 @@ function startObserve(reactRoot: HTMLElement): void {
   }).observe(reactRoot, {
     subtree: true,
     childList: true,
-  })
-  document.addEventListener('MirrorBlock<-entry', event => {
-    const customEvent = event as CustomEvent<EntryWithData>
-    const entryWithData = customEvent.detail
-    entryQueue.push(entryWithData)
   })
   document.addEventListener('MirrorBlock<-UserCell', event => {
     const customEvent = event as CustomEvent<UserCellIdentifier>
@@ -334,6 +249,12 @@ function startObserve(reactRoot: HTMLElement): void {
     const customEvent = event as CustomEvent<{ convId: string }>
     const { convId } = customEvent.detail
     DMHandler.handleDMConversation(convId)
+  })
+  document.addEventListener('MirrorBlock<-Tweet', event => {
+    const customEvent = event as CustomEvent
+    const elem = customEvent.target as HTMLElement
+    const { tweet } = customEvent.detail
+    promisesQueue.push(EntryHandler.handleMentionsInTweet(tweet, elem))
   })
 }
 async function isLoggedIn(): Promise<boolean> {

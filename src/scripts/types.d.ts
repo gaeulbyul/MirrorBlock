@@ -179,8 +179,14 @@ interface LimitStatus {
 // Twitter Redux store entries
 // ------------------------------
 
+// 트위터의 Redux store에는 일부 속성에 실제 값 대신 id만 들어있음
+type TweetEntity = Tweet & {
+  user: string
+  quoted_status?: string
+}
+
 interface TweetEntities {
-  [tweetId: string]: Tweet
+  [tweetId: string]: TweetEntity
 }
 
 interface DMParticipant {

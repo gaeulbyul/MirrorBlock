@@ -34,7 +34,7 @@ async function triggerPageEventWithResponse(
   })
 }
 
-export async function getMultipleUsersByIds(userIds: string[]): Promise<TwitterUser[]> {
+export async function getMultipleUsersByIds(userIds: string[]): Promise<TwitterUserEntities> {
   return triggerPageEventWithResponse('getMultipleUsersByIds', {
     userIds,
   })
