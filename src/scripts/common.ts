@@ -1,5 +1,3 @@
-import * as TwitterAPI from './twitter-api-ct'
-
 export const enum Action {
   StartChainBlock = 'MirrorBlock/Start',
   StopChainBlock = 'MirrorBlock/Stop',
@@ -31,11 +29,11 @@ const USER_NAME_BLACKLIST = Object.freeze([
 ])
 
 export class TwitterUserMap extends Map<string, TwitterUser> {
-  public addUser(user: TwitterUser, forceUpdate = false) {
-    const shouldUpdate = forceUpdate || !this.has(user.id_str)
-    if (shouldUpdate) {
-      this.set(user.id_str, user)
-    }
+  public addUser(user: TwitterUser) {
+    this.set(user.id_str, user)
+  }
+  public hasUser(user: TwitterUser) {
+    return this.has(user.id_str)
   }
   public toUserArray(): TwitterUser[] {
     return Array.from(this.values())
@@ -46,19 +44,6 @@ export class TwitterUserMap extends Map<string, TwitterUser> {
       usersObj[userId] = user
     }
     return usersObj
-  }
-  public async refreshUsers(): Promise<TwitterUserMap> {
-    const freshMap = new TwitterUserMap()
-    const refreshSingleUser = async (user: TwitterUser) => {
-      return TwitterAPI.getSingleUserById(user.id_str)
-        .catch(() => null)
-        .then(freshUser => {
-          if (freshUser) {
-            freshMap.addUser(freshUser, true)
-          }
-        })
-    }
-    return Promise.all(this.toUserArray().map(refreshSingleUser)).then(() => freshMap)
   }
   public static fromUsersArray(users: TwitterUser[]): TwitterUserMap {
     return new TwitterUserMap(users.map((user): [string, TwitterUser] => [user.id_str, user]))
