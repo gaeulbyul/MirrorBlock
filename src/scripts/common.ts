@@ -39,7 +39,7 @@ export class TwitterUserMap extends Map<string, TwitterUser> {
     return Array.from(this.values())
   }
   public toUserObject(): TwitterUserEntities {
-    const usersObj: TwitterUserEntities = {}
+    const usersObj: TwitterUserEntities = Object.create(null)
     for (const [userId, user] of this) {
       usersObj[userId] = user
     }

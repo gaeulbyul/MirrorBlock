@@ -5,10 +5,11 @@ import * as StoreUpdater from './updater'
 
 // API호출 실패한 사용자이름을 저장하여 API호출을 반복하지 않도록 한다.
 // (예: 지워지거나 정지걸린 계정)
-const failedUserParams = new Set<string>()
-function errorHandler(failedIdOrNames: string[]): (err: any) => void {
+const notExistUsers = new Set<string>()
+
+function treatAsNonExistUser(failedIdOrNames: string[]): (err: any) => void {
   return (err: any) => {
-    failedIdOrNames.forEach(idOrName => failedUserParams.add(idOrName))
+    failedIdOrNames.forEach(idOrName => notExistUsers.add(idOrName))
     console.error(err)
   }
 }
@@ -27,15 +28,14 @@ function checkObjectIsUser(obj: object | null, n: number): obj is TwitterUser {
   return isTwitterUser(obj)
 }
 export async function getUserById(userId: string, useAPI: boolean): Promise<TwitterUser | null> {
-  if (failedUserParams.has(userId)) {
+  if (notExistUsers.has(userId)) {
     return null
   }
   const userFromStore = await StoreRetriever.getUserById(userId)
   if (userFromStore && checkObjectIsUser(userFromStore, 3)) {
     return userFromStore
   } else if (useAPI) {
-    // console.log('request api "%s"', userId)
-    const user = await TwitterAPI.getSingleUserById(userId).catch(errorHandler([userId]))
+    const user = await TwitterAPI.getSingleUserById(userId).catch(treatAsNonExistUser([userId]))
     if (user) {
       StoreUpdater.insertSingleUserIntoStore(user)
     }
@@ -49,15 +49,16 @@ export async function getUserByName(
   useAPI: boolean
 ): Promise<TwitterUser | null> {
   const loweredName = userName.toLowerCase()
-  if (failedUserParams.has(loweredName)) {
+  if (notExistUsers.has(loweredName)) {
     return null
   }
   const userFromStore = await StoreRetriever.getUserByName(loweredName)
   if (userFromStore && checkObjectIsUser(userFromStore, 3)) {
     return userFromStore
   } else if (useAPI) {
-    // console.log('request api "@%s"', userName)
-    const user = await TwitterAPI.getSingleUserByName(userName).catch(errorHandler([userName]))
+    const user = await TwitterAPI.getSingleUserByName(userName).catch(
+      treatAsNonExistUser([userName])
+    )
     if (user) {
       StoreUpdater.insertSingleUserIntoStore(user)
     }
@@ -76,13 +77,13 @@ export async function getMultipleUsersById(userIds: string[]): Promise<TwitterUs
     const userFromStore = await StoreRetriever.getUserById(userId)
     if (userFromStore && checkObjectIsUser(userFromStore, 3)) {
       userMap.addUser(userFromStore)
-    } else if (!failedUserParams.has(userId)) {
+    } else if (!notExistUsers.has(userId)) {
       idsToRequestAPI.push(userId)
     }
   }
   if (idsToRequestAPI.length === 1) {
     const requestedUser = await TwitterAPI.getSingleUserById(idsToRequestAPI[0]).catch(
-      errorHandler(idsToRequestAPI)
+      treatAsNonExistUser(idsToRequestAPI)
     )
     if (requestedUser) {
       StoreUpdater.insertSingleUserIntoStore(requestedUser)
@@ -91,7 +92,7 @@ export async function getMultipleUsersById(userIds: string[]): Promise<TwitterUs
   } else if (idsToRequestAPI.length > 1) {
     const requestedUsers = await TwitterAPI.getMultipleUsersById(idsToRequestAPI)
       .then(users => TwitterUserMap.fromUsersArray(users))
-      .catch(errorHandler(idsToRequestAPI))
+      .catch(treatAsNonExistUser(idsToRequestAPI))
     if (requestedUsers) {
       StoreUpdater.insertMultipleUsersIntoStore(requestedUsers)
       requestedUsers.forEach(rUser => userMap.addUser(rUser))
