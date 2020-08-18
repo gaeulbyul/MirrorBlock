@@ -103,13 +103,14 @@ export function* getAddedElementsFromMutations(
   }
 }
 
-export function filterElements<T extends HTMLElement>(elems: Iterable<T> | ArrayLike<T>): T[] {
-  return Array.from(elems)
-    .filter(elem => !elem.classList.contains('mob-checked'))
-    .map(elem => {
-      elem.classList.add('mob-checked')
-      return elem
-    })
+const touchedElems = new WeakSet<HTMLElement>()
+export function* iterateUntouchedElems<T extends HTMLElement>(elems: Iterable<T> | ArrayLike<T>) {
+  for (const elem of Array.from(elems)) {
+    if (!touchedElems.has(elem)) {
+      touchedElems.add(elem)
+      yield elem
+    }
+  }
 }
 
 // naive check given object is TwitterUser

@@ -1,5 +1,7 @@
 import { dig, getReactEventHandler } from './inject-common'
 
+const touchedElems = new WeakSet<HTMLElement>()
+
 function findTweetIdFromElement(elem: HTMLElement): string | null {
   if (!elem.matches('[data-testid=tweet]')) {
     throw new Error('unexpected non-tweet elem?')
@@ -145,8 +147,6 @@ function sendDMConversationsToExtension() {
     document.dispatchEvent(customEvent)
   }
 }
-
-const touchedElems = new WeakSet<HTMLElement>()
 
 function tweetDetector(state: any) {
   const tweetElems = document.querySelectorAll<HTMLElement>('[data-testid=tweet]')

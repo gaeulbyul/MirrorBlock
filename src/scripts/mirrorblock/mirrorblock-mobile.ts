@@ -21,11 +21,10 @@ namespace ProfileDetector {
     const helpLinks = rootElem.querySelectorAll<HTMLElement>(
       'a[href="https://support.twitter.com/articles/20172060"]'
     )
-    const filteredElems = Utils.filterElements(helpLinks)
-    if (filteredElems.length <= 0) {
+    const helpLink = Array.from(Utils.iterateUntouchedElems(helpLinks)).shift()
+    if (!helpLink) {
       return
     }
-    const helpLink = filteredElems[0]
     const userName = Utils.getUserNameFromTweetUrl(location)
     if (!userName) {
       return
