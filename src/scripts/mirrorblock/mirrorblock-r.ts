@@ -29,17 +29,3 @@ export async function reflectBlock({
     }
   }
 }
-
-export function reflectBlockOnVisible(elem: HTMLElement, reflOptions: ReflectionOptions) {
-  const intob = new IntersectionObserver((entries, observer) => {
-    const execute = () => reflectBlock(reflOptions)
-    const visibleEntries = entries.filter(ent => ent.isIntersecting)
-    for (const ent of visibleEntries) {
-      observer.unobserve(ent.target)
-      requestIdleCallback(execute, {
-        timeout: 1000,
-      })
-    }
-  })
-  intob.observe(elem)
-}

@@ -1,7 +1,7 @@
 import Badge from './mirrorblock-badge'
 import * as Utils from '../common'
 import * as TwitterAPI from '../twitter-api-ct'
-import { reflectBlock, reflectBlockOnVisible } from './mirrorblock-r'
+import { reflectBlock } from './mirrorblock-r'
 import { StoreRetriever, StoreUpdater, UserGetter } from './redux-store'
 
 type DOMQueryable = HTMLElement | Document
@@ -11,21 +11,11 @@ function markOutline(elem: Element | null): void {
     elem.setAttribute('data-mirrorblock-blocks-you', '1')
   }
 }
-function getElemsByUserCell(idOrName: UserCellIdentifier): HTMLElement[] {
-  const { userId, userName } = idOrName
-  let selectors: string[] = []
-  if (userId) {
-    selectors.push(`[data-mirrorblock-usercell-id="${userId}"]`)
-  }
-  if (userName) {
-    selectors.push(`[data-mirrorblock-usercell-name="${userName}"]`)
-  }
-  const elems = document.querySelectorAll<HTMLElement>(selectors.join(','))
-  return Utils.filterElements(elems)
-}
+
 function getElemByDmData(dmData: DMData): HTMLElement | null {
   return document.querySelector(`[data-mirrorblock-conversation-id="${dmData.conversation_id}"]`)
 }
+
 namespace ProfileDetector {
   export async function detectProfile(rootElem: DOMQueryable) {
     const helpLinks = rootElem.querySelectorAll<HTMLElement>(
@@ -81,7 +71,7 @@ namespace EntryHandler {
     const quoteLink = tweetElem.querySelector(`a[href^="${qUrl.pathname}" i]`)
     const quotedTweet = tweetElem.querySelector('div[role=blockquote]')
     const indicateMe = quoteLink || quotedTweet || tweetElem
-    reflectBlockOnVisible(tweetElem, {
+    reflectBlock({
       user: quotedUser,
       indicateBlock() {
         markOutline(indicateMe)
@@ -125,7 +115,7 @@ namespace EntryHandler {
       const loweredName = mUser.screen_name.toLowerCase()
       const mentionElems = mentionElemsMap.get(loweredName)!
       const badge = new Badge(mUser)
-      reflectBlockOnVisible(tweetElem, {
+      reflectBlock({
         user: mUser,
         indicateBlock() {
           if (mentionElems.length > 0) {
@@ -148,39 +138,17 @@ namespace EntryHandler {
   }
 }
 namespace UserCellHandler {
-  async function getUser(idOrName: UserCellIdentifier): Promise<TwitterUser | null> {
-    const { userId, userName } = idOrName
-    if (userId) {
-      return UserGetter.getUserById(userId, false)
-    } else if (userName) {
-      return UserGetter.getUserByName(userName, false)
-    } else {
-      throw new Error('unreachable')
-    }
-  }
-  export async function handleUserCells(idOrName: UserCellIdentifier) {
-    const userCellElems = getElemsByUserCell(idOrName)
-    if (userCellElems.length <= 0) {
-      return
-    }
-    const user = await getUser(idOrName)
-    if (!user || !user.blocked_by) {
-      return
-    }
-    const badgesPool: Badge[] = []
+  export async function handleUserCells(user: TwitterUser, elem: HTMLElement) {
+    const badge = new Badge(user)
     reflectBlock({
       user,
       indicateBlock() {
-        const badge = new Badge(user)
-        badgesPool.push(badge)
-        for (const elem of userCellElems) {
-          markOutline(elem)
-          const badgeTarget = elem.querySelector('div[dir=ltr]')!
-          badge.attachAfter(badgeTarget)
-        }
+        markOutline(elem)
+        const badgeTarget = elem.querySelector('div[dir=ltr]')!
+        badge.attachAfter(badgeTarget)
       },
       indicateReflection() {
-        badgesPool.forEach(b => b.blockReflected())
+        badge.blockReflected()
         StoreUpdater.afterBlockUser(user)
       },
     })
@@ -241,9 +209,10 @@ function startObserve(reactRoot: HTMLElement): void {
     childList: true,
   })
   document.addEventListener('MirrorBlock<-UserCell', event => {
-    const customEvent = event as CustomEvent<UserCellIdentifier>
-    const { userId, userName } = customEvent.detail
-    UserCellHandler.handleUserCells({ userId, userName })
+    const customEvent = event as CustomEvent
+    const elem = customEvent.target as HTMLElement
+    const { user } = customEvent.detail
+    UserCellHandler.handleUserCells(user, elem)
   })
   document.addEventListener('MirrorBlock<-DMConversation', event => {
     const customEvent = event as CustomEvent<{ convId: string }>

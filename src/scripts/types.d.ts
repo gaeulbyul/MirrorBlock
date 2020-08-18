@@ -224,11 +224,6 @@ type ReduxStoreEventNames =
   | 'getUserByName'
   | 'getDMData'
 
-interface UserCellIdentifier {
-  userId: string | null
-  userName: string | null
-}
-
 interface FollowsScraperOptions {
   delay: number
 }
