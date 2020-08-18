@@ -3,7 +3,15 @@ import * as TwitterAPI from '../../twitter-api-ct'
 import * as StoreRetriever from './retriever'
 import * as StoreUpdater from './updater'
 
-// API호출 실패한 사용자이름을 저장하여 API호출을 반복하지 않도록 한다.
+// Redux store에 들어가기 전에 요청이 들어오는 경우를 대비한 캐시
+const userCacheById = new Map<string, TwitterUser>()
+const userCacheByName = new Map<string, TwitterUser>()
+function addUserToCache(user: TwitterUser) {
+  userCacheById.set(user.id_str, user)
+  userCacheByName.set(user.screen_name, user)
+}
+
+// API호출 실패한 사용자 ID나 사용자이름을 저장하여 API호출을 반복하지 않도록 한다.
 // (예: 지워지거나 정지걸린 계정)
 const notExistUsers = new Set<string>()
 
@@ -33,10 +41,14 @@ export async function getUserById(userId: string, useAPI: boolean): Promise<Twit
   }
   const userFromStore = await StoreRetriever.getUserById(userId)
   if (userFromStore && checkObjectIsUser(userFromStore, 3)) {
+    addUserToCache(userFromStore)
     return userFromStore
+  } else if (userCacheById.has(userId)) {
+    return userCacheById.get(userId)!
   } else if (useAPI) {
     const user = await TwitterAPI.getSingleUserById(userId).catch(treatAsNonExistUser([userId]))
     if (user) {
+      addUserToCache(user)
       StoreUpdater.insertSingleUserIntoStore(user)
     }
     return user || null
@@ -54,12 +66,16 @@ export async function getUserByName(
   }
   const userFromStore = await StoreRetriever.getUserByName(loweredName)
   if (userFromStore && checkObjectIsUser(userFromStore, 3)) {
+    addUserToCache(userFromStore)
     return userFromStore
+  } else if (userCacheByName.has(userName)) {
+    return userCacheByName.get(userName)!
   } else if (useAPI) {
     const user = await TwitterAPI.getSingleUserByName(userName).catch(
       treatAsNonExistUser([userName])
     )
     if (user) {
+      addUserToCache(user)
       StoreUpdater.insertSingleUserIntoStore(user)
     }
     return user || null
@@ -71,12 +87,16 @@ export async function getMultipleUsersById(userIds: string[]): Promise<TwitterUs
   if (userIds.length > 100) {
     throw new Error('too many user!')
   }
-  const userMap = new TwitterUserMap()
+  const resultUserMap = new TwitterUserMap()
   const idsToRequestAPI: string[] = []
   for (const userId of userIds) {
     const userFromStore = await StoreRetriever.getUserById(userId)
+    const userFromCache = userCacheById.get(userId)
     if (userFromStore && checkObjectIsUser(userFromStore, 3)) {
-      userMap.addUser(userFromStore)
+      addUserToCache(userFromStore)
+      resultUserMap.addUser(userFromStore)
+    } else if (userFromCache) {
+      resultUserMap.addUser(userFromCache)
     } else if (!notExistUsers.has(userId)) {
       idsToRequestAPI.push(userId)
     }
@@ -86,8 +106,9 @@ export async function getMultipleUsersById(userIds: string[]): Promise<TwitterUs
       treatAsNonExistUser(idsToRequestAPI)
     )
     if (requestedUser) {
+      addUserToCache(requestedUser)
       StoreUpdater.insertSingleUserIntoStore(requestedUser)
-      userMap.addUser(requestedUser)
+      resultUserMap.addUser(requestedUser)
     }
   } else if (idsToRequestAPI.length > 1) {
     const requestedUsers = await TwitterAPI.getMultipleUsersById(idsToRequestAPI)
@@ -95,8 +116,11 @@ export async function getMultipleUsersById(userIds: string[]): Promise<TwitterUs
       .catch(treatAsNonExistUser(idsToRequestAPI))
     if (requestedUsers) {
       StoreUpdater.insertMultipleUsersIntoStore(requestedUsers)
-      requestedUsers.forEach(rUser => userMap.addUser(rUser))
+      requestedUsers.forEach(user => {
+        addUserToCache(user)
+        resultUserMap.addUser(user)
+      })
     }
   }
-  return userMap
+  return resultUserMap
 }
