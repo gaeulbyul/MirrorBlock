@@ -50,6 +50,8 @@ interface Tweet {
   retweeted: boolean
   isReported?: boolean // 넌 왜 camelCase냐!
   is_quote_status: boolean
+  quoted_status?: string
+  quoted_status_permalink?: UrlEntity
   in_reply_to_status_id_str?: string
   in_reply_to_user_id_str?: string
   in_reply_to_screen_name?: string
@@ -70,12 +72,6 @@ interface UrlEntityInTweet {
   url: string
   display_url: string
   expanded_url: string
-}
-
-interface TweetWithQuote extends Tweet {
-  is_quote_status: true
-  quoted_status?: string
-  quoted_status_permalink?: UrlEntity
 }
 
 interface UrlEntity {

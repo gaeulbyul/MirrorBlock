@@ -6,25 +6,36 @@ function findTweetIdFromElement(elem: HTMLElement): string | null {
   if (!elem.matches('[data-testid=tweet]')) {
     throw new Error('unexpected non-tweet elem?')
   }
-  const article = elem.closest('article[role=article]')!
-  // tweet-detail
-  const parentReh = getReactEventHandler(article.parentElement!)
-  const maybeTweetId1 = dig(() => parentReh.children.props.entry.entryId)
-  if (typeof maybeTweetId1 === 'string') {
-    const maybeTweetId1Match = /^tweet-(\d+)$/.exec(maybeTweetId1 || '')
-    if (maybeTweetId1Match) {
-      return maybeTweetId1Match[1]
+  // 타임라인상. 이전 UI 및 트리 UI
+  const permalink = elem.querySelector('a[href^="/"][href*="/status/"')
+  if (permalink instanceof HTMLAnchorElement) {
+    const maybeTimeElem = permalink.children[0]
+    if (maybeTimeElem.tagName === 'TIME') {
+      const maybeTweetId2Match = /\/status\/(\d+)$/.exec(permalink.pathname)
+      if (maybeTweetId2Match) {
+        return maybeTweetId2Match[1]
+      }
     }
   }
-  const permalink = elem.querySelector('a[href^="/"][href*="/status/"')
-  if (!(permalink instanceof HTMLAnchorElement)) {
-    return null
+  const article = elem.closest('article[role=article]')!
+  // tweet-detail, 이전 UI
+  const grandParentReh = getReactEventHandler(article.parentElement!.parentElement!)
+  const maybeTweetId1 = dig(() => grandParentReh.children._owner.key)
+  if (typeof maybeTweetId1 === 'string') {
+    const maybeTweetIdMatch = /\btweet-(\d+)$/.exec(maybeTweetId1 || '')
+    if (maybeTweetIdMatch) {
+      return maybeTweetIdMatch[1]
+    }
   }
-  const maybeTimeElem = permalink.children[0]
-  if (maybeTimeElem.tagName === 'TIME') {
-    const maybeTweetId2Match = /\/status\/(\d+)$/.exec(permalink.pathname)
-    if (maybeTweetId2Match) {
-      return maybeTweetId2Match[1]
+  // tweet-detail, 트리 UI
+  const ancientElemReh = getReactEventHandler(
+    article.parentElement!.parentElement!.parentElement!.parentElement!
+  )
+  const maybeTweetId2 = dig(() => ancientElemReh.children._owner.key)
+  if (typeof maybeTweetId2 === 'string') {
+    const maybeTweetIdMatch = /\btweet-(\d+)$/.exec(maybeTweetId2 || '')
+    if (maybeTweetIdMatch) {
+      return maybeTweetIdMatch[1]
     }
   }
   // 신고한 트윗이나 안 보이는 트윗 등의 경우, 여기서 트윗 ID를 못 찾는다.

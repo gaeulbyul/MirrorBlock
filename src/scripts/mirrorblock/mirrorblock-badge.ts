@@ -1,13 +1,8 @@
-import { validateTwitterUserName } from '../common'
-
 export default class Badge {
   private readonly badgedAttr = 'data-mirrorblock-badged'
   private readonly baseElem = document.createElement('span')
-  constructor(private user?: TwitterUser) {
-    let userName = user ? user.screen_name : ''
-    if (!validateTwitterUserName(userName)) {
-      userName = ''
-    }
+  constructor(private user: TwitterUser) {
+    let userName = user.screen_name
     const tooltipUserName = userName ? `@${userName}` : '이 사용자'
     this.baseElem.className = 'mob-badge'
     this.baseElem.style.whiteSpace = 'initial'
@@ -25,9 +20,6 @@ export default class Badge {
 </span>`
   }
   public showUserName() {
-    if (!this.user) {
-      return
-    }
     const name = this.user.screen_name
     const userNameElem = this.baseElem.querySelector<HTMLElement>('.badge-username')!
     userNameElem.textContent = `(@${name})`

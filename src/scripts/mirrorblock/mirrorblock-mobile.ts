@@ -6,10 +6,8 @@ import { StoreRetriever, StoreUpdater, UserGetter } from './redux-store'
 
 type DOMQueryable = HTMLElement | Document
 
-function markOutline(elem: Element | null): void {
-  if (elem) {
-    elem.setAttribute('data-mirrorblock-blocks-you', '1')
-  }
+function markOutline(elem: Element): void {
+  elem.setAttribute('data-mirrorblock-blocks-you', '1')
 }
 
 function getElemByDmData(dmData: DMData): HTMLElement | null {
@@ -46,12 +44,27 @@ async function detectProfile(rootElem: DOMQueryable) {
   })
 }
 
-// @ts-ignore TODO
-async function handleQuotedTweet(tweet: TweetWithQuote, tweetElem: HTMLElement) {
-  if (!tweet.quoted_status_permalink) {
+function findElementToIndicateQuotedTweetFromBlockedUser(
+  tweetElem: HTMLElement,
+  quotedTweetUrl: URL
+) {
+  const article = tweetElem.closest('article[role=article]')!
+  const quotedTweetInTimeline = tweetElem.querySelector('[data-testid=tweet] [data-testid=tweet]')
+  const quotedTweetInDetail = article.querySelector('article article [data-testid=tweet]')
+  const quotedTweet = quotedTweetInTimeline || quotedTweetInDetail
+  if (quotedTweet) {
+    const quotedTweetInnerMessage = quotedTweet.querySelector('[dir=auto]')
+    return quotedTweetInnerMessage || quotedTweet
+  } else {
+    return article.querySelector(`a[href^="${quotedTweetUrl.pathname}" i]`)!
+  }
+}
+
+async function handleQuotedTweet(tweet: Tweet, tweetElem: HTMLElement) {
+  if (!tweet.is_quote_status) {
     return
   }
-  const qUrlString = tweet.quoted_status_permalink.expanded
+  const qUrlString = tweet.quoted_status_permalink!.expanded
   const qUrl = new URL(qUrlString)
   // 드물게 인용 트윗 주소가 t.co 링크일 경우도 있더라.
   if (qUrl.hostname === 't.co') {
@@ -59,19 +72,14 @@ async function handleQuotedTweet(tweet: TweetWithQuote, tweetElem: HTMLElement) 
   }
   const quotedUserName = Utils.getUserNameFromTweetUrl(qUrl)!
   const quotedUser = await UserGetter.getUserByName(quotedUserName, true)
-  if (!quotedUser || !quotedUser.blocked_by) {
+  if (!quotedUser) {
     return
   }
   const badge = new Badge(quotedUser)
-  // 가끔 날 차단한 사람의 인용트윗이 보인다.
-  // 이 때 보이는 인용트윗은 div[role=blockquote]다.
-  // 안 보일 땐 트윗의 링크가 뜨는 데 그건 quoteLink
-  const quoteLink = tweetElem.querySelector(`a[href^="${qUrl.pathname}" i]`)
-  const quotedTweet = tweetElem.querySelector('div[role=blockquote]')
-  const indicateMe = quoteLink || quotedTweet || tweetElem
   reflectBlock({
     user: quotedUser,
     indicateBlock() {
+      const indicateMe = findElementToIndicateQuotedTweetFromBlockedUser(tweetElem, qUrl)
       markOutline(indicateMe)
       badge.attachAfter(indicateMe)
     },
@@ -219,6 +227,7 @@ function startObserve(reactRoot: HTMLElement): void {
     const elem = customEvent.target as HTMLElement
     const { tweet } = customEvent.detail
     promisesQueue.push(() => handleMentionsInTweet(tweet, elem))
+    handleQuotedTweet(tweet, elem)
   })
 }
 async function isLoggedIn(): Promise<boolean> {
