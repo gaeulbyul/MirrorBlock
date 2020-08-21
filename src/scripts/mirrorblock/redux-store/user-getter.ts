@@ -21,26 +21,12 @@ function treatAsNonExistUser(failedIdOrNames: string[]): (err: any) => void {
     console.error(err)
   }
 }
-// 2019-07-08
-// reduxStore.dispatch('rweb/BATCH', ...)를 통해 들어온 사용자 정보엔
-// id_str 과 screen_name 만 들어있는 경우가 있다.
-// 정보값이 불충분하므로 store에 없는 사용자로 취급
-function checkObjectIsUser(obj: object | null, n: number): obj is TwitterUser {
-  if (!obj) {
-    return false
-  }
-  const keys = Object.keys(obj)
-  if (keys.length <= n) {
-    return false
-  }
-  return isTwitterUser(obj)
-}
 export async function getUserById(userId: string, useAPI: boolean): Promise<TwitterUser | null> {
   if (notExistUsers.has(userId)) {
     return null
   }
   const userFromStore = await StoreRetriever.getUserById(userId)
-  if (userFromStore && checkObjectIsUser(userFromStore, 3)) {
+  if (userFromStore && isTwitterUser(userFromStore)) {
     addUserToCache(userFromStore)
     return userFromStore
   } else if (userCacheById.has(userId)) {
@@ -65,7 +51,7 @@ export async function getUserByName(
     return null
   }
   const userFromStore = await StoreRetriever.getUserByName(loweredName)
-  if (userFromStore && checkObjectIsUser(userFromStore, 3)) {
+  if (userFromStore && isTwitterUser(userFromStore)) {
     addUserToCache(userFromStore)
     return userFromStore
   } else if (userCacheByName.has(userName)) {
@@ -92,7 +78,7 @@ export async function getMultipleUsersById(userIds: string[]): Promise<TwitterUs
   for (const userId of userIds) {
     const userFromStore = await StoreRetriever.getUserById(userId)
     const userFromCache = userCacheById.get(userId)
-    if (userFromStore && checkObjectIsUser(userFromStore, 3)) {
+    if (userFromStore && isTwitterUser(userFromStore)) {
       addUserToCache(userFromStore)
       resultUserMap.addUser(userFromStore)
     } else if (userFromCache) {

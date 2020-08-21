@@ -117,15 +117,12 @@ async function handleMentionsInTweet(tweet: Tweet, tweetElem: HTMLElement) {
     return
   }
   for (const mUser of mentionedUsersMap.values()) {
-    if (!mUser.blocked_by) {
-      continue
-    }
-    const loweredName = mUser.screen_name.toLowerCase()
-    const mentionElems = mentionElemsMap.get(loweredName)!
     const badge = new Badge(mUser)
     reflectBlock({
       user: mUser,
       indicateBlock() {
+        const loweredName = mUser.screen_name.toLowerCase()
+        const mentionElems = mentionElemsMap.get(loweredName)!
         if (mentionElems.length > 0) {
           mentionElems.forEach(el => {
             markOutline(el)

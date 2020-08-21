@@ -114,14 +114,21 @@ export function* iterateUntouchedElems<T extends HTMLElement>(elems: Iterable<T>
 }
 
 // naive check given object is TwitterUser
-export function isTwitterUser(obj: any): obj is TwitterUser {
-  if (typeof obj !== 'object' || obj === null) {
+export function isTwitterUser(obj: unknown): obj is TwitterUser {
+  if (!(obj && typeof obj === 'object')) {
     return false
   }
-  if (typeof obj.id_str !== 'string') {
+  const objAsAny = obj as any
+  if (typeof objAsAny.id_str !== 'string') {
     return false
   }
-  if (typeof obj.screen_name !== 'string') {
+  if (typeof objAsAny.screen_name !== 'string') {
+    return false
+  }
+  if (typeof objAsAny.blocking !== 'boolean') {
+    return false
+  }
+  if (typeof objAsAny.blocked_by !== 'boolean') {
     return false
   }
   return true
