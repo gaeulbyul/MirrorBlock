@@ -3,6 +3,7 @@ import * as Utils from '../common'
 import * as TwitterAPI from '../twitter-api-ct'
 import { reflectBlock } from './mirrorblock-r'
 import { StoreRetriever, StoreUpdater, UserGetter } from './redux-store'
+import * as EventNames from '../event-names'
 
 type DOMQueryable = HTMLElement | Document
 
@@ -211,18 +212,18 @@ function startObserve(reactRoot: HTMLElement): void {
     subtree: true,
     childList: true,
   })
-  document.addEventListener('MirrorBlock<-UserCell', event => {
+  document.addEventListener(EventNames.USERCELL, event => {
     const customEvent = event as CustomEvent
     const elem = customEvent.target as HTMLElement
     const { user } = customEvent.detail
     handleUserCells(user, elem)
   })
-  document.addEventListener('MirrorBlock<-DMConversation', event => {
+  document.addEventListener(EventNames.DM, event => {
     const customEvent = event as CustomEvent<{ convId: string }>
     const { convId } = customEvent.detail
     handleDMConversation(convId)
   })
-  document.addEventListener('MirrorBlock<-Tweet', event => {
+  document.addEventListener(EventNames.TWEET, event => {
     const customEvent = event as CustomEvent
     const elem = customEvent.target as HTMLElement
     const { tweet } = customEvent.detail

@@ -1,4 +1,5 @@
 import { dig, getReactEventHandler } from './inject-common'
+import * as EventNames from '../../event-names'
 
 const touchedElems = new WeakSet<HTMLElement>()
 
@@ -123,7 +124,7 @@ function userCellDetector(state: any) {
     if (!user) {
       continue
     }
-    const event = new CustomEvent('MirrorBlock<-UserCell', {
+    const event = new CustomEvent(EventNames.USERCELL, {
       bubbles: true,
       detail: { user },
     })
@@ -152,7 +153,7 @@ function sendDMConversationsToExtension() {
       throw new Error('failed to get conv. id')
     }
     elem.setAttribute('data-mirrorblock-conversation-id', convId)
-    const customEvent = new CustomEvent('MirrorBlock<-DMConversation', {
+    const customEvent = new CustomEvent(EventNames.DM, {
       detail: { convId },
     })
     document.dispatchEvent(customEvent)
@@ -170,7 +171,7 @@ function tweetDetector(state: any) {
     if (!tweet) {
       continue
     }
-    const event = new CustomEvent('MirrorBlock<-Tweet', {
+    const event = new CustomEvent(EventNames.TWEET, {
       bubbles: true,
       detail: { tweet },
     })
@@ -198,6 +199,6 @@ export function observe(reactRoot: Element, reduxStore: ReduxStore): void {
   }).observe(reactRoot, {
     subtree: true,
     childList: true,
-    characterData: true,
+    // characterData: true,
   })
 }
