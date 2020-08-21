@@ -96,7 +96,8 @@ async function handleMentionsInTweet(tweet: Tweet, tweetElem: HTMLElement) {
   if (mentionedUserEntities.length <= 0) {
     return
   }
-  const links = Array.from(tweetElem.querySelectorAll<HTMLAnchorElement>('a[role=link][href^="/"]'))
+  const article = tweetElem.closest('article[role=article]')!
+  const links = Array.from(article.querySelectorAll<HTMLAnchorElement>('a[role=link][href^="/"]'))
   const mentionElemsMap = new Map<string, HTMLAnchorElement[]>(
     mentionedUserEntities
       .map(ent => ent.screen_name.toLowerCase())
@@ -105,7 +106,7 @@ async function handleMentionsInTweet(tweet: Tweet, tweetElem: HTMLElement) {
         links.filter(a => a.pathname.toLowerCase() === `/${loweredName}`),
       ])
   )
-  const overflowed = tweetElem.querySelector('a[aria-label][href$="/people"]')
+  const overflowed = article.querySelector('a[aria-label][href$="/people"]')
   const mentionedUsersMap = await UserGetter.getMultipleUsersById(
     mentionedUserEntities.map(u => u.id_str)
   ).catch(err => {
