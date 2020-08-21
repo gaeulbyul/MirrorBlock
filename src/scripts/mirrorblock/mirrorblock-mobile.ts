@@ -1,4 +1,3 @@
-import Badge from './mirrorblock-badge'
 import * as Utils from '../common'
 import * as TwitterAPI from '../twitter-api-ct'
 import { reflectBlock } from './mirrorblock-r'
@@ -32,13 +31,12 @@ async function detectProfile(rootElem: DOMQueryable) {
   if (!user) {
     return
   }
-  const badge = new Badge(user)
   reflectBlock({
     user,
-    indicateBlock() {
+    indicateBlock(badge) {
       badge.appendTo(helpLink.parentElement!)
     },
-    indicateReflection() {
+    indicateReflection(badge) {
       badge.blockReflected()
       StoreUpdater.afterBlockUser(user)
     },
@@ -76,15 +74,14 @@ async function handleQuotedTweet(tweet: Tweet, tweetElem: HTMLElement) {
   if (!quotedUser) {
     return
   }
-  const badge = new Badge(quotedUser)
   reflectBlock({
     user: quotedUser,
-    indicateBlock() {
+    indicateBlock(badge) {
       const indicateMe = findElementToIndicateQuotedTweetFromBlockedUser(tweetElem, qUrl)
       markOutline(indicateMe)
       badge.attachAfter(indicateMe)
     },
-    indicateReflection() {
+    indicateReflection(badge) {
       badge.blockReflected()
       StoreUpdater.afterBlockUser(quotedUser)
     },
@@ -117,10 +114,9 @@ async function handleMentionsInTweet(tweet: Tweet, tweetElem: HTMLElement) {
     return
   }
   for (const mUser of mentionedUsersMap.values()) {
-    const badge = new Badge(mUser)
     reflectBlock({
       user: mUser,
-      indicateBlock() {
+      indicateBlock(badge) {
         const loweredName = mUser.screen_name.toLowerCase()
         const mentionElems = mentionElemsMap.get(loweredName)!
         if (mentionElems.length > 0) {
@@ -134,7 +130,7 @@ async function handleMentionsInTweet(tweet: Tweet, tweetElem: HTMLElement) {
           badge.attachAfter(overflowed)
         }
       },
-      indicateReflection() {
+      indicateReflection(badge) {
         badge.blockReflected()
         StoreUpdater.afterBlockUser(mUser)
       },
@@ -143,15 +139,14 @@ async function handleMentionsInTweet(tweet: Tweet, tweetElem: HTMLElement) {
 }
 
 async function handleUserCells(user: TwitterUser, elem: HTMLElement) {
-  const badge = new Badge(user)
   reflectBlock({
     user,
-    indicateBlock() {
+    indicateBlock(badge) {
       markOutline(elem)
       const badgeTarget = elem.querySelector('div[dir=ltr]')!
       badge.attachAfter(badgeTarget)
     },
-    indicateReflection() {
+    indicateReflection(badge) {
       badge.blockReflected()
       StoreUpdater.afterBlockUser(user)
     },
@@ -176,17 +171,16 @@ async function handleDMConversation(convId: string) {
     return
   }
   for (const userToBlock of blockedMe.values()) {
-    const badge = new Badge(userToBlock)
-    if (dmData.type === 'GROUP_DM') {
-      badge.showUserName()
-    }
     await reflectBlock({
       user: userToBlock,
-      indicateBlock() {
+      indicateBlock(badge) {
         markOutline(elem)
+        if (dmData.type === 'GROUP_DM') {
+          badge.showUserName()
+        }
         badge.appendTo(badgeTarget)
       },
-      indicateReflection() {
+      indicateReflection(badge) {
         badge.blockReflected()
         StoreUpdater.afterBlockUser(userToBlock)
       },

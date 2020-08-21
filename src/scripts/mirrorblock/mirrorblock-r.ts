@@ -1,10 +1,11 @@
 import * as Options from '../../extoption'
 import * as TwitterAPI from '../twitter-api-ct'
+import Badge from './mirrorblock-badge'
 
 interface ReflectionOptions {
   user: TwitterUser
-  indicateBlock: () => void
-  indicateReflection: () => void
+  indicateBlock: (badge: Badge) => void
+  indicateReflection: (badge: Badge) => void
 }
 
 export async function reflectBlock({
@@ -15,7 +16,8 @@ export async function reflectBlock({
   if (!user.blocked_by) {
     return
   }
-  indicateBlock()
+  const badge = new Badge(user)
+  indicateBlock(badge)
   const extOptions = await Options.load()
   const muteSkip = user.muting && !extOptions.blockMutedUser
   const shouldBlock = extOptions.enableBlockReflection && !muteSkip && !user.blocking
@@ -25,7 +27,7 @@ export async function reflectBlock({
       return false
     })
     if (blockResult) {
-      indicateReflection()
+      indicateReflection(badge)
     }
   }
 }
