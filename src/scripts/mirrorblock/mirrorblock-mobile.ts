@@ -114,7 +114,7 @@ async function handleMentionsInTweet(tweet: Tweet, tweetElem: HTMLElement) {
     return
   }
   for (const mUser of mentionedUsersMap.values()) {
-    reflectBlock({
+    await reflectBlock({
       user: mUser,
       indicateBlock(badge) {
         const loweredName = mUser.screen_name.toLowerCase()
