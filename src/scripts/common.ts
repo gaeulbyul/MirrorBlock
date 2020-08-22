@@ -79,6 +79,7 @@ export function injectScript(path: string): Promise<void> {
   return new Promise(resolve => {
     const script = document.createElement('script')
     script.addEventListener('load', () => {
+      script.remove()
       resolve()
     })
     script.src = browser.runtime.getURL(path)

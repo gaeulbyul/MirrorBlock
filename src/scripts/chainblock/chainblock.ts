@@ -74,7 +74,7 @@ class ChainMirrorBlock {
     usersToBlock.forEach(({ user }) => {
       this.blockResults.set(user.id_str, 'pending')
     })
-    const immBlockPromises = usersToBlock.map(({ user }) => {
+    const immBlockPromises = usersToBlock.map(async ({ user }) => {
       return TwitterAPI.blockUser(user)
         .then(blocked => {
           const bresult: BlockResult = blocked ? 'blockSuccess' : 'blockFailed'
