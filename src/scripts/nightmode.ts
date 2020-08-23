@@ -4,10 +4,6 @@ export function handleDarkMode() {
     document.documentElement.classList.toggle('mob-nightmode', isDarkMode)
   }
 
-  const reactRoot = document.getElementById('react-root')
-  if (!reactRoot) {
-    return
-  }
   document.documentElement.classList.add('mob-mobile')
   const colorThemeTag = document.querySelector('meta[name="theme-color"]')
   if (colorThemeTag) {
