@@ -234,10 +234,6 @@ interface MBStartChainBlockMessage {
   followType: FollowType
 }
 
-interface MBStopChainBlockMessage {
-  action: Action['StopChainBlock']
-}
-
 interface MBAlertMessage {
   action: Action['Alert']
   message: string
@@ -266,14 +262,9 @@ interface MBChainBlockableActorResult {
   actorId: string | null
 }
 
-type MBMessage =
-  | MBStartChainBlockMessage
-  | MBStopChainBlockMessage
-  | MBAlertMessage
-  | MBRequestAPIMessage
-  | MBResponseAPIMessage
-  | MBExamineChainBlockableActor
-  | MBChainBlockableActorResult
+type MBMessageFromContentToBackground = MBRequestAPIMessage | MBExamineChainBlockableActor
+
+type MBMessageFromBackgroundToContent = MBStartChainBlockMessage | MBAlertMessage
 
 type UserState = 'shouldBlock' | 'alreadyBlocked' | 'muteSkip'
 

@@ -1,6 +1,5 @@
 export const enum Action {
   StartChainBlock = 'MirrorBlock/Start',
-  StopChainBlock = 'MirrorBlock/Stop',
   Alert = 'MirrorBlock/Alert',
   RequestAPI = 'MirrorBlock/RequestAPI',
   ResponseAPI = 'MirrorBlock/ResponseAPI',
@@ -166,4 +165,8 @@ export function getUserNameFromTweetUrl(
   } else {
     return null
   }
+}
+
+export function assertNever(x: never) {
+  console.error('assertNever: unreachable! %o', x)
 }
