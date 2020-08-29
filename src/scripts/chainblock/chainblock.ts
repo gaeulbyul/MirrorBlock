@@ -1,6 +1,6 @@
 import * as Options from '../../extoption'
 import { APIError } from '../twitter-api-ct'
-import { Action, sleep, copyFrozenObject, assertNever } from '../common'
+import { sleep, copyFrozenObject, assertNever } from '../common'
 import ChainMirrorBlockUI from './chainblock-ui'
 import * as TwitterAPI from '../twitter-api-ct'
 
@@ -278,11 +278,11 @@ export async function startChainBlock(targetUserName: string, followType: Follow
 
 browser.runtime.onMessage.addListener((msg: object) => {
   const message = msg as MBMessageFromBackgroundToContent
-  switch (message.action) {
-    case Action.StartChainBlock:
+  switch (message.messageType) {
+    case 'StartChainBlock':
       startChainBlock(message.userName, message.followType)
       break
-    case Action.Alert:
+    case 'Alert':
       window.alert(message.message)
       break
     default:

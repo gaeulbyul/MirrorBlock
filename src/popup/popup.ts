@@ -1,5 +1,5 @@
 import * as Options from '../extoption'
-import { Action, getUserNameFromTweetUrl } from '../scripts/common'
+import { getUserNameFromTweetUrl } from '../scripts/common'
 type Tab = browser.tabs.Tab
 
 function closePopup() {
@@ -8,7 +8,7 @@ function closePopup() {
 
 async function alertToTab(tabId: number, message: string) {
   return browser.tabs.sendMessage<MBAlertMessage>(tabId, {
-    action: Action.Alert,
+    messageType: 'Alert',
     message,
   })
 }
@@ -48,7 +48,7 @@ async function executeChainBlock(followType: FollowType) {
   }
   browser.tabs
     .sendMessage<MBStartChainBlockMessage>(tabId, {
-      action: Action.StartChainBlock,
+      messageType: 'StartChainBlock',
       followType,
       userName,
     })

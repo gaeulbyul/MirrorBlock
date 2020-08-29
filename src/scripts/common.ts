@@ -1,12 +1,3 @@
-export const enum Action {
-  StartChainBlock = 'MirrorBlock/Start',
-  Alert = 'MirrorBlock/Alert',
-  RequestAPI = 'MirrorBlock/RequestAPI',
-  ResponseAPI = 'MirrorBlock/ResponseAPI',
-  ExamineChainBlockableActor = 'MirrorBlock/ExamineChainBlockableActor',
-  ChainBlockableActorResult = 'MirrorBlock/ChainBlockableActorResult',
-}
-
 const USER_NAME_BLACKLIST = Object.freeze([
   '1',
   'about',

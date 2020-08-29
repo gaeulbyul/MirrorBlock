@@ -1,6 +1,6 @@
 import chunk from 'lodash/chunk'
 
-import { validateTwitterUserName, sleep, Action } from './common'
+import { validateTwitterUserName, sleep } from './common'
 
 export class APIError extends Error {
   constructor(public readonly response: APIResponse) {
@@ -16,9 +16,10 @@ async function sendRequest(
   paramsObj: URLParamsObj = {},
   actAsUserId = ''
 ): Promise<APIResponse> {
+  console.warn('deprecated: re-write...')
   const { response } = await browser.runtime.sendMessage<MBRequestAPIMessage, MBResponseAPIMessage>(
     {
-      action: Action.RequestAPI,
+      messageType: 'RequestAPI',
       method,
       path,
       paramsObj,
@@ -34,7 +35,7 @@ export async function examineChainBlockableActor(user: TwitterUser): Promise<str
     MBExamineChainBlockableActor,
     MBChainBlockableActorResult
   >({
-    action: Action.ExamineChainBlockableActor,
+    messageType: 'ExamineChainBlockableActor',
     targetUserId: user.id_str,
   })
   return actorId

@@ -1,5 +1,3 @@
-type Action = typeof import('./common').Action
-
 type HTTPMethods = 'get' | 'delete' | 'post' | 'put'
 type URLParamsObj = { [key: string]: string | number | boolean }
 
@@ -229,18 +227,18 @@ interface EventStore {
 }
 
 interface MBStartChainBlockMessage {
-  action: Action['StartChainBlock']
+  messageType: 'StartChainBlock'
   userName: string
   followType: FollowType
 }
 
 interface MBAlertMessage {
-  action: Action['Alert']
+  messageType: 'Alert'
   message: string
 }
 
 interface MBRequestAPIMessage {
-  action: Action['RequestAPI']
+  messageType: 'RequestAPI'
   method: HTTPMethods
   path: string
   paramsObj: URLParamsObj
@@ -248,17 +246,17 @@ interface MBRequestAPIMessage {
 }
 
 interface MBResponseAPIMessage {
-  action: Action['ResponseAPI']
+  messageType: 'ResponseAPI'
   response: APIResponse
 }
 
 interface MBExamineChainBlockableActor {
-  action: Action['ExamineChainBlockableActor']
+  messageType: 'ExamineChainBlockableActor'
   targetUserId: string
 }
 
 interface MBChainBlockableActorResult {
-  action: Action['ChainBlockableActorResult']
+  messageType: 'ChainBlockableActorResult'
   actorId: string | null
 }
 

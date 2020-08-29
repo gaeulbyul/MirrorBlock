@@ -1,5 +1,5 @@
 import * as Options from '../extoption'
-import { Action, assertNever } from '../scripts/common'
+import { assertNever } from '../scripts/common'
 import { initializeContextMenus } from './context-menus'
 import * as TWApiBG from './twitter-api-bg'
 import { initializeWebRequests } from './webrequest'
@@ -33,20 +33,20 @@ async function initialize() {
   browser.runtime.onMessage.addListener(
     async (msg: object, _sender: browser.runtime.MessageSender): Promise<any> => {
       const message = msg as MBMessageFromContentToBackground
-      switch (message.action) {
-        case Action.RequestAPI: {
+      switch (message.messageType) {
+        case 'RequestAPI': {
           const { method, path, paramsObj, actAsUserId } = message
           const response = await TWApiBG.requestAPI(method, path, paramsObj, actAsUserId)
           return Promise.resolve<MBResponseAPIMessage>({
-            action: Action.ResponseAPI,
+            messageType: 'ResponseAPI',
             response,
           })
         }
-        case Action.ExamineChainBlockableActor: {
+        case 'ExamineChainBlockableActor': {
           const { targetUserId } = message
           const actorId = await TWApiBG.examineChainBlockableActor(targetUserId)
           return Promise.resolve<MBChainBlockableActorResult>({
-            action: Action.ChainBlockableActorResult,
+            messageType: 'ChainBlockableActorResult',
             actorId,
           })
         }
