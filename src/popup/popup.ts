@@ -1,5 +1,7 @@
 import * as Options from '../extoption'
 import { getUserNameFromTweetUrl } from '../scripts/common'
+import * as i18n from '../scripts/i18n'
+
 type Tab = browser.tabs.Tab
 
 function closePopup() {
@@ -29,19 +31,13 @@ async function executeChainBlock(followType: FollowType) {
   }
   const tabId = currentTab.id
   const url = new URL(currentTab.url!)
-  if (url.hostname === 'tweetdeck.twitter.com') {
-    const a = 'Mirror Block: 트윗덱에선 작동하지 않습니다.'
-    const b = '트위터(https://twitter.com)에서 실행해주세요.'
-    const message = `${a}\n${b}`
-    alertToTab(tabId, message)
-    closePopup()
-    return
-  }
   const userName = getUserNameFromTweetUrl(url)
   if (!userName) {
-    const a = 'Mirror Block: 체인맞블락을 사용하시려면 사용자의 프로필페이지로 이동해주세요.'
-    const b = '( 예: https://twitter.com/(사용자이름) )'
-    const message = `${a}\n${b}`
+    const message = `\
+${i18n.getMessage('please_run_on_profile_page_1')}\n${i18n.getMessage(
+      'please_run_on_profile_page_2'
+    )}
+`.trim()
     alertToTab(tabId, message)
     closePopup()
     return
@@ -56,6 +52,7 @@ async function executeChainBlock(followType: FollowType) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  i18n.applyI18nOnHtml()
   const currentTab = await getCurrentTab()
   if (currentTab && currentTab.url) {
     const currentUrl = new URL(currentTab.url!)
@@ -64,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (supportingHostname.includes(currentUrl.hostname)) {
       cbButtons.forEach(el => (el.disabled = false))
     } else {
-      cbButtons.forEach(el => (el.title = '체인맞블락은 트위터 내에서 사용할 수 있습니다.'))
+      cbButtons.forEach(el => (el.title = i18n.getMessage('scanning_is_only_available_on_twitter')))
     }
   }
   document.querySelector('.menu-item.chain-block-followers')!.addEventListener('click', event => {
@@ -82,8 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   {
     const manifest = browser.runtime.getManifest()
     const currentVersion = document.querySelector<HTMLElement>('.currentVersion')!
-    currentVersion.textContent = `버전: ${manifest.version}`
-    currentVersion.title = `Mirror Block 버전 ${manifest.version}을(를) 사용하고 있습니다.`
+    currentVersion.textContent = `Mirror Block v${manifest.version}`
   }
   {
     const options = await Options.load()
@@ -91,6 +87,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const val = options.enableBlockReflection
     // const warningEmoji = '\u{26a0}\u{fe0f}'
     blockReflection.classList.toggle('on', val)
-    blockReflection.textContent = `차단반사: ${val ? 'On \u2714' : 'Off'}`
+    blockReflection.textContent = `${i18n.getMessage('block_reflection')}: ${
+      val ? 'On \u2714' : 'Off'
+    }`
   }
 })

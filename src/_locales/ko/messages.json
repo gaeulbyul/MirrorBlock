@@ -1,0 +1,62 @@
+{
+  "extension_description": {
+    "message": "트위터에서 나를 차단한 사람을 표시하고, 맞차단(차단반사)할 수 있는 웹 브라우저용 확장기능입니다."
+  },
+  "popupmenu_title": {
+    "message": "Mirror Block 메뉴"
+  },
+  "scan_from_followers": {
+    "message": "체인맞블락 (팔로워)"
+  },
+  "scan_from_followers_description": {
+    "message": "해당 유저의 팔로워 중에서 나를 차단한 유저를 찾습니다."
+  },
+  "scan_from_following": {
+    "message": "체인맞블락 (팔로잉)"
+  },
+  "scan_from_following_description": {
+    "message": "해당 유저가 팔로우하는 유저중에서 나를 차단한 유저를 찾습니다."
+  },
+  "scanning_is_only_available_on_twitter": {
+    "message": "체인맞블락은 트위터 내에서 사용할 수 있습니다."
+  },
+  "please_run_on_profile_page_1": {
+    "message": "체인맞블락을 사용하시려면 사용자의 프로필페이지로 이동해주세요."
+  },
+  "please_run_on_profile_page_2": {
+    "message": "(예: https://twitter.com/<유저이름>)"
+  },
+  "options": {
+    "message": "설정"
+  },
+  "options_description": {
+    "message": "미러블락의 설정을 바꿉니다."
+  },
+  "block_reflection": {
+    "message": "차단반사"
+  },
+  "block_reflection_description": {
+    "message": "차단반사: 나를 차단한 유저를 발견하면 그 유저를 맞차단합니다."
+  },
+  "outline_user_blocked_me": {
+    "message": "나를 차단한 유저가 더 잘 보이도록 빨간 테두리 표시하기"
+  },
+  "enable_block_reflection": {
+    "message": "차단반사 기능 활성화"
+  },
+  "enable_block_reflection_description": {
+    "message": "나를 차단한 유저가 보이면 해당 사용자를 맞차단합니다."
+  },
+  "block_muted_user": {
+    "message": "내가 뮤트한 유저도 맞차단하기"
+  },
+  "block_muted_user_description": {
+    "message": "이 옵션을 끌 경우 내가 뮤트한 유저에게는 맞차단을 하지 않습니다. 이 옵션을 키면 뮤트여부와 상관없이 맞차단을 합니다."
+  },
+  "always_immediately_block_mode": {
+    "message": "\"즉시 맞차단 모드\"를 기본값으로 활성화"
+  },
+  "always_immediately_block_mode_description": {
+    "message": "체인맞블락을 실행할 때 \"발견 즉시 맞차단하기\" 기능을 기본값으로 활성화합니다."
+  }
+}
