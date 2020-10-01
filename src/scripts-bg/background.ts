@@ -1,5 +1,6 @@
 import * as Options from '../extoption'
 import { assertNever } from '../scripts/common'
+import * as i18n from '../scripts/i18n'
 import { initializeContextMenus } from './context-menus'
 import * as TWApiBG from './twitter-api-bg'
 import { initializeWebRequests } from './webrequest'
@@ -16,7 +17,7 @@ async function updateBadge(option: MirrorBlockOption) {
   browser.browserAction.setTitle({
     title: [
       `Mirror Block v${manifest.version}`,
-      `* 차단 반사: ${enableBlockReflection ? 'On' : 'Off'}`,
+      `* ${i18n.getMessage('block_reflection')}: ${enableBlockReflection ? 'On' : 'Off'}`,
     ].join('\n'),
   })
 }

@@ -1,23 +1,28 @@
+import * as i18n from '../i18n'
+
 export default class Badge {
   private readonly badgedAttr = 'data-mirrorblock-badged'
   private readonly baseElem = document.createElement('span')
   constructor(private user: TwitterUser) {
-    let userName = user.screen_name
-    const tooltipUserName = userName ? `@${userName}` : '이 사용자'
+    const userName = user.screen_name
     this.baseElem.className = 'mob-badge'
     this.baseElem.style.whiteSpace = 'initial'
     this.baseElem.innerHTML = `\
 <span class="badge-wrapper">
-  <span class="badge blocks-you"
-  title="나를 차단함: ${tooltipUserName}이(가) 나를 차단하고 있습니다.">
-    나를 차단함
+  <span class="badge blocks-you">
+    ${i18n.getMessage('blocks_you')}
     <span hidden class="badge-username"></span>
   </span>
-  <span hidden class="badge block-reflected"
-  title="차단반사 발동: Mirror Block이 ${tooltipUserName}을(를) 맞차단했습니다.">
-    차단반사 발동!
+  <span hidden class="badge block-reflected">
+    ${i18n.getMessage('block_reflected')}
   </span>
 </span>`
+    this.baseElem
+      .querySelector('.badge.blocks-you')!
+      .setAttribute('title', i18n.getMessage('blocks_you_description', userName))
+    this.baseElem
+      .querySelector('.badge.blocks-reflected')!
+      .setAttribute('title', i18n.getMessage('block_reflected_description', userName))
   }
   public showUserName() {
     const name = this.user.screen_name

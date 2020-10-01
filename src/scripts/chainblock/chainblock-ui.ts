@@ -1,19 +1,22 @@
 import { EventEmitter, sleep } from '../common'
+import * as i18n from '../i18n'
+
+function i18m(key: i18n.I18NMessageKeys) {
+  return i18n.getMessage(key)
+}
 
 const CHAINBLOCK_UI_HTML = `
   <div class="mobcb-bg modal-container block-dialog" style="display:flex">
     <div class="mobcb-dialog modal modal-content is-autoPosition">
       <div class="mobcb-titlebar">
-        <span class="mobcb-title">체인맞블락</span>
-        <span class="mobcb-title-status">(준비 중)</span>
+        <span class="mobcb-title">${i18m('chainblock')}</span>
+        <span class="mobcb-title-status">(${i18m('preparing')})</span>
       </div>
       <div class="mobcb-progress">
         <progress class="mobcb-progress-bar"></progress>
         <div class="mobcb-progress-text" hidden>
           (<span class="mobcb-prg-percentage"></span>%)
-          <span class="mobcb-prg-total"></span>명 중
-          <span class="mobcb-prg-scraped"></span>명 수집,
-          총 <span class="mobcb-prg-found"></span>명 발견
+          ${i18n.getMessage('chainblock_progress', [0, 0, 0])}
         </div>
       </div>
       <hr class="mobcb-hr">
@@ -27,31 +30,33 @@ const CHAINBLOCK_UI_HTML = `
       </div>
       <hr class="mobcb-hr">
       <div class="mobcb-extra-options">
-        <label title="맞차단할 사용자를 발견하면 ('차단'버튼을 누르지 않아도) 바로 맞차단합니다.">
-          <input type="checkbox" id="mobcb-block-immediately">발견 즉시 바로 맞차단하기
+        <label title="${i18m('chainblock_immediately_block_mode_tooltip')}">
+          <input type="checkbox" id="mobcb-block-immediately">${i18m(
+            'chainblock_immediately_block_mode_label'
+          )}
         </label>
       </div>
       <div class="mobcb-controls">
         <div class="mobcb-message-container">
           <div class="mobcb-bottom-message">
             <span class="mobcb-rate-limited mobcb-rate-limited-msg" hidden>
-              팔로워를 너무 많이 가져와 일시적인 제한에 걸렸습니다.
+              ${i18m('chainblock_rate_limited')}
             </span>
           </div>
           <div class="mobcb-rate-limited mobcb-limit-status" hidden>
-            예상 제한해제 시간 (±5분): <span class="resettime"></span>
+            ${i18m('chainblock_reset_time_label')}: <span class="resettime"></span>
           </div>
         </div>
-        <button class="mobcb-close btn normal-btn">닫기</button>
-        <button disabled class="mobcb-execute btn caution-btn">차단</button>
+        <button class="mobcb-close btn normal-btn">${i18m('close')}</button>
+        <button disabled class="mobcb-execute btn caution-btn">${i18m('block')}</button>
       </div>
     </div>
-  </div>
-`
+  </div>`
 
 function getLimitResetTime(limit: Limit): string {
+  const uiLanguage = browser.i18n.getUILanguage()
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-  const formatter = new Intl.DateTimeFormat('ko-KR', {
+  const formatter = new Intl.DateTimeFormat(uiLanguage, {
     timeZone,
     hour: '2-digit',
     minute: '2-digit',
@@ -74,12 +79,12 @@ class UserList {
     }
     let userPrefix = ''
     if (found.state === 'alreadyBlocked') {
-      userPrefix = '[이미 차단함]'
+      userPrefix = `[${i18n.getMessage('already_blocked')}]`
     } else if (found.state === 'muteSkip') {
-      userPrefix = '[스킵]'
+      userPrefix = `[${i18n.getMessage('skipped')}]`
     }
     let tooltip = `${userPrefix} @${user.screen_name} (${user.name})`
-    tooltip += `\n프로필:\n${user.description}`
+    tooltip += `\${i18n.getMessage('profile')}:\n${user.description}`
     const ul = this.rootElem.querySelector('ul')!
     const item = document.createElement('li')
     const link = document.createElement('a')
@@ -183,7 +188,9 @@ export default class ChainMirrorBlockUI extends EventEmitter {
     })
   }
   public updateProgress(progress: ChainMirrorBlockProgress) {
-    this.rootElem.querySelector('.mobcb-title-status')!.textContent = '(진행 중...)'
+    this.rootElem.querySelector('.mobcb-title-status')!.textContent = `(${i18n.getMessage(
+      'scrape_running'
+    )})`
     progress.foundUsers
       .filter(found => found.state === 'shouldBlock')
       .forEach(found => this.blockedbyUserList.add(found))
@@ -203,13 +210,15 @@ export default class ChainMirrorBlockUI extends EventEmitter {
     this.rootElem.querySelector<HTMLElement>('.mobcb-progress-text')!.hidden = false
   }
   private completeProgressUI(progress: ChainMirrorBlockProgress) {
-    this.rootElem.querySelector('.mobcb-title-status')!.textContent = '(수집 완료)'
+    this.rootElem.querySelector('.mobcb-title-status')!.textContent = `(${i18n.getMessage(
+      'scrape_completed'
+    )})`
     const shouldBlocks = progress.foundUsers.filter(user => user.state === 'shouldBlock')
     const executeButton = this.rootElem.querySelector<HTMLButtonElement>('.mobcb-execute')!
     if (shouldBlocks.length > 0) {
       executeButton.disabled = false
     } else {
-      executeButton.title = `맞차단할 사용자가 없습니다.`
+      executeButton.title = i18n.getMessage('no_blockable_user')
     }
     this.rootElem.querySelector<HTMLInputElement>('#mobcb-block-immediately')!.disabled = true
     this.rootElem.querySelector('.mobcb-prg-scraped')!.textContent = this.total.toLocaleString()
@@ -223,16 +232,20 @@ export default class ChainMirrorBlockUI extends EventEmitter {
     if (progress.foundUsers.length <= 0) {
       // sleep: progress가 100%되기 전에 메시지가 뜨며 닫히는 현상 방지
       sleep(100).then(() => {
-        window.alert('여기에선 아무도 나를 차단하지 않았습니다.')
+        window.alert(i18n.getMessage('nobody_blocks_you'))
         this.emit('ui:close-without-confirm')
       })
     }
   }
   public startMutualBlock() {
-    this.rootElem.querySelector('.mobcb-title-status')!.textContent = '(맞차단 진행 중...)'
+    this.rootElem.querySelector('.mobcb-title-status')!.textContent = `(${i18n.getMessage(
+      'block_running'
+    )})`
     this.rootElem.querySelector<HTMLButtonElement>('.mobcb-execute.btn')!.disabled = true
   }
   public completeMutualBlock() {
-    this.rootElem.querySelector('.mobcb-title-status')!.textContent = '(맞차단 완료)'
+    this.rootElem.querySelector('.mobcb-title-status')!.textContent = `(${i18n.getMessage(
+      'block_completed'
+    )})`
   }
 }

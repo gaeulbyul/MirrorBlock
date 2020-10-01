@@ -5,19 +5,19 @@
   "popupmenu_title": {
     "message": "Mirror Block 메뉴"
   },
-  "scan_from_followers": {
+  "run_chainblock_from_followers": {
     "message": "체인맞블락 (팔로워)"
   },
-  "scan_from_followers_description": {
+  "run_chainblock_from_followers_description": {
     "message": "해당 유저의 팔로워 중에서 나를 차단한 유저를 찾습니다."
   },
-  "scan_from_following": {
+  "run_chainblock_from_following": {
     "message": "체인맞블락 (팔로잉)"
   },
-  "scan_from_following_description": {
+  "run_chainblock_from_following_description": {
     "message": "해당 유저가 팔로우하는 유저중에서 나를 차단한 유저를 찾습니다."
   },
-  "scanning_is_only_available_on_twitter": {
+  "running_chainblock_is_only_available_on_twitter": {
     "message": "체인맞블락은 트위터 내에서 사용할 수 있습니다."
   },
   "please_run_on_profile_page_1": {
@@ -58,5 +58,163 @@
   },
   "always_immediately_block_mode_description": {
     "message": "체인맞블락을 실행할 때 \"발견 즉시 맞차단하기\" 기능을 기본값으로 활성화합니다."
+  },
+  "warning_before_close": {
+    "message": "페이지를 닫거나 다른 페이지로 이동하면 현재 작동중인 체인맞블락은 멈추게 됩니다. 계속 하시겠습니까?"
+  },
+  "chainblock_still_running": {
+    "message": "체인맞블락이 아직 실행중입니다. 그래도 닫으시겠습니까?"
+  },
+  "confirm_mutual_block": {
+    "message": "발견한 유저 $count$명을 맞차단하시겠습니까?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "no_users_to_mutual_block": { "message": "맞차단할 유저가 없습니다." },
+  "cant_chainblock_they_blocks_you": {
+    "message": "@$username$에게 차단당하여 체인맞블락을 실행할 수 없습니다.",
+    "placeholders": {
+      "username": {
+        "content": "$1"
+      }
+    }
+  },
+  "chainblock_already_running": {
+    "message": "이미 체인맞블락이 실행중입니다."
+  },
+  "please_check_login_before_chainblock": {
+    "message": "먼저 로그인을 해주세요"
+  },
+  "error_occured_from_twitter_server": {
+    "message": "트위터 서버에서 오류가 발생했습니다."
+  },
+  "error_occured": {
+    "message": "오류가 발생했습니다."
+  },
+  "nobody_follows_them": {
+    "message": "팔로우하는 유저가 0명인 유저입니다."
+  },
+  "cant_chainblock_they_protected": {
+    "message": "@$username$은(는) 프로텍트가 걸려있어서 체인맞블락을 실행할 수 없습니다.",
+    "placeholders": {
+      "username": {
+        "content": "$1"
+      }
+    }
+  },
+  "confirm_chainblock_to_followers": {
+    "message": "@$username$의 팔로워목록에서 체인맞블락을 실행하시겠습니까?",
+    "placeholders": {
+      "username": {
+        "content": "$1"
+      }
+    }
+  },
+  "confirm_chainblock_to_following": {
+    "message": "@$username$이(가) 팔로우하는 유저목록에서 체인맞블락을 실행하시겠습니까?",
+    "placeholders": {
+      "username": {
+        "content": "$1"
+      }
+    }
+  },
+  "warning_too_many_followers": {
+    "message": "주의! 팔로잉/팔로워가 너무 많으면 체인맞블락 도중 리밋 등 계정 사용에 제한이 걸릴 수 있습니다. 정말로 진행하시겠습니까?"
+  },
+  "chainblock": {
+    "message": "체인맞블락"
+  },
+  "preparing": {
+    "message": "준비 중"
+  },
+  "chainblock_progress": {
+    "message": "$total$명 중 $scraped$명 수집, 총 $found$명 발견",
+    "placeholders": {
+      "total": {
+        "content": "<span class=\"mobcb-prg-total\">$1</span>"
+      },
+      "scraped": {
+        "content": "<span class=\"mobcb-prg-scraped\">$1</span>"
+      },
+      "found": {
+        "content": "<span class=\"mobcb-prg-found\">$1</span>"
+      }
+    }
+  },
+  "chainblock_immediately_block_mode_tooltip": {
+    "message": "맞차단할 사용자를 발견하면 ('차단'버튼을 누르지 않아도) 바로 맞차단합니다."
+  },
+  "chainblock_immediately_block_mode_label": {
+    "message": "발견 즉시 바로 맞차단하기"
+  },
+  "chainblock_rate_limited": {
+    "message": "팔로워를 너무 많이 가져와 일시적인 제한에 걸렸습니다."
+  },
+  "chainblock_reset_time_label": {
+    "message": "예상 제한해제 시간 (±5분)"
+  },
+  "close": {
+    "message": "닫기"
+  },
+  "block": {
+    "message": "차단"
+  },
+  "already_blocked": {
+    "message": "이미 차단함"
+  },
+  "skipped": {
+    "message": "스킵"
+  },
+  "profile": {
+    "message": "프로필"
+  },
+  "scrape_running": {
+    "message": "진행 중..."
+  },
+  "scrape_completed": {
+    "message": "수집 완료"
+  },
+  "block_running": {
+    "message": "차단 중..."
+  },
+  "block_completed": {
+    "message": "차단 완료"
+  },
+  "no_blockable_user": {
+    "message": "맞차단할 사용자가 없습니다."
+  },
+  "nobody_blocks_you": {
+    "message": "여기서 아무도 나를 차단하지 않았습니다."
+  },
+  "run_chainblock_from_followers_contextmenu": {
+    "message": "이 사용자에게 체인맞블락 실행 (팔로워)"
+  },
+  "run_chainblock_from_following_contextmenu": {
+    "message": "이 사용자에게 체인맞블락 실행 (팔로잉)"
+  },
+  "blocks_you": {
+    "message": "나를 차단함"
+  },
+  "blocks_you_description": {
+    "message": "나를 차단함: @$username$이(가) 나를 차단하고 있습니다.",
+    "placeholders": {
+      "username": {
+        "content": "$1"
+      }
+    }
+  },
+  "block_reflected": {
+    "message": "차단반사 발동!"
+  },
+  "block_reflected_description": {
+    "message": "차단반사 발동: Mirror Block이 @$username$을(를) 맞차단했습니다.",
+    "placeholders": {
+      "username": {
+        "content": "$1"
+      }
+    }
   }
 }

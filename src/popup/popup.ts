@@ -61,7 +61,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (supportingHostname.includes(currentUrl.hostname)) {
       cbButtons.forEach(el => (el.disabled = false))
     } else {
-      cbButtons.forEach(el => (el.title = i18n.getMessage('scanning_is_only_available_on_twitter')))
+      cbButtons.forEach(
+        el => (el.title = i18n.getMessage('running_chainblock_is_only_available_on_twitter'))
+      )
     }
   }
   document.querySelector('.menu-item.chain-block-followers')!.addEventListener('click', event => {
