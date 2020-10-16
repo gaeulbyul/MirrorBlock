@@ -10,7 +10,7 @@ function findTweetIdFromElement(elem: HTMLElement): string | null {
   const article = elem.closest('article[role=article]')! as HTMLElement
   const permalinks = article.querySelectorAll<HTMLAnchorElement>('a[href^="/"][href*="/status/"')
   for (const plink of permalinks) {
-    const tweetIdMatch = /\/status\/(\d+)$/.exec(plink.pathname)
+    const tweetIdMatch = /\/status\/(\d+)/.exec(plink.pathname)
     const tweetId = tweetIdMatch![1]
     const firstChild = plink.firstElementChild
     if (firstChild?.tagName === 'TIME') {
