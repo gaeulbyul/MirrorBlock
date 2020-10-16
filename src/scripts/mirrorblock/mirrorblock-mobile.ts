@@ -4,8 +4,6 @@ import { reflectBlock } from './mirrorblock-r'
 import { StoreRetriever, StoreUpdater, UserGetter } from './redux-store'
 import * as EventNames from '../event-names'
 
-type DOMQueryable = HTMLElement | Document
-
 function markOutline(elem: Element): void {
   elem.setAttribute('data-mirrorblock-blocks-you', '1')
 }
@@ -14,7 +12,7 @@ function getElemByDmData(dmData: DMData): HTMLElement | null {
   return document.querySelector(`[data-mirrorblock-conversation-id="${dmData.conversation_id}"]`)
 }
 
-async function detectProfile(rootElem: DOMQueryable) {
+async function detectProfile(rootElem: HTMLElement) {
   const helpLinks = rootElem.querySelectorAll<HTMLElement>(
     'a[href="https://support.twitter.com/articles/20172060"]'
   )
@@ -188,12 +186,15 @@ async function handleDMConversation(convId: string) {
   }
 }
 
-const promisesQueue = new (class {
-  private promise = Promise.resolve()
-  public push(newAsyncFunc: () => Promise<void>) {
-    this.promise = this.promise.then(newAsyncFunc)
-  }
-})()
+function* PromisesQueue() {
+  let promise = Promise.resolve()
+  while ((promise = promise.then(yield)));
+}
+
+const promisesQueue = PromisesQueue()
+// the first call of next executes from the start of the function
+// until the first yield statement
+promisesQueue.next()
 
 function startObserve(reactRoot: HTMLElement): void {
   new MutationObserver(mutations => {
@@ -219,8 +220,8 @@ function startObserve(reactRoot: HTMLElement): void {
     const customEvent = event as CustomEvent
     const elem = customEvent.target as HTMLElement
     const { tweet } = customEvent.detail
-    promisesQueue.push(() => handleMentionsInTweet(tweet, elem))
-    handleQuotedTweet(tweet, elem)
+    promisesQueue.next(() => handleMentionsInTweet(tweet, elem))
+    promisesQueue.next(() => handleQuotedTweet(tweet, elem))
   })
 }
 async function isLoggedIn(): Promise<boolean> {
