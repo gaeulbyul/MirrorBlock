@@ -1,30 +1,27 @@
-export function handleDarkMode() {
-  const isDarkMode = /\bnight_mode=1\b/.test(document.cookie)
-  function toggleNightMode(isDarkMode: boolean): void {
-    document.documentElement.classList.toggle('mob-nightmode', isDarkMode)
-  }
+function isDark(colorThemeElem: HTMLMetaElement) {
+  return colorThemeElem.content.toUpperCase() !== '#FFFFFF'
+}
 
-  const reactRoot = document.getElementById('react-root')
-  if (!reactRoot) {
-    return
-  }
+function toggleNightMode(dark: boolean): void {
+  document.documentElement.classList.toggle('mob-nightmode', dark)
+}
+
+export function handleDarkMode() {
+  // TODO: mob-mobile 은 이제 필요없음
+  // 단, 지울 때 chainblock.css 를 수정해야 함
   document.documentElement.classList.add('mob-mobile')
-  const colorThemeTag = document.querySelector('meta[name="theme-color"]')
-  if (colorThemeTag) {
-    const nightModeObserver = new MutationObserver(mutations => {
-      if (mutations.length <= 0) {
-        return
-      }
-      const target = mutations[0].target as HTMLMetaElement
-      const themeColor = target.content.toUpperCase()
-      const nightMode = themeColor !== '#FFFFFF'
-      toggleNightMode(nightMode)
+
+  const colorThemeTag = document.querySelector('meta[name=theme-color]')
+  if (colorThemeTag instanceof HTMLMetaElement) {
+    const nightModeObserver = new MutationObserver(() => {
+      toggleNightMode(isDark(colorThemeTag))
     })
 
     nightModeObserver.observe(colorThemeTag, {
       attributeFilter: ['content'],
       attributes: true,
     })
+
+    toggleNightMode(isDark(colorThemeTag))
   }
-  toggleNightMode(isDarkMode)
 }
