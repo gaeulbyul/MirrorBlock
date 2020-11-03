@@ -8,7 +8,8 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "yarn just default"
+    "build": "just default",
+    "just": "just"
   },
   "husky": {
     "hooks": {
@@ -39,7 +40,7 @@
     "web-ext-types": "^3.1.0",
     "webextension-polyfill": "^0.6.0",
     "webpack": "^4.44.1",
-    "webpack-cli": "^3.3.12"
+    "webpack-cli": "^4.1.0"
   },
   "dependencies": {
     "@types/lodash": "^4.14.149",
