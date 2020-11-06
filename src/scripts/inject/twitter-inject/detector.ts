@@ -32,7 +32,11 @@ function findUserIdFromElement(elem: HTMLElement): string | null {
     throw new Error('unexpected non-usercell elem?')
   }
   const btn = elem.querySelector('[role=button][data-testid]')!
-  const userIdMatch = /^(\d+)/.exec(btn.getAttribute('data-testid')!)!
+  // 자기 자신의 UserCell은 아무 버튼도 없다.
+  if (!btn) {
+    return null
+  }
+  const userIdMatch = /^(\d+)/.exec(btn.getAttribute('data-testid') || '')!
   const userId = userIdMatch[1]
   return userId
 }
