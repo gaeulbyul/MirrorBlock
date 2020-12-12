@@ -21,7 +21,6 @@ async function sendRequest(
       paramsObj,
     }
   )
-  console.debug('response: ', response)
   return response
 }
 
@@ -35,7 +34,6 @@ export async function blockUser(user: TwitterUser): Promise<boolean> {
     const fatalErrorMessage = `!!!!!FATAL!!!!!:
 attempted to block user that should NOT block!!
 (user: ${user.screen_name})`
-    console.error(fatalErrorMessage)
     throw new Error(fatalErrorMessage)
   }
   return blockUserById(user.id_str)

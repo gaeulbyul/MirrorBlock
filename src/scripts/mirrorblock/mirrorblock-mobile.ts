@@ -109,13 +109,7 @@ async function handleMentionsInTweet(tweet: Tweet, tweetElem: HTMLElement) {
   const overflowed = article.querySelector('a[aria-label][href$="/people"]')
   const mentionedUsersMap = await UserGetter.getMultipleUsersById(
     mentionedUserEntities.map(u => u.id_str)
-  ).catch(err => {
-    console.error(err)
-    return null
-  })
-  if (!mentionedUsersMap) {
-    return
-  }
+  )
   for (const mUser of mentionedUsersMap.values()) {
     await reflectBlock({
       user: mUser,

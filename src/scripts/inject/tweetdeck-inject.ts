@@ -1,6 +1,4 @@
 {
-  console.debug('tweetdeck-inject.js injected!')
-
   function applyMagicToTD(TD: any) {
     // 트윗덱의 AJAX요청에 차단여부 정보를 포함하게 해주는 옵션을 추가한다.
     TD.services.TwitterClient.prototype.request$REAL = TD.services.TwitterClient.prototype.request
@@ -129,7 +127,6 @@
           document.dispatchEvent(ev)
           readyObserver.disconnect()
         }
-        // console.log(target)
       }
     })
     readyObserver.observe(loadingElem, {

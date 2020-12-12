@@ -41,10 +41,8 @@ function inject(): void {
 export function initialize() {
   const reactRoot = document.getElementById('react-root')!
   if ('_reactRootContainer' in reactRoot) {
-    console.debug('inject!!!')
     inject()
   } else {
-    console.debug('waiting...')
     setTimeout(initialize, 500)
   }
 }

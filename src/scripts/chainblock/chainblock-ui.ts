@@ -218,7 +218,6 @@ export default class ChainMirrorBlockUI extends EventEmitter {
     this.rootElem.querySelector('.mobcb-prg-percentage')!.textContent = '100'
   }
   public complete(progress: ChainMirrorBlockProgress) {
-    console.debug(progress)
     this.completeProgressUI(progress)
     if (progress.foundUsers.length <= 0) {
       // sleep: progress가 100%되기 전에 메시지가 뜨며 닫히는 현상 방지
