@@ -93,20 +93,12 @@ class ChainMirrorBlock {
     Promise.all(immBlockPromises)
   }
   public async start(targetUser: TwitterUser, followType: FollowType) {
-    let actAsUserId = ''
     this.isRunning = true
     try {
       if (targetUser.blocked_by) {
-        const actorId = await TwitterAPI.examineChainBlockableActor(targetUser)
-        if (actorId) {
-          actAsUserId = actorId
-        } else {
-          window.alert(
-            `@${targetUser.screen_name}님에게 차단당하여 체인맞블락을 진행할 수 없습니다.`
-          )
-          this.stopAndClose()
-          return
-        }
+        window.alert(`@${targetUser.screen_name}님에게 차단당하여 체인맞블락을 진행할 수 없습니다.`)
+        this.stopAndClose()
+        return
       }
       const updateProgress = () => {
         this.ui.updateProgress(copyFrozenObject(this.progress))
@@ -136,7 +128,6 @@ class ChainMirrorBlock {
       this.ui.initProgress(total)
       const delay = total > 1e4 ? 950 : 300
       const scraper = TwitterAPI.getAllFollows(targetUser, followType, {
-        actAsUserId,
         delay,
       })
       let rateLimited = false

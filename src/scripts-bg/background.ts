@@ -36,21 +36,11 @@ async function initialize() {
       switch (message.action) {
         case Action.RequestAPI:
           {
-            const { method, path, paramsObj, actAsUserId } = message
-            const response = await TWApiBG.requestAPI(method, path, paramsObj, actAsUserId)
+            const { method, path, paramsObj } = message
+            const response = await TWApiBG.requestAPI(method, path, paramsObj)
             return Promise.resolve<MBResponseAPIMessage>({
               action: Action.ResponseAPI,
               response,
-            })
-          }
-          break
-        case Action.ExamineChainBlockableActor:
-          {
-            const { targetUserId } = message
-            const actorId = await TWApiBG.examineChainBlockableActor(targetUserId)
-            return Promise.resolve<MBChainBlockableActorResult>({
-              action: Action.ChainBlockableActorResult,
-              actorId,
             })
           }
           break

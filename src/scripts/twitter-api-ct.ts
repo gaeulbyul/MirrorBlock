@@ -1,5 +1,3 @@
-import chunk from 'lodash/chunk'
-
 import { validateTwitterUserName, sleep, Action } from './common'
 
 export class APIError extends Error {
@@ -13,8 +11,7 @@ export class APIError extends Error {
 async function sendRequest(
   method: HTTPMethods,
   path: string,
-  paramsObj: URLParamsObj = {},
-  actAsUserId = ''
+  paramsObj: URLParamsObj = {}
 ): Promise<APIResponse> {
   const { response } = await browser.runtime.sendMessage<MBRequestAPIMessage, MBResponseAPIMessage>(
     {
@@ -22,22 +19,10 @@ async function sendRequest(
       method,
       path,
       paramsObj,
-      actAsUserId,
     }
   )
   console.debug('response: ', response)
   return response
-}
-
-export async function examineChainBlockableActor(user: TwitterUser): Promise<string | null> {
-  const { actorId } = await browser.runtime.sendMessage<
-    MBExamineChainBlockableActor,
-    MBChainBlockableActorResult
-  >({
-    action: Action.ExamineChainBlockableActor,
-    targetUserId: user.id_str,
-  })
-  return actorId
 }
 
 export async function blockUser(user: TwitterUser): Promise<boolean> {
@@ -101,61 +86,11 @@ async function getFollowersList(
   }
 }
 
-async function getFollowingsIdsListAsActor(
-  user: TwitterUser,
-  actAsUserId = '',
-  cursor: string = '-1'
-): Promise<FollowsIdsResponse> {
-  const response = await sendRequest(
-    'get',
-    '/friends/ids.json',
-    {
-      user_id: user.id_str,
-      stringify_ids: true,
-      count: 5000,
-      cursor,
-    },
-    actAsUserId
-  )
-  if (response.ok) {
-    return response.body as FollowsIdsResponse
-  } else {
-    throw new APIError(response)
-  }
-}
-
-async function getFollowersIdsListAsActor(
-  user: TwitterUser,
-  actAsUserId = '',
-  cursor: string = '-1'
-): Promise<FollowsIdsResponse> {
-  const response = await sendRequest(
-    'get',
-    '/followers/ids.json',
-    {
-      user_id: user.id_str,
-      stringify_ids: true,
-      count: 5000,
-      cursor,
-    },
-    actAsUserId
-  )
-  if (response.ok) {
-    return response.body as FollowsIdsResponse
-  } else {
-    throw new APIError(response)
-  }
-}
-
 export async function* getAllFollows(
   user: TwitterUser,
   followType: FollowType,
   options: FollowsScraperOptions
 ): AsyncIterableIterator<Either<APIError, Readonly<TwitterUser>>> {
-  if (options.actAsUserId) {
-    yield* getAllFollowsAsActor(user, followType, options)
-    return
-  }
   let cursor = '-1'
   while (true) {
     try {
@@ -180,54 +115,6 @@ export async function* getAllFollows(
         break
       } else {
         await sleep(options.delay)
-        continue
-      }
-    } catch (error) {
-      if (error instanceof APIError) {
-        yield {
-          ok: false,
-          error,
-        }
-      } else {
-        throw error
-      }
-    }
-  }
-}
-
-async function* getAllFollowsAsActor(
-  user: TwitterUser,
-  followType: FollowType,
-  options: FollowsScraperOptions
-): AsyncIterableIterator<Either<APIError, Readonly<TwitterUser>>> {
-  const { actAsUserId, delay } = options
-  let cursor = '-1'
-  while (true) {
-    try {
-      let json: FollowsIdsResponse
-      switch (followType) {
-        case 'followers':
-          json = await getFollowersIdsListAsActor(user, actAsUserId, cursor)
-          break
-        case 'following':
-          json = await getFollowingsIdsListAsActor(user, actAsUserId, cursor)
-          break
-        default:
-          throw new Error('unreachable')
-      }
-      cursor = json.next_cursor_str
-      const chunkedUserIds = chunk(json.ids, 100)
-      for (const userIdChunk of chunkedUserIds) {
-        const users = await getMultipleUsersById(userIdChunk)
-        yield* users.map(user => ({
-          ok: true as const,
-          value: Object.freeze(user),
-        }))
-      }
-      if (cursor === '0') {
-        break
-      } else {
-        await sleep(delay)
         continue
       }
     } catch (error) {

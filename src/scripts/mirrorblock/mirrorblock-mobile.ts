@@ -61,7 +61,12 @@ async function handleQuotedTweet(tweet: Tweet, tweetElem: HTMLElement) {
   if (!tweet.is_quote_status) {
     return
   }
-  const qUrlString = tweet.quoted_status_permalink!.expanded
+  const permalinkObject = tweet.quoted_status_permalink
+  if (!permalinkObject) {
+    debugger
+    return
+  }
+  const qUrlString = permalinkObject.expanded
   const qUrl = new URL(qUrlString)
   // 드물게 인용 트윗 주소가 t.co 링크일 경우도 있더라.
   if (qUrl.hostname === 't.co') {

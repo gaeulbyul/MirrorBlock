@@ -33,20 +33,25 @@ function findUserIdFromElement(elem: HTMLElement): string | null {
   }
   const btn = elem.querySelector('[role=button][data-testid]')!
   // 자기 자신의 UserCell은 아무 버튼도 없다.
+  // 또한 여러 계정 로그인이 되어있을 때, 하단의 계정전환 버튼을 누를 때
+  // 나타나는 계정메뉴 항목도 UserCell로 이루어져있음
   if (!btn) {
     return null
   }
-  const userIdMatch = /^(\d+)/.exec(btn.getAttribute('data-testid') || '')!
+  const userIdMatch = /^(\d+)/.exec(btn.getAttribute('data-testid')!)
+  if (!userIdMatch) {
+    return null
+  }
   const userId = userIdMatch[1]
   return userId
 }
 
-function getTweetEntityById(state: any, tweetId: string) {
+function getTweetEntityById(state: any, tweetId: string): TweetEntity | null {
   const entities = state.entities.tweets.entities
   for (const entity_ of Object.values(entities)) {
     const entity = entity_ as any
     if (entity.id_str.toLowerCase() === tweetId) {
-      return entity as TweetEntity
+      return entity
     }
   }
   return null
