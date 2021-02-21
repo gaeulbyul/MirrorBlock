@@ -63,7 +63,6 @@ async function handleQuotedTweet(tweet: Tweet, tweetElem: HTMLElement) {
   }
   const permalinkObject = tweet.quoted_status_permalink
   if (!permalinkObject) {
-    debugger
     return
   }
   const qUrlString = permalinkObject.expanded
