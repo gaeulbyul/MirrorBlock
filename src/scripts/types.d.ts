@@ -3,7 +3,7 @@ type Action = typeof import('./common').Action
 type HTTPMethods = 'get' | 'delete' | 'post' | 'put'
 type URLParamsObj = { [key: string]: string | number | boolean }
 
-type FollowType = 'followers' | 'following'
+type FollowKind = 'followers' | 'following'
 
 // ------------------------------
 // Twitter API
@@ -230,7 +230,7 @@ interface EventStore {
 interface MBStartChainBlockMessage {
   action: Action['StartChainBlock']
   userName: string
-  followType: FollowType
+  followKind: FollowKind
 }
 
 interface MBStopChainBlockMessage {

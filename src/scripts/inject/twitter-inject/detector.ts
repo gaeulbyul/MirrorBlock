@@ -1,5 +1,5 @@
 import { dig, getReactEventHandler } from './inject-common'
-import * as EventNames from '../../event-names'
+import * as EventNames from '미러블락/scripts/event-names'
 
 const touchedElems = new WeakSet<HTMLElement>()
 

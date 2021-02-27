@@ -1,5 +1,5 @@
-import * as Options from '../extoption'
-import { Action, getUserNameFromTweetUrl } from '../scripts/common'
+import * as Options from '미러블락/extoption'
+import { Action, getUserNameFromTweetUrl } from '미러블락/scripts/common'
 type Tab = browser.tabs.Tab
 
 function closePopup() {
@@ -22,7 +22,7 @@ async function getCurrentTab(): Promise<Tab | null> {
   return currentTab
 }
 
-async function executeChainBlock(followType: FollowType) {
+async function executeChainBlock(followKind: FollowKind) {
   const currentTab = await getCurrentTab()
   if (!(currentTab && typeof currentTab.id === 'number')) {
     return
@@ -49,7 +49,7 @@ async function executeChainBlock(followType: FollowType) {
   browser.tabs
     .sendMessage<MBStartChainBlockMessage>(tabId, {
       action: Action.StartChainBlock,
-      followType,
+      followKind,
       userName,
     })
     .then(closePopup)

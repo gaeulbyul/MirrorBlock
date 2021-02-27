@@ -1,7 +1,7 @@
 import { detectOnCurrentTwitter } from './mirrorblock-mobile'
-import { handleDarkMode } from '../nightmode'
+import { handleDarkMode } from '미러블락/scripts/nightmode'
 
-import * as Options from '../../extoption'
+import * as Options from '미러블락/extoption'
 
 function initialize() {
   browser.storage.onChanged.addListener(changes => {

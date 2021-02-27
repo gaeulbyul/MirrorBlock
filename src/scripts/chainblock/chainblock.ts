@@ -1,8 +1,8 @@
-import * as Options from '../../extoption'
-import { APIError } from '../twitter-api-ct'
-import { Action, sleep, copyFrozenObject } from '../common'
+import * as Options from '미러블락/extoption'
+import { APIError } from '미러블락/scripts/twitter-api-ct'
+import { Action, sleep, copyFrozenObject } from '미러블락/scripts/common'
 import ChainMirrorBlockUI from './chainblock-ui'
-import * as TwitterAPI from '../twitter-api-ct'
+import * as TwitterAPI from '미러블락/scripts/twitter-api-ct'
 
 class ChainMirrorBlock {
   private readonly ui = new ChainMirrorBlockUI()
@@ -92,7 +92,7 @@ class ChainMirrorBlock {
     })
     Promise.all(immBlockPromises)
   }
-  public async start(targetUser: TwitterUser, followType: FollowType) {
+  public async start(targetUser: TwitterUser, followKind: FollowKind) {
     this.isRunning = true
     try {
       if (targetUser.blocked_by) {
@@ -124,10 +124,10 @@ class ChainMirrorBlock {
         this.blockResults.set(follower.id_str, 'notYet')
         updateProgress()
       }
-      const total = getTotalFollows(targetUser, followType)
+      const total = getTotalFollows(targetUser, followKind)
       this.ui.initProgress(total)
       const delay = total > 1e4 ? 950 : 300
-      const scraper = TwitterAPI.getAllFollows(targetUser, followType, {
+      const scraper = TwitterAPI.getAllFollows(targetUser, followKind, {
         delay,
       })
       let rateLimited = false
@@ -139,7 +139,7 @@ class ChainMirrorBlock {
           const { error } = maybeFollower
           if (error.response.status === 429) {
             rateLimited = true
-            TwitterAPI.getFollowsScraperRateLimitStatus(followType).then(this.ui.rateLimited)
+            TwitterAPI.getFollowsScraperRateLimitStatus(followKind).then(this.ui.rateLimited)
             await sleep(1000 * 60 * 2)
             continue
           } else {
@@ -203,17 +203,17 @@ class ChainMirrorBlock {
   }
 }
 
-function getTotalFollows(user: TwitterUser, followType: FollowType): number {
-  if (followType === 'followers') {
+function getTotalFollows(user: TwitterUser, followKind: FollowKind): number {
+  if (followKind === 'followers') {
     return user.followers_count
-  } else if (followType === 'following') {
+  } else if (followKind === 'following') {
     return user.friends_count
   } else {
     throw new Error('unreachable')
   }
 }
 
-export async function startChainBlock(targetUserName: string, followType: FollowType) {
+export async function startChainBlock(targetUserName: string, followKind: FollowKind) {
   const alreadyRunning = document.querySelector('.mobcg-bg')
   if (alreadyRunning) {
     window.alert('이미 체인맞블락이 실행중입니다.')
@@ -237,7 +237,7 @@ export async function startChainBlock(targetUserName: string, followType: Follow
   if (!targetUser) {
     return
   }
-  const followsCount = getTotalFollows(targetUser, followType)
+  const followsCount = getTotalFollows(targetUser, followKind)
   if (followsCount <= 0) {
     window.alert('팔로잉/팔로워가 0명이므로 아무것도 하지 않았습니다.')
     return
@@ -250,9 +250,9 @@ export async function startChainBlock(targetUserName: string, followType: Follow
       return
     }
   }
-  const followTypeKor = followType === 'followers' ? '팔로워' : '팔로잉'
+  const followKindKor = followKind === 'followers' ? '팔로워' : '팔로잉'
   let confirmed = window.confirm(
-    `@${targetUserName}님의 ${followTypeKor} 목록에서 체인맞블락을 실행하시겠습니까?`
+    `@${targetUserName}님의 ${followKindKor} 목록에서 체인맞블락을 실행하시겠습니까?`
   )
   if (followsCount > 200000) {
     const a =
@@ -263,14 +263,14 @@ export async function startChainBlock(targetUserName: string, followType: Follow
   if (confirmed) {
     const options = await Options.load()
     const chainblocker = new ChainMirrorBlock(options)
-    chainblocker.start(targetUser, followType)
+    chainblocker.start(targetUser, followKind)
   }
 }
 
 browser.runtime.onMessage.addListener((msg: object) => {
   const message = msg as MBMessage
   if (message.action === Action.StartChainBlock) {
-    startChainBlock(message.userName, message.followType)
+    startChainBlock(message.userName, message.followKind)
   } else if (message.action === Action.Alert) {
     const msg = message.message
     window.alert(msg)

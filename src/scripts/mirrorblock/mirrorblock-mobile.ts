@@ -1,8 +1,8 @@
-import * as Utils from '../common'
-import * as TwitterAPI from '../twitter-api-ct'
+import * as Utils from '미러블락/scripts/common'
+import * as TwitterAPI from '미러블락/scripts/twitter-api-ct'
 import { reflectBlock } from './mirrorblock-r'
 import { StoreRetriever, StoreUpdater, UserGetter } from './redux-store'
-import * as EventNames from '../event-names'
+import * as EventNames from '미러블락/scripts/event-names'
 
 function markOutline(elem: Element): void {
   elem.setAttribute('data-mirrorblock-blocks-you', '1')

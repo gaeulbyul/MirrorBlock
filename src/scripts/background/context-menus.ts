@@ -1,4 +1,4 @@
-import { getUserNameFromTweetUrl, Action } from '../scripts/common'
+import { getUserNameFromTweetUrl, Action } from '미러블락/scripts/common'
 
 function getUserNameFromClickInfo(info: browser.contextMenus.OnClickData): string | null {
   const { linkUrl } = info
@@ -26,7 +26,7 @@ export function initializeContextMenus() {
       }
       browser.tabs.sendMessage<MBStartChainBlockMessage>(tabId, {
         action: Action.StartChainBlock,
-        followType: 'followers',
+        followKind: 'followers',
         userName,
       })
     },
@@ -44,7 +44,7 @@ export function initializeContextMenus() {
       }
       browser.tabs.sendMessage<MBStartChainBlockMessage>(tabId, {
         action: Action.StartChainBlock,
-        followType: 'following',
+        followKind: 'following',
         userName,
       })
     },

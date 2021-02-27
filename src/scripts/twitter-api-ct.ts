@@ -86,14 +86,14 @@ async function getFollowersList(
 
 export async function* getAllFollows(
   user: TwitterUser,
-  followType: FollowType,
+  followKind: FollowKind,
   options: FollowsScraperOptions
 ): AsyncIterableIterator<Either<APIError, Readonly<TwitterUser>>> {
   let cursor = '-1'
   while (true) {
     try {
       let json: FollowsListResponse
-      switch (followType) {
+      switch (followKind) {
         case 'followers':
           json = await getFollowersList(user, cursor)
           break
@@ -235,11 +235,11 @@ export async function getRateLimitStatus(): Promise<LimitStatus> {
   return resources
 }
 
-export async function getFollowsScraperRateLimitStatus(followType: FollowType): Promise<Limit> {
+export async function getFollowsScraperRateLimitStatus(followKind: FollowKind): Promise<Limit> {
   const limitStatus = await getRateLimitStatus()
-  if (followType === 'followers') {
+  if (followKind === 'followers') {
     return limitStatus.followers['/followers/list']
-  } else if (followType === 'following') {
+  } else if (followKind === 'following') {
     return limitStatus.friends['/friends/list']
   } else {
     throw new Error('unreachable')

@@ -1,5 +1,5 @@
-import * as Options from '../extoption'
-import { Action } from '../scripts/common'
+import * as Options from '미러블락/extoption'
+import { Action } from '미러블락/scripts/common'
 import { initializeContextMenus } from './context-menus'
 import * as TWApiBG from './twitter-api-bg'
 import { initializeWebRequests } from './webrequest'

@@ -1,4 +1,4 @@
-import { EventEmitter, sleep } from '../common'
+import { EventEmitter, sleep } from '미러블락/scripts/common'
 
 const CHAINBLOCK_UI_HTML = `
   <div class="mobcb-bg modal-container block-dialog" style="display:flex">
