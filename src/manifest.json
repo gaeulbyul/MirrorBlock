@@ -20,7 +20,6 @@
 
   "permissions": [
     "https://twitter.com/*",
-    "https://api.twitter.com/*",
     "https://mobile.twitter.com/*",
     "storage",
     "cookies",

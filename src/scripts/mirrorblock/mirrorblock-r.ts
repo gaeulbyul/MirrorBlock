@@ -1,5 +1,5 @@
 import * as Options from '미러블락/extoption'
-import * as TwitterAPI from '미러블락/scripts/twitter-api-ct'
+import * as TwitterAPI from '미러블락/scripts/twitter-api'
 import Badge from './mirrorblock-badge'
 
 interface ReflectionOptions {

@@ -233,33 +233,12 @@ interface MBStartChainBlockMessage {
   followKind: FollowKind
 }
 
-interface MBStopChainBlockMessage {
-  action: Action['StopChainBlock']
-}
-
 interface MBAlertMessage {
   action: Action['Alert']
   message: string
 }
 
-interface MBRequestAPIMessage {
-  action: Action['RequestAPI']
-  method: HTTPMethods
-  path: string
-  paramsObj: URLParamsObj
-}
-
-interface MBResponseAPIMessage {
-  action: Action['ResponseAPI']
-  response: APIResponse
-}
-
-type MBMessage =
-  | MBStartChainBlockMessage
-  | MBStopChainBlockMessage
-  | MBAlertMessage
-  | MBRequestAPIMessage
-  | MBResponseAPIMessage
+type MBMessage = MBStartChainBlockMessage | MBAlertMessage
 
 type UserState = 'shouldBlock' | 'alreadyBlocked' | 'muteSkip'
 

@@ -1,8 +1,8 @@
 import * as Options from '미러블락/extoption'
-import { APIError } from '미러블락/scripts/twitter-api-ct'
+import { APIError } from '미러블락/scripts/twitter-api'
 import { Action, sleep, copyFrozenObject } from '미러블락/scripts/common'
 import ChainMirrorBlockUI from './chainblock-ui'
-import * as TwitterAPI from '미러블락/scripts/twitter-api-ct'
+import * as TwitterAPI from '미러블락/scripts/twitter-api'
 
 class ChainMirrorBlock {
   private readonly ui = new ChainMirrorBlockUI()

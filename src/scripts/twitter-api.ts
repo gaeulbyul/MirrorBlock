@@ -1,4 +1,11 @@
-import { validateTwitterUserName, sleep, Action } from './common'
+import { validateTwitterUserName, sleep } from './common'
+
+const BEARER_TOKEN = `AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA`
+
+let apiPrefix = 'https://twitter.com/i/api/1.1'
+if (location.hostname === 'mobile.twitter.com') {
+  apiPrefix = 'https://mobile.twitter.com/i/api/1.1'
+}
 
 export class APIError extends Error {
   constructor(public readonly response: APIResponse) {
@@ -6,22 +13,6 @@ export class APIError extends Error {
     // from: https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-2.html#support-for-newtarget
     Object.setPrototypeOf(this, new.target.prototype)
   }
-}
-
-async function sendRequest(
-  method: HTTPMethods,
-  path: string,
-  paramsObj: URLParamsObj = {}
-): Promise<APIResponse> {
-  const { response } = await browser.runtime.sendMessage<MBRequestAPIMessage, MBResponseAPIMessage>(
-    {
-      action: Action.RequestAPI,
-      method,
-      path,
-      paramsObj,
-    }
-  )
-  return response
 }
 
 export async function blockUser(user: TwitterUser): Promise<boolean> {
@@ -244,4 +235,71 @@ export async function getFollowsScraperRateLimitStatus(followKind: FollowKind): 
   } else {
     throw new Error('unreachable')
   }
+}
+
+function getCsrfTokenFromCookies(): string {
+  return /\bct0=([0-9a-f]+)/i.exec(document.cookie)![1]
+}
+
+function generateTwitterAPIOptions(obj: RequestInit): RequestInit {
+  const csrfToken = getCsrfTokenFromCookies()
+  const headers = new Headers()
+  headers.set('authorization', `Bearer ${BEARER_TOKEN}`)
+  headers.set('x-csrf-token', csrfToken)
+  headers.set('x-twitter-active-user', 'yes')
+  headers.set('x-twitter-auth-type', 'OAuth2Session')
+  const result: RequestInit = {
+    method: 'get',
+    mode: 'cors',
+    credentials: 'include',
+    referrer: 'https://twitter.com/',
+    headers,
+  }
+  Object.assign(result, obj)
+  return result
+}
+
+function setDefaultParams(params: URLSearchParams): void {
+  params.set('include_profile_interstitial_type', '1')
+  params.set('include_blocking', '1')
+  params.set('include_blocked_by', '1')
+  params.set('include_followed_by', '1')
+  params.set('include_want_retweets', '1')
+  params.set('include_mute_edge', '1')
+  params.set('include_can_dm', '1')
+}
+
+export async function sendRequest(
+  method: HTTPMethods,
+  path: string,
+  paramsObj: URLParamsObj = {}
+): Promise<APIResponse> {
+  const fetchOptions = generateTwitterAPIOptions({ method })
+  const url = new URL(apiPrefix + path)
+  let params: URLSearchParams
+  if (method === 'get') {
+    params = url.searchParams
+  } else {
+    params = new URLSearchParams()
+    fetchOptions.body = params
+  }
+  setDefaultParams(params)
+  for (const [key, value] of Object.entries(paramsObj)) {
+    params.set(key, value.toString())
+  }
+  const response = await fetch(url.toString(), fetchOptions)
+  const headers = Array.from(response.headers).reduce(
+    (obj, [name, value]) => ((obj[name] = value), obj),
+    {} as { [name: string]: string }
+  )
+  const { ok, status, statusText } = response
+  const body = await response.json()
+  const apiResponse = {
+    ok,
+    status,
+    statusText,
+    headers,
+    body,
+  }
+  return apiResponse
 }

@@ -29,7 +29,11 @@ function filterInvalidHeaders(headers: HttpHeaders): HttpHeaders {
 
 function initializeTwitterAPIRequestHeaderModifier() {
   const reqFilters = {
-    urls: ['https://api.twitter.com/*'],
+    urls: [
+      // 'https://api.twitter.com/*',
+      'https://twitter.com/i/api/*',
+      'https://mobile.twitter.com/i/api/*',
+    ],
   }
   browser.webRequest.onBeforeSendHeaders.addListener(
     details => {
