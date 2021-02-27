@@ -2,6 +2,9 @@ import { validateTwitterUserName, sleep } from './common'
 
 const BEARER_TOKEN = `AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA`
 
+// CORB* 로 인해 content scripts에서 api.twitter.com 을 사용할 수 없다.
+// https://www.chromestatus.com/feature/5629709824032768
+// https://www.chromium.org/Home/chromium-security/corb-for-developers
 let apiPrefix = 'https://twitter.com/i/api/1.1'
 if (location.hostname === 'mobile.twitter.com') {
   apiPrefix = 'https://mobile.twitter.com/i/api/1.1'
