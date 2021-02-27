@@ -22,7 +22,6 @@
     "https://twitter.com/*",
     "https://mobile.twitter.com/*",
     "storage",
-    "cookies",
     "contextMenus",
     "activeTab",
     "webRequest",
