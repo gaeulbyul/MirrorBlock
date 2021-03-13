@@ -17,7 +17,7 @@ const notExistUsers = new Set<string>()
 
 function treatAsNonExistUser(failedIdOrNames: string[]): (err: any) => void {
   return (err: any) => {
-    failedIdOrNames.forEach(idOrName => notExistUsers.add(idOrName))
+    failedIdOrNames.forEach(idOrName => notExistUsers.add(idOrName.toLowerCase()))
     console.error(err)
   }
 }
