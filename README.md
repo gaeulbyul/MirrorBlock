@@ -29,7 +29,7 @@ Mirror Block은 트위터에서 나를 차단한 사람을 표시하고, 맞차�
   ![Chrome Web Store](https://img.shields.io/chrome-web-store/users/hbpjabpglddifkpjeiggalbnpjmhkkac.svg?style=plastic)
   https://chrome.google.com/webstore/detail/mirror-block/hbpjabpglddifkpjeiggalbnpjmhkkac
   - Whale 브라우저는 Whale 스토어에서도 설치할 수 있습니다: https://store.whale.naver.com/detail/ggkdhcjafohekmchjkkpaopdbmjkfgob
-- Opera - ~~https://addons.opera.com/ko/extensions/details/mirror-block/~~ 업데이트 반영이 잘 안되는 관계로 크롬 웹스토어에서 내려받아주시길 바랍니다.
+- Opera - https://addons.opera.com/ko/extensions/details/mirror-of-block/
 
 ## 라이센스
 
