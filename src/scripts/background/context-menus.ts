@@ -1,4 +1,5 @@
 import { getUserNameFromTweetUrl, Action } from '미러블락/scripts/common'
+import * as i18n from '미러블락/scripts/i18n'
 
 function getUserNameFromClickInfo(info: browser.contextMenus.OnClickData): string | null {
   const { linkUrl } = info
@@ -17,7 +18,7 @@ export function initializeContextMenus() {
     contexts,
     documentUrlPatterns,
     targetUrlPatterns,
-    title: '이 사용자에게 체인맞블락 실행 (팔로워)',
+    title: i18n.getMessage('run_chainblock_from_followers_contextmenu'),
     onclick(clickInfo, tab) {
       const tabId = tab.id!
       const userName = getUserNameFromClickInfo(clickInfo)
@@ -35,7 +36,7 @@ export function initializeContextMenus() {
     contexts,
     documentUrlPatterns,
     targetUrlPatterns,
-    title: '이 사용자에게 체인맞블락 실행 (팔로잉)',
+    title: i18n.getMessage('run_chainblock_from_following_contextmenu'),
     onclick(clickInfo, tab) {
       const tabId = tab.id!
       const userName = getUserNameFromClickInfo(clickInfo)

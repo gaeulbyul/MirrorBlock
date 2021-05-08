@@ -1,9 +1,10 @@
 {
-  "description": "트위터에서 나를 차단한 사람을 표시하고, 맞차단(차단반사)할 수 있는 웹 브라우저용 확장기능입니다.",
+  "description": "__MSG_extension_description__",
   "manifest_version": 2,
   "name": "Mirror Block",
   "author": "Gaeulbyul <aeiou256@gmail.com>",
   "version": "0.14.5.0",
+  "default_locale": "en",
   "homepage_url": "https://github.com/gaeulbyul/MirrorBlock",
   "icons": {
     "48": "icons/icon-48.png",

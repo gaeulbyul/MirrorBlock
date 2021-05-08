@@ -1,4 +1,5 @@
 import * as Options from '미러블락/extoption'
+import * as i18n from '미러블락/scripts/i18n'
 
 const elements: { [key in keyof MirrorBlockOption]: HTMLInputElement } = {
   outlineBlockUser: document.getElementById('outlineBlockUser') as HTMLInputElement,
@@ -34,6 +35,7 @@ function displayVersion() {
 }
 
 function init() {
+  i18n.applyI18nOnHtml()
   loadOption()
   for (const input of document.querySelectorAll('.field input')) {
     input.addEventListener('change', () => {

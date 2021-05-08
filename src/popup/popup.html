@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
@@ -8,31 +8,31 @@
   </head>
   <body>
     <div class="whole">
-      <div class="title">Mirror Block 메뉴</div>
+      <div class="title" data-i18n-text="popupmenu_title"></div>
       <div class="menu">
         <button
           disabled
           class="menu-item chain-block chain-block-followers"
-          title="팔로워를 수집한 후 일괄적으로 맞차단할 수 있습니다. (실행하자마자 바로 차단하지 않습니다.)"
-        >
-          체인맞블락 (팔로워)
-        </button>
+          data-i18n-attrs="title=run_chainblock_from_followers_description"
+          data-i18n-text="run_chainblock_from_followers"
+        ></button>
         <button
           disabled
           class="menu-item chain-block chain-block-following"
-          title="팔로우하는 사용자를 수집한 후 일괄적으로 맞차단할 수 있습니다. (실행하자마자 바로 차단하지 않습니다.)"
-        >
-          체인맞블락 (팔로잉)
-        </button>
-        <button class="menu-item open-option" title="Mirror Block의 설정을 수정할 수 있습니다.">
-          설정
-        </button>
+          data-i18n-attrs="title=run_chainblock_from_following_description"
+          data-i18n-text="run_chainblock_from_following"
+        ></button>
+        <button
+          class="menu-item open-option"
+          data-i18n-attrs="title=options_description"
+          data-i18n-text="options"
+        ></button>
       </div>
       <hr />
       <div class="current-options">
         <div
           class="option-item blockReflection"
-          title="차단반사: 나를 차단한 사용자를 발견하면 맞차단합니다."
+          data-i18n-attrs="title=block_reflection_description"
         ></div>
         <div class="option-item currentVersion"></div>
       </div>

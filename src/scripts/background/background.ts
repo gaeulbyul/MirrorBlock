@@ -1,6 +1,7 @@
 import * as Options from '미러블락/extoption'
 import { initializeContextMenus } from './context-menus'
 import { initializeWebRequests } from './webrequest'
+import * as i18n from '미러블락/scripts/i18n'
 
 async function updateBadge(option: MirrorBlockOption) {
   const { enableBlockReflection } = option
@@ -14,7 +15,7 @@ async function updateBadge(option: MirrorBlockOption) {
   browser.browserAction.setTitle({
     title: [
       `Mirror Block v${manifest.version}`,
-      `* 차단 반사: ${enableBlockReflection ? 'On' : 'Off'}`,
+      `* ${i18n.getMessage('block_reflection')}: ${enableBlockReflection ? 'On' : 'Off'}`,
     ].join('\n'),
   })
 }

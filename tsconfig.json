@@ -19,6 +19,7 @@
     "noFallthroughCasesInSwitch": true,
     "typeRoots": ["node_modules/@types", "node_modules/csstype", "node_modules/web-ext-types"],
     "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
     "inlineSourceMap": false,
     "inlineSources": false,
     "paths": {

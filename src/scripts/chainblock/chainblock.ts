@@ -3,6 +3,7 @@ import { APIError } from '미러블락/scripts/twitter-api'
 import { Action, sleep, copyFrozenObject } from '미러블락/scripts/common'
 import ChainMirrorBlockUI from './chainblock-ui'
 import * as TwitterAPI from '미러블락/scripts/twitter-api'
+import * as i18n from '미러블락/scripts/i18n'
 
 class ChainMirrorBlock {
   private readonly ui = new ChainMirrorBlockUI()
@@ -30,13 +31,12 @@ class ChainMirrorBlock {
         return
       }
       event.preventDefault()
-      const message =
-        '[Mirror Block] 페이지를 닫거나 다른 페이지로 이동하면 현재 작동중인 체인맞블락은 멈추게 됩니다. 계속 하시겠습니까?'
+      const message = `[Mirror Block] ${i18n.getMessage('warning_before_close')}`
       event.returnValue = message
       return message
     })
     this.ui.on('ui:close', () => {
-      const confirmMessage = '체인맞블락이 아직 진행중입니다. 그래도 닫으시겠습니까?'
+      const confirmMessage = i18n.getMessage('chainblock_still_running')
       if (this.isRunning && window.confirm(confirmMessage)) {
         this.stopAndClose()
       } else if (!this.isRunning) {
@@ -49,13 +49,13 @@ class ChainMirrorBlock {
     this.ui.on('ui:execute-mutual-block', () => {
       const shouldBlocks = this.progress.foundUsers.filter(user => user.state === 'shouldBlock')
       if (shouldBlocks.length > 0) {
-        const confirmMessage = `발견한 사용자 ${shouldBlocks.length}명을 맞차단하시겠습니까?`
+        const confirmMessage = i18n.getMessage('confirm_mutual_block', shouldBlocks.length)
         if (!window.confirm(confirmMessage)) {
           return
         }
         this.executeMutualBlock()
       } else {
-        window.alert('맞차단할 사용자가 없습니다.')
+        window.alert(i18n.getMessage('no_users_to_mutual_block'))
       }
     })
   }
@@ -96,7 +96,7 @@ class ChainMirrorBlock {
     this.isRunning = true
     try {
       if (targetUser.blocked_by) {
-        window.alert(`@${targetUser.screen_name}님에게 차단당하여 체인맞블락을 진행할 수 없습니다.`)
+        window.alert(i18n.getMessage('cant_chainblock_they_blocks_you', targetUser.screen_name))
         this.stopAndClose()
         return
       }
@@ -216,21 +216,21 @@ function getTotalFollows(user: TwitterUser, followKind: FollowKind): number {
 export async function startChainBlock(targetUserName: string, followKind: FollowKind) {
   const alreadyRunning = document.querySelector('.mobcg-bg')
   if (alreadyRunning) {
-    window.alert('이미 체인맞블락이 실행중입니다.')
+    window.alert(i18n.getMessage('chainblock_already_running'))
     return
   }
   const myself = await TwitterAPI.getMyself() //.catch(() => null)
   if (!myself) {
-    window.alert('로그인을 해주세요.')
+    window.alert(i18n.getMessage('please_check_login_before_chainblock'))
     return
   }
   const targetUser = await TwitterAPI.getSingleUserByName(targetUserName).catch(err => {
     if (err instanceof APIError) {
       const json = err.response.body
       const jsonstr = JSON.stringify(json, null, 2)
-      window.alert(`트위터 서버에서 오류가 발생했습니다.:\n${jsonstr}`)
+      window.alert(`${i18n.getMessage('error_occured_from_twitter_server')}\n${jsonstr}`)
     } else if (err instanceof Error) {
-      window.alert(`오류가 발생했습니다.:\n${err.message}`)
+      window.alert(`${i18n.getMessage('error_occured')}\n${err.message}`)
     }
     return null
   })
@@ -239,26 +239,29 @@ export async function startChainBlock(targetUserName: string, followKind: Follow
   }
   const followsCount = getTotalFollows(targetUser, followKind)
   if (followsCount <= 0) {
-    window.alert('팔로잉/팔로워가 0명이므로 아무것도 하지 않았습니다.')
+    window.alert(i18n.getMessage('nobody_follows_them'))
     return
   }
   if (targetUser.protected) {
     const relationship = await TwitterAPI.getRelationship(myself, targetUser)
     const { following } = relationship.source
     if (!following) {
-      window.alert(`@${targetUserName}님은 프로텍트가 걸려있어서 체인맞블락을 진행할 수 없습니다.`)
+      window.alert(i18n.getMessage('cant_chainblock_they_protected', targetUserName))
       return
     }
   }
-  const followKindKor = followKind === 'followers' ? '팔로워' : '팔로잉'
-  let confirmed = window.confirm(
-    `@${targetUserName}님의 ${followKindKor} 목록에서 체인맞블락을 실행하시겠습니까?`
-  )
+  let confirmMessage: string
+  switch (followKind) {
+    case 'followers':
+      confirmMessage = i18n.getMessage('confirm_chainblock_to_followers')
+      break
+    case 'following':
+      confirmMessage = i18n.getMessage('confirm_chainblock_to_following')
+      break
+  }
+  let confirmed = window.confirm(confirmMessage)
   if (followsCount > 200000) {
-    const a =
-      '주의!: 팔로잉/팔로워가 너무 많으면 체인맞블락 도중 리밋 등 계정 사용에 제한이 걸릴 수 있습니다.'
-    const b = '정말로 진행하시겠습니까?'
-    confirmed = window.confirm(`${a} ${b}`)
+    confirmed = window.confirm(i18n.getMessage('warning_too_many_followers'))
   }
   if (confirmed) {
     const options = await Options.load()
