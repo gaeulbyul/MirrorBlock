@@ -13,13 +13,9 @@ function initialize() {
     document.documentElement.classList.toggle('mob-enable-outline', option.outlineBlockUser)
   })
 
-  const reactRoot = document.getElementById('react-root')
-  if (reactRoot) {
-    detectOnCurrentTwitter(reactRoot)
-    handleDarkMode()
-  } else {
-    throw new Error('legacy twitter not supported')
-  }
+  const reactRoot = document.getElementById('react-root')!
+  detectOnCurrentTwitter(reactRoot)
+  handleDarkMode()
 }
 
 initialize()
