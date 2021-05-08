@@ -33,6 +33,8 @@ module.exports = {
   ],
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
+    alias: {
+      '@locale': path.resolve(__dirname, 'src/_locales'),
   },
   watchOptions: {
     poll: 400,
