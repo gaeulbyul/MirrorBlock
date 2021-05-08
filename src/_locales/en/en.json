@@ -1,0 +1,220 @@
+{
+  "extension_description": {
+    "message": "An browser extension that allows you to display and counterblock (block) who blocked you on Twitter."
+  },
+  "popupmenu_title": {
+    "message": "Mirror Block Menu"
+  },
+  "run_chainblock_from_followers": {
+    "message": "ChainBlock (followers)"
+  },
+  "run_chainblock_from_followers_description": {
+    "message": "Run chain block on an account who blocked you among the followers of that account."
+  },
+  "run_chainblock_from_following": {
+    "message": "ChainBlock (Following)"
+  },
+  "run_chainblock_from_following_description": {
+    "message": "Run chain block on an account who blocked you among the accounts you follow. "
+  },
+  "running_chainblock_is_only_available_on_twitter": {
+    "message": "Chain Block can be used only on Twitter."
+  },
+  "please_run_on_profile_page_1": {
+    "message": "To run chain block, please go to your profile page."
+  },
+  "please_run_on_profile_page_2": {
+    "message": "(Yes: https://twitter.com/<username>)"
+  },
+  "options": {
+    "message": "Settings"
+  },
+  "options_description": {
+    "message": "Change the settings for the mirror block"
+  },
+  "block_reflection": {
+    "message": "Block Reflection"
+  },
+  "block_reflection_description": {
+    "message": "Block reflection: If I see a user who blocked me, I block the user."
+  },
+  "outline_user_blocked_me": {
+    "message": "Outline a red border to better see the user who blocked your account."
+  },
+  "enable_block_reflection": {
+    "message": "Enable Block Reflection"
+  },
+  "enable_block_reflection_description": {
+    "message": "If I see a user who blocked me, I block the user."
+  },
+  "block_muted_user": {
+    "message": "Block the users I muted."
+  },
+  "block_muted_user_description": {
+    "message": "If you turn the option off, it don't block the user you have muted. If you turn this option on, it blocks whether it's muted or not."
+  },
+  "always_immediately_block_mode": {
+    "message": "Enable \"Immediate Counterblock Mode\" as default"
+  },
+  "always_immediately_block_mode_description": {
+    "message": "Enables the \"Block Upon Discovery\" feature to default when executing a chain block."
+  },
+  "warning_before_close": {
+    "message": "Closing the page or navigating to another page will stop the currently active chain block. Would you like to go on?"
+  },
+  "chainblock_still_running": {
+    "message": "The chain block is still running. Do you still want to close it?"
+  },
+  "confirm_mutual_block": {
+    "message": "Do you want to block $count$ users you found?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "no_users_to_mutual_block": { "message": "There is no user to block against." },
+  "cant_chainblock_they_blocks_you": {
+    "message": "Unable to execute chain block because @$username$ blocked.",
+    "placeholders": {
+      "username": {
+        "content": "$1"
+      }
+    }
+  },
+  "chainblock_already_running": {
+    "message": "The chain block is already running."
+  },
+  "please_check_login_before_chainblock": {
+    "message": "Please log in first."
+  },
+  "error_occured_from_twitter_server": {
+    "message": "An error occurred on the Twitter server."
+  },
+  "error_occured": {
+    "message": "An error has occurred."
+  },
+  "nobody_follows_them": {
+    "message": "The user currently has 0 followers."
+  },
+  "cant_chainblock_they_protected": {
+    "message": "Cannot execute a chain block on private account: @$username$ .",
+    "placeholders": {
+      "username": {
+        "content": "$1"
+      }
+    }
+  },
+  "confirm_chainblock_to_followers": {
+    "message": "Do you want to run a chain block on @$username$'s follower list?",
+    "placeholders": {
+      "username": {
+        "content": "$1"
+      }
+    }
+  },
+  "confirm_chainblock_to_following": {
+    "message": "Do you want to run a chain block from the list of users that @$username$ follows?",
+    "placeholders": {
+      "username": {
+        "content": "$1"
+      }
+    }
+  },
+  "warning_too_many_followers": {
+    "message": "Caution! If you have too many followers/followers, your account may be restricted, such as remitting, during chain block. Are you sure you want to proceed?"
+  },
+  "chainblock": {
+    "message": "Chain Block"
+  },
+  "preparing": {
+    "message": "Preparing"
+  },
+  "chainblock_progress": {
+    "message": "Collected $scraped$ out of $total$, found a total of $found$",
+    "placeholders": {
+      "total": {
+        "content": "<span class=\"mobcb-prg-total\">$1</span>"
+      },
+      "scraped": {
+        "content": "<span class=\"mobcb-prg-scraped\">$1</span>"
+      },
+      "found": {
+        "content": "<span class=\"mobcb-prg-found\">$1</span>"
+      }
+    }
+  },
+  "chainblock_immediately_block_mode_tooltip": {
+    "message": "If you find a user you want to counter-block (without pressing the 'Block' button), you will immediately counter-block."
+  },
+  "chainblock_immediately_block_mode_label": {
+    "message": "Block immediately upon discovery."
+  },
+  "chainblock_rate_limited": {
+    "message": "Rate Limit: Too many followers. Temporarily restricted."
+  },
+  "chainblock_reset_time_label": {
+    "message": "Expected reset time (±5 minutes)"
+  },
+  "close": {
+    "message": "Close"
+  },
+  "block": {
+    "message": "Block"
+  },
+  "already_blocked": {
+    "message": "Already blocked"
+  },
+  "skipped": {
+    "message": "Skip"
+  },
+  "profile": {
+    "message": "Profile"
+  },
+  "scrape_running": {
+    "message": "Collecting..."
+  },
+  "scrape_completed": {
+    "message": "Collection Complete."
+  },
+  "block_running": {
+    "message": "Block Running..."
+  },
+  "block_completed": {
+    "message": "Block Complete."
+  },
+  "no_blockable_user": {
+    "message": "There are no users to counter-block."
+  },
+  "nobody_blocks_you": {
+    "message": "Nobody blocks you."
+  },
+  "run_chainblock_from_followers_contextmenu": {
+    "message": "Run a chainblock on this user (follower)"
+  },
+  "run_chainblock_from_following_contextmenu": {
+    "message": "Run a chainblock on this user (following)"
+  },
+  "blocks_you": {
+    "message": "Blocks you."
+  },
+  "blocks_you_description": {
+    "message": "Blocks you: @$username$ is blocking you.",
+    "placeholders": {
+      "username": {
+        "content": "$1"
+      }
+    }
+  },
+  "block_reflected": {
+    "message": "Block Reflection Trigerred!"
+  },
+  "block_reflected_description": {
+    "message": "Block Reflection Triggered: Mirror Block hits @$username$",
+    "placeholders": {
+      "username": {
+        "content": "$1"
+      }
+    }
+  }
+}
