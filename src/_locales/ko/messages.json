@@ -54,7 +54,7 @@
     "message": "이 옵션을 끌 경우 내가 뮤트한 유저에게는 맞차단을 하지 않습니다. 이 옵션을 키면 뮤트여부와 상관없이 맞차단을 합니다."
   },
   "always_immediately_block_mode": {
-    "message": "\"즉시 맞차단 모드\"를 기본값으로 활성화"
+    "message": "\"발견 즉시 맞차단하기\"를 기본값으로 활성화"
   },
   "always_immediately_block_mode_description": {
     "message": "체인맞블락을 실행할 때 \"발견 즉시 맞차단하기\" 기능을 기본값으로 활성화합니다."
