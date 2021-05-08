@@ -253,10 +253,10 @@ export async function startChainBlock(targetUserName: string, followKind: Follow
   let confirmMessage: string
   switch (followKind) {
     case 'followers':
-      confirmMessage = i18n.getMessage('confirm_chainblock_to_followers')
+      confirmMessage = i18n.getMessage('confirm_chainblock_to_followers', targetUser.screen_name)
       break
     case 'following':
-      confirmMessage = i18n.getMessage('confirm_chainblock_to_following')
+      confirmMessage = i18n.getMessage('confirm_chainblock_to_following', targetUser.screen_name)
       break
   }
   let confirmed = window.confirm(confirmMessage)
