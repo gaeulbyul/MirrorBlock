@@ -1,3 +1,7 @@
+## v0.14.6.0
+
+- 영어번역 추가 [#13](https://github.com/gaeulbyul/MirrorBlock/pull/13)
+
 ## v0.14.5.0
 
 - 트위터 API 요청방식 변경
