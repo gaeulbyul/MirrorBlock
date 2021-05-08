@@ -1,6 +1,6 @@
-import * as Options from '../extoption'
-import { getUserNameFromTweetUrl } from '../scripts/common'
-import * as i18n from '../scripts/i18n'
+import * as Options from '미러블락/extoption'
+import { Action, getUserNameFromTweetUrl } from '미러블락/scripts/common'
+import * as i18n from '미러블락/scripts/i18n'
 
 type Tab = browser.tabs.Tab
 
@@ -10,7 +10,7 @@ function closePopup() {
 
 async function alertToTab(tabId: number, message: string) {
   return browser.tabs.sendMessage<MBAlertMessage>(tabId, {
-    messageType: 'Alert',
+    action: Action.Alert,
     message,
   })
 }
@@ -24,28 +24,35 @@ async function getCurrentTab(): Promise<Tab | null> {
   return currentTab
 }
 
-async function executeChainBlock(followType: FollowType) {
+async function executeChainBlock(followKind: FollowKind) {
   const currentTab = await getCurrentTab()
   if (!(currentTab && typeof currentTab.id === 'number')) {
     return
   }
   const tabId = currentTab.id
   const url = new URL(currentTab.url!)
+  if (url.hostname === 'tweetdeck.twitter.com') {
+    // TODO
+    const a = 'Mirror Block: 트윗덱에선 작동하지 않습니다.'
+    const b = '트위터(https://twitter.com)에서 실행해주세요.'
+    const message = `${a}\n${b}`
+    alertToTab(tabId, message)
+    closePopup()
+    return
+  }
   const userName = getUserNameFromTweetUrl(url)
   if (!userName) {
-    const message = `\
-${i18n.getMessage('please_run_on_profile_page_1')}\n${i18n.getMessage(
-      'please_run_on_profile_page_2'
-    )}
-`.trim()
+    const a = i18n.getMessage('please_run_on_profile_page_1')
+    const b = i18n.getMessage('please_run_on_profile_page_2')
+    const message = `${a}\n${b}`
     alertToTab(tabId, message)
     closePopup()
     return
   }
   browser.tabs
     .sendMessage<MBStartChainBlockMessage>(tabId, {
-      messageType: 'StartChainBlock',
-      followType,
+      action: Action.StartChainBlock,
+      followKind,
       userName,
     })
     .then(closePopup)
@@ -87,7 +94,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const options = await Options.load()
     const blockReflection = document.querySelector<HTMLElement>('.blockReflection')!
     const val = options.enableBlockReflection
-    // const warningEmoji = '\u{26a0}\u{fe0f}'
     blockReflection.classList.toggle('on', val)
     blockReflection.textContent = `${i18n.getMessage('block_reflection')}: ${
       val ? 'On \u2714' : 'Off'

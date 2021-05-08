@@ -1,6 +1,14 @@
-import chunk from 'lodash/chunk'
-
 import { validateTwitterUserName, sleep } from './common'
+
+const BEARER_TOKEN = `AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA`
+
+// CORB* 로 인해 content scripts에서 api.twitter.com 을 사용할 수 없다.
+// https://www.chromestatus.com/feature/5629709824032768
+// https://www.chromium.org/Home/chromium-security/corb-for-developers
+let apiPrefix = 'https://twitter.com/i/api/1.1'
+if (location.hostname === 'mobile.twitter.com') {
+  apiPrefix = 'https://mobile.twitter.com/i/api/1.1'
+}
 
 export class APIError extends Error {
   constructor(public readonly response: APIResponse) {
@@ -8,37 +16,6 @@ export class APIError extends Error {
     // from: https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-2.html#support-for-newtarget
     Object.setPrototypeOf(this, new.target.prototype)
   }
-}
-
-async function sendRequest(
-  method: HTTPMethods,
-  path: string,
-  paramsObj: URLParamsObj = {},
-  actAsUserId = ''
-): Promise<APIResponse> {
-  console.warn('deprecated: re-write...')
-  const { response } = await browser.runtime.sendMessage<MBRequestAPIMessage, MBResponseAPIMessage>(
-    {
-      messageType: 'RequestAPI',
-      method,
-      path,
-      paramsObj,
-      actAsUserId,
-    }
-  )
-  console.debug('response: ', response)
-  return response
-}
-
-export async function examineChainBlockableActor(user: TwitterUser): Promise<string | null> {
-  const { actorId } = await browser.runtime.sendMessage<
-    MBExamineChainBlockableActor,
-    MBChainBlockableActorResult
-  >({
-    messageType: 'ExamineChainBlockableActor',
-    targetUserId: user.id_str,
-  })
-  return actorId
 }
 
 export async function blockUser(user: TwitterUser): Promise<boolean> {
@@ -51,7 +28,6 @@ export async function blockUser(user: TwitterUser): Promise<boolean> {
     const fatalErrorMessage = `!!!!!FATAL!!!!!:
 attempted to block user that should NOT block!!
 (user: ${user.screen_name})`
-    console.error(fatalErrorMessage)
     throw new Error(fatalErrorMessage)
   }
   return blockUserById(user.id_str)
@@ -102,66 +78,16 @@ async function getFollowersList(
   }
 }
 
-async function getFollowingsIdsListAsActor(
-  user: TwitterUser,
-  actAsUserId = '',
-  cursor: string = '-1'
-): Promise<FollowsIdsResponse> {
-  const response = await sendRequest(
-    'get',
-    '/friends/ids.json',
-    {
-      user_id: user.id_str,
-      stringify_ids: true,
-      count: 5000,
-      cursor,
-    },
-    actAsUserId
-  )
-  if (response.ok) {
-    return response.body as FollowsIdsResponse
-  } else {
-    throw new APIError(response)
-  }
-}
-
-async function getFollowersIdsListAsActor(
-  user: TwitterUser,
-  actAsUserId = '',
-  cursor: string = '-1'
-): Promise<FollowsIdsResponse> {
-  const response = await sendRequest(
-    'get',
-    '/followers/ids.json',
-    {
-      user_id: user.id_str,
-      stringify_ids: true,
-      count: 5000,
-      cursor,
-    },
-    actAsUserId
-  )
-  if (response.ok) {
-    return response.body as FollowsIdsResponse
-  } else {
-    throw new APIError(response)
-  }
-}
-
 export async function* getAllFollows(
   user: TwitterUser,
-  followType: FollowType,
+  followKind: FollowKind,
   options: FollowsScraperOptions
 ): AsyncIterableIterator<Either<APIError, Readonly<TwitterUser>>> {
-  if (options.actAsUserId) {
-    yield* getAllFollowsAsActor(user, followType, options)
-    return
-  }
   let cursor = '-1'
   while (true) {
     try {
       let json: FollowsListResponse
-      switch (followType) {
+      switch (followKind) {
         case 'followers':
           json = await getFollowersList(user, cursor)
           break
@@ -181,54 +107,6 @@ export async function* getAllFollows(
         break
       } else {
         await sleep(options.delay)
-        continue
-      }
-    } catch (error) {
-      if (error instanceof APIError) {
-        yield {
-          ok: false,
-          error,
-        }
-      } else {
-        throw error
-      }
-    }
-  }
-}
-
-async function* getAllFollowsAsActor(
-  user: TwitterUser,
-  followType: FollowType,
-  options: FollowsScraperOptions
-): AsyncIterableIterator<Either<APIError, Readonly<TwitterUser>>> {
-  const { actAsUserId, delay } = options
-  let cursor = '-1'
-  while (true) {
-    try {
-      let json: FollowsIdsResponse
-      switch (followType) {
-        case 'followers':
-          json = await getFollowersIdsListAsActor(user, actAsUserId, cursor)
-          break
-        case 'following':
-          json = await getFollowingsIdsListAsActor(user, actAsUserId, cursor)
-          break
-        default:
-          throw new Error('unreachable')
-      }
-      cursor = json.next_cursor_str
-      const chunkedUserIds = chunk(json.ids, 100)
-      for (const userIdChunk of chunkedUserIds) {
-        const users = await getMultipleUsersById(userIdChunk)
-        yield* users.map(user => ({
-          ok: true as const,
-          value: Object.freeze(user),
-        }))
-      }
-      if (cursor === '0') {
-        break
-      } else {
-        await sleep(delay)
         continue
       }
     } catch (error) {
@@ -351,13 +229,80 @@ export async function getRateLimitStatus(): Promise<LimitStatus> {
   return resources
 }
 
-export async function getFollowsScraperRateLimitStatus(followType: FollowType): Promise<Limit> {
+export async function getFollowsScraperRateLimitStatus(followKind: FollowKind): Promise<Limit> {
   const limitStatus = await getRateLimitStatus()
-  if (followType === 'followers') {
+  if (followKind === 'followers') {
     return limitStatus.followers['/followers/list']
-  } else if (followType === 'following') {
+  } else if (followKind === 'following') {
     return limitStatus.friends['/friends/list']
   } else {
     throw new Error('unreachable')
   }
+}
+
+function getCsrfTokenFromCookies(): string {
+  return /\bct0=([0-9a-f]+)/i.exec(document.cookie)![1]
+}
+
+function generateTwitterAPIOptions(obj: RequestInit): RequestInit {
+  const csrfToken = getCsrfTokenFromCookies()
+  const headers = new Headers()
+  headers.set('authorization', `Bearer ${BEARER_TOKEN}`)
+  headers.set('x-csrf-token', csrfToken)
+  headers.set('x-twitter-active-user', 'yes')
+  headers.set('x-twitter-auth-type', 'OAuth2Session')
+  const result: RequestInit = {
+    method: 'get',
+    mode: 'cors',
+    credentials: 'include',
+    referrer: 'https://twitter.com/',
+    headers,
+  }
+  Object.assign(result, obj)
+  return result
+}
+
+function setDefaultParams(params: URLSearchParams): void {
+  params.set('include_profile_interstitial_type', '1')
+  params.set('include_blocking', '1')
+  params.set('include_blocked_by', '1')
+  params.set('include_followed_by', '1')
+  params.set('include_want_retweets', '1')
+  params.set('include_mute_edge', '1')
+  params.set('include_can_dm', '1')
+}
+
+export async function sendRequest(
+  method: HTTPMethods,
+  path: string,
+  paramsObj: URLParamsObj = {}
+): Promise<APIResponse> {
+  const fetchOptions = generateTwitterAPIOptions({ method })
+  const url = new URL(apiPrefix + path)
+  let params: URLSearchParams
+  if (method === 'get') {
+    params = url.searchParams
+  } else {
+    params = new URLSearchParams()
+    fetchOptions.body = params
+  }
+  setDefaultParams(params)
+  for (const [key, value] of Object.entries(paramsObj)) {
+    params.set(key, value.toString())
+  }
+  const response = await fetch(url.toString(), fetchOptions)
+  const headers = Array.from(response.headers).reduce(
+    (obj, [name, value]) => ((obj[name] = value), obj),
+    {} as { [name: string]: string }
+  )
+  const { ok, status, statusText } = response
+  const body = await response.json()
+  const apiResponse = {
+    ok,
+    status,
+    statusText,
+    headers,
+    body,
+  }
+  return apiResponse
 }

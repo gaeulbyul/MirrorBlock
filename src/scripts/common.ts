@@ -1,3 +1,9 @@
+export const enum Action {
+  StartChainBlock = 'MirrorBlock/Start',
+  StopChainBlock = 'MirrorBlock/Stop',
+  Alert = 'MirrorBlock/Alert',
+}
+
 const USER_NAME_BLACKLIST = Object.freeze([
   '1',
   'about',
@@ -46,7 +52,6 @@ export class TwitterUserMap extends Map<string, TwitterUser> {
 export abstract class EventEmitter {
   protected events: EventStore = {}
   on<T>(eventName: string, handler: (t: T) => any) {
-    console.debug('handle %s event', eventName)
     if (!(eventName in this.events)) {
       this.events[eventName] = []
     }
@@ -54,7 +59,6 @@ export abstract class EventEmitter {
     return this
   }
   emit<T>(eventName: string, eventHandlerParameter?: T) {
-    console.debug('emit %s event with %o', eventName, eventHandlerParameter)
     const handlers = this.events[eventName] || []
     handlers.forEach(handler => handler(eventHandlerParameter))
     return this
@@ -156,8 +160,4 @@ export function getUserNameFromTweetUrl(
   } else {
     return null
   }
-}
-
-export function assertNever(x: never) {
-  console.error('assertNever: unreachable! %o', x)
 }

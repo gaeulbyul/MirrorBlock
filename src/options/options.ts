@@ -1,5 +1,5 @@
-import * as Options from '../extoption'
-import * as i18n from '../scripts/i18n'
+import * as Options from '미러블락/extoption'
+import * as i18n from '미러블락/scripts/i18n'
 
 const elements: { [key in keyof MirrorBlockOption]: HTMLInputElement } = {
   outlineBlockUser: document.getElementById('outlineBlockUser') as HTMLInputElement,
@@ -12,19 +12,19 @@ const elements: { [key in keyof MirrorBlockOption]: HTMLInputElement } = {
 
 async function saveOption() {
   const option = await Options.load()
-  for (const key_ of Object.keys(elements)) {
+  for (const [key_, elem] of Object.entries(elements)) {
     const key = key_ as keyof MirrorBlockOption
-    option[key] = elements[key].checked
+    option[key] = elem.checked
   }
   return Options.save(option)
 }
 
 async function loadOption() {
   const option = await Options.load()
-  for (const key_ of Object.keys(elements)) {
+  for (const [key_, elem] of Object.entries(elements)) {
     const key = key_ as keyof MirrorBlockOption
-    elements[key].disabled = false
-    elements[key].checked = option[key]
+    elem.disabled = false
+    elem.checked = option[key]
   }
 }
 

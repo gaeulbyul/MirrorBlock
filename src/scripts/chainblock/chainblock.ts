@@ -1,9 +1,9 @@
-import * as Options from '../../extoption'
-import { APIError } from '../twitter-api-ct'
-import { sleep, copyFrozenObject, assertNever } from '../common'
-import * as i18n from '../i18n'
+import * as Options from '미러블락/extoption'
+import { APIError } from '미러블락/scripts/twitter-api'
+import { Action, sleep, copyFrozenObject } from '미러블락/scripts/common'
 import ChainMirrorBlockUI from './chainblock-ui'
-import * as TwitterAPI from '../twitter-api-ct'
+import * as TwitterAPI from '미러블락/scripts/twitter-api'
+import * as i18n from '미러블락/scripts/i18n'
 
 class ChainMirrorBlock {
   private readonly ui = new ChainMirrorBlockUI()
@@ -92,19 +92,13 @@ class ChainMirrorBlock {
     })
     Promise.all(immBlockPromises)
   }
-  public async start(targetUser: TwitterUser, followType: FollowType) {
-    let actAsUserId = ''
+  public async start(targetUser: TwitterUser, followKind: FollowKind) {
     this.isRunning = true
     try {
       if (targetUser.blocked_by) {
-        const actorId = await TwitterAPI.examineChainBlockableActor(targetUser)
-        if (actorId) {
-          actAsUserId = actorId
-        } else {
-          window.alert(i18n.getMessage('cant_chainblock_they_blocks_you', targetUser.screen_name))
-          this.stopAndClose()
-          return
-        }
+        window.alert(i18n.getMessage('cant_chainblock_they_blocks_you', targetUser.screen_name))
+        this.stopAndClose()
+        return
       }
       const updateProgress = () => {
         this.ui.updateProgress(copyFrozenObject(this.progress))
@@ -130,11 +124,10 @@ class ChainMirrorBlock {
         this.blockResults.set(follower.id_str, 'notYet')
         updateProgress()
       }
-      const total = getTotalFollows(targetUser, followType)
+      const total = getTotalFollows(targetUser, followKind)
       this.ui.initProgress(total)
       const delay = total > 1e4 ? 950 : 300
-      const scraper = TwitterAPI.getAllFollows(targetUser, followType, {
-        actAsUserId,
+      const scraper = TwitterAPI.getAllFollows(targetUser, followKind, {
         delay,
       })
       let rateLimited = false
@@ -146,7 +139,7 @@ class ChainMirrorBlock {
           const { error } = maybeFollower
           if (error.response.status === 429) {
             rateLimited = true
-            TwitterAPI.getFollowsScraperRateLimitStatus(followType).then(this.ui.rateLimited)
+            TwitterAPI.getFollowsScraperRateLimitStatus(followKind).then(this.ui.rateLimited)
             await sleep(1000 * 60 * 2)
             continue
           } else {
@@ -210,17 +203,17 @@ class ChainMirrorBlock {
   }
 }
 
-function getTotalFollows(user: TwitterUser, followType: FollowType): number {
-  if (followType === 'followers') {
+function getTotalFollows(user: TwitterUser, followKind: FollowKind): number {
+  if (followKind === 'followers') {
     return user.followers_count
-  } else if (followType === 'following') {
+  } else if (followKind === 'following') {
     return user.friends_count
   } else {
     throw new Error('unreachable')
   }
 }
 
-export async function startChainBlock(targetUserName: string, followType: FollowType) {
+export async function startChainBlock(targetUserName: string, followKind: FollowKind) {
   const alreadyRunning = document.querySelector('.mobcg-bg')
   if (alreadyRunning) {
     window.alert(i18n.getMessage('chainblock_already_running'))
@@ -244,7 +237,7 @@ export async function startChainBlock(targetUserName: string, followType: Follow
   if (!targetUser) {
     return
   }
-  const followsCount = getTotalFollows(targetUser, followType)
+  const followsCount = getTotalFollows(targetUser, followKind)
   if (followsCount <= 0) {
     window.alert(i18n.getMessage('nobody_follows_them'))
     return
@@ -258,7 +251,7 @@ export async function startChainBlock(targetUserName: string, followType: Follow
     }
   }
   let confirmMessage: string
-  switch (followType) {
+  switch (followKind) {
     case 'followers':
       confirmMessage = i18n.getMessage('confirm_chainblock_to_followers')
       break
@@ -273,20 +266,16 @@ export async function startChainBlock(targetUserName: string, followType: Follow
   if (confirmed) {
     const options = await Options.load()
     const chainblocker = new ChainMirrorBlock(options)
-    chainblocker.start(targetUser, followType)
+    chainblocker.start(targetUser, followKind)
   }
 }
 
 browser.runtime.onMessage.addListener((msg: object) => {
-  const message = msg as MBMessageFromBackgroundToContent
-  switch (message.messageType) {
-    case 'StartChainBlock':
-      startChainBlock(message.userName, message.followType)
-      break
-    case 'Alert':
-      window.alert(message.message)
-      break
-    default:
-      assertNever(message)
+  const message = msg as MBMessage
+  if (message.action === Action.StartChainBlock) {
+    startChainBlock(message.userName, message.followKind)
+  } else if (message.action === Action.Alert) {
+    const msg = message.message
+    window.alert(msg)
   }
 })

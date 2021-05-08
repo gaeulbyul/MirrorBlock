@@ -1,6 +1,6 @@
-import * as Options from '../../extoption'
-import { injectScript, getAddedElementsFromMutations } from '../common'
-import * as TwitterAPI from '../twitter-api-ct'
+import * as Options from '미러블락/extoption'
+import { injectScript, getAddedElementsFromMutations } from '미러블락/scripts/common'
+import * as TwitterAPI from '미러블락/scripts/twitter-api'
 
 type TDUserDataSet = DOMStringMap & { [i in keyof TDUserData]: string }
 

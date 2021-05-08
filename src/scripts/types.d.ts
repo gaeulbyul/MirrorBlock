@@ -1,7 +1,9 @@
+type Action = typeof import('./common').Action
+
 type HTTPMethods = 'get' | 'delete' | 'post' | 'put'
 type URLParamsObj = { [key: string]: string | number | boolean }
 
-type FollowType = 'followers' | 'following'
+type FollowKind = 'followers' | 'following'
 
 // ------------------------------
 // Twitter API
@@ -90,7 +92,6 @@ interface FollowsIdsResponse {
 
 interface FollowsScraperOptions {
   delay: number
-  actAsUserId?: string
 }
 
 type ConnectionType =
@@ -227,42 +228,17 @@ interface EventStore {
 }
 
 interface MBStartChainBlockMessage {
-  messageType: 'StartChainBlock'
+  action: Action['StartChainBlock']
   userName: string
-  followType: FollowType
+  followKind: FollowKind
 }
 
 interface MBAlertMessage {
-  messageType: 'Alert'
+  action: Action['Alert']
   message: string
 }
 
-interface MBRequestAPIMessage {
-  messageType: 'RequestAPI'
-  method: HTTPMethods
-  path: string
-  paramsObj: URLParamsObj
-  actAsUserId: string
-}
-
-interface MBResponseAPIMessage {
-  messageType: 'ResponseAPI'
-  response: APIResponse
-}
-
-interface MBExamineChainBlockableActor {
-  messageType: 'ExamineChainBlockableActor'
-  targetUserId: string
-}
-
-interface MBChainBlockableActorResult {
-  messageType: 'ChainBlockableActorResult'
-  actorId: string | null
-}
-
-type MBMessageFromContentToBackground = MBRequestAPIMessage | MBExamineChainBlockableActor
-
-type MBMessageFromBackgroundToContent = MBStartChainBlockMessage | MBAlertMessage
+type MBMessage = MBStartChainBlockMessage | MBAlertMessage
 
 type UserState = 'shouldBlock' | 'alreadyBlocked' | 'muteSkip'
 

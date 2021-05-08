@@ -1,5 +1,5 @@
-import { getUserNameFromTweetUrl } from '../scripts/common'
-import * as i18n from '../scripts/i18n'
+import { getUserNameFromTweetUrl, Action } from '미러블락/scripts/common'
+import * as i18n from '미러블락/scripts/i18n'
 
 function getUserNameFromClickInfo(info: browser.contextMenus.OnClickData): string | null {
   const { linkUrl } = info
@@ -26,8 +26,8 @@ export function initializeContextMenus() {
         return
       }
       browser.tabs.sendMessage<MBStartChainBlockMessage>(tabId, {
-        messageType: 'StartChainBlock',
-        followType: 'followers',
+        action: Action.StartChainBlock,
+        followKind: 'followers',
         userName,
       })
     },
@@ -44,8 +44,8 @@ export function initializeContextMenus() {
         return
       }
       browser.tabs.sendMessage<MBStartChainBlockMessage>(tabId, {
-        messageType: 'StartChainBlock',
-        followType: 'following',
+        action: Action.StartChainBlock,
+        followKind: 'following',
         userName,
       })
     },

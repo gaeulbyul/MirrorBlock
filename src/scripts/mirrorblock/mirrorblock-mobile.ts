@@ -1,10 +1,8 @@
-import * as Utils from '../common'
-import * as TwitterAPI from '../twitter-api-ct'
+import * as Utils from '미러블락/scripts/common'
+import * as TwitterAPI from '미러블락/scripts/twitter-api'
 import { reflectBlock } from './mirrorblock-r'
 import { StoreRetriever, StoreUpdater, UserGetter } from './redux-store'
-import * as EventNames from '../event-names'
-
-type DOMQueryable = HTMLElement | Document
+import * as EventNames from '미러블락/scripts/event-names'
 
 function markOutline(elem: Element): void {
   elem.setAttribute('data-mirrorblock-blocks-you', '1')
@@ -14,7 +12,7 @@ function getElemByDmData(dmData: DMData): HTMLElement | null {
   return document.querySelector(`[data-mirrorblock-conversation-id="${dmData.conversation_id}"]`)
 }
 
-async function detectProfile(rootElem: DOMQueryable) {
+async function detectProfile(rootElem: HTMLElement) {
   const helpLinks = rootElem.querySelectorAll<HTMLElement>(
     'a[href="https://support.twitter.com/articles/20172060"]'
   )
@@ -63,7 +61,11 @@ async function handleQuotedTweet(tweet: Tweet, tweetElem: HTMLElement) {
   if (!tweet.is_quote_status) {
     return
   }
-  const qUrlString = tweet.quoted_status_permalink!.expanded
+  const permalinkObject = tweet.quoted_status_permalink
+  if (!permalinkObject) {
+    return
+  }
+  const qUrlString = permalinkObject.expanded
   const qUrl = new URL(qUrlString)
   // 드물게 인용 트윗 주소가 t.co 링크일 경우도 있더라.
   if (qUrl.hostname === 't.co') {
@@ -106,13 +108,7 @@ async function handleMentionsInTweet(tweet: Tweet, tweetElem: HTMLElement) {
   const overflowed = article.querySelector('a[aria-label][href$="/people"]')
   const mentionedUsersMap = await UserGetter.getMultipleUsersById(
     mentionedUserEntities.map(u => u.id_str)
-  ).catch(err => {
-    console.error(err)
-    return null
-  })
-  if (!mentionedUsersMap) {
-    return
-  }
+  )
   for (const mUser of mentionedUsersMap.values()) {
     await reflectBlock({
       user: mUser,
@@ -188,12 +184,15 @@ async function handleDMConversation(convId: string) {
   }
 }
 
-const promisesQueue = new (class {
-  private promise = Promise.resolve()
-  public push(newAsyncFunc: () => Promise<void>) {
-    this.promise = this.promise.then(newAsyncFunc)
-  }
-})()
+function* PromisesQueue() {
+  let promise = Promise.resolve()
+  while ((promise = promise.then(yield)));
+}
+
+const promisesQueue = PromisesQueue()
+// the first call of next executes from the start of the function
+// until the first yield statement
+promisesQueue.next()
 
 function startObserve(reactRoot: HTMLElement): void {
   new MutationObserver(mutations => {
@@ -219,8 +218,8 @@ function startObserve(reactRoot: HTMLElement): void {
     const customEvent = event as CustomEvent
     const elem = customEvent.target as HTMLElement
     const { tweet } = customEvent.detail
-    promisesQueue.push(() => handleMentionsInTweet(tweet, elem))
-    handleQuotedTweet(tweet, elem)
+    promisesQueue.next(() => handleMentionsInTweet(tweet, elem))
+    promisesQueue.next(() => handleQuotedTweet(tweet, elem))
   })
 }
 async function isLoggedIn(): Promise<boolean> {

@@ -1,10 +1,10 @@
 {
-  "description": "__MSG_extension_description__.",
+  "description": "__MSG_extension_description__",
   "manifest_version": 2,
   "name": "Mirror Block",
   "author": "Gaeulbyul <aeiou256@gmail.com>",
-  "version": "0.14.4.0",
-  "default_locale": "ko",
+  "version": "0.14.5.0",
+  "default_locale": "en",
   "homepage_url": "https://github.com/gaeulbyul/MirrorBlock",
   "icons": {
     "48": "icons/icon-48.png",
@@ -15,16 +15,14 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "{85e5d0a4-fc52-4d60-8634-7c67239276de}",
-      "strict_min_version": "68.0"
+      "strict_min_version": "78.0"
     }
   },
 
   "permissions": [
     "https://twitter.com/*",
-    "https://api.twitter.com/*",
     "https://mobile.twitter.com/*",
     "storage",
-    "cookies",
     "contextMenus",
     "activeTab",
     "webRequest",

@@ -21,6 +21,9 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "inlineSourceMap": false,
-    "inlineSources": false
+    "inlineSources": false,
+    "paths": {
+      "미러블락/*": ["./src/*"]
+    }
   }
 }

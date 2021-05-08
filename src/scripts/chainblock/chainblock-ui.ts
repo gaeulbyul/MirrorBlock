@@ -1,7 +1,8 @@
-import { EventEmitter, sleep } from '../common'
-import * as i18n from '../i18n'
+import { EventEmitter, sleep } from '미러블락/scripts/common'
+import * as i18n from '미러블락/scripts/i18n'
 
-function i18m(key: i18n.I18NMessageKeys) {
+// shortcut
+function i18m(key: i18n.I18NMessageKeys): string {
   return i18n.getMessage(key)
 }
 
@@ -51,7 +52,8 @@ const CHAINBLOCK_UI_HTML = `
         <button disabled class="mobcb-execute btn caution-btn">${i18m('block')}</button>
       </div>
     </div>
-  </div>`
+  </div>
+`
 
 function getLimitResetTime(limit: Limit): string {
   const uiLanguage = browser.i18n.getUILanguage()
@@ -227,7 +229,6 @@ export default class ChainMirrorBlockUI extends EventEmitter {
     this.rootElem.querySelector('.mobcb-prg-percentage')!.textContent = '100'
   }
   public complete(progress: ChainMirrorBlockProgress) {
-    console.debug(progress)
     this.completeProgressUI(progress)
     if (progress.foundUsers.length <= 0) {
       // sleep: progress가 100%되기 전에 메시지가 뜨며 닫히는 현상 방지

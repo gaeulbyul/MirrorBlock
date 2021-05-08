@@ -38,7 +38,7 @@
   will-change: transform;
 }
 
-[hidden] {
+.badge-wrapper [hidden] {
   display: none;
 }
 

@@ -1,5 +1,5 @@
-import { TwitterUserMap, isTwitterUser } from '../../common'
-import * as TwitterAPI from '../../twitter-api-ct'
+import { TwitterUserMap, isTwitterUser } from '미러블락/scripts/common'
+import * as TwitterAPI from '미러블락/scripts/twitter-api'
 import * as StoreRetriever from './retriever'
 import * as StoreUpdater from './updater'
 
@@ -17,7 +17,7 @@ const notExistUsers = new Set<string>()
 
 function treatAsNonExistUser(failedIdOrNames: string[]): (err: any) => void {
   return (err: any) => {
-    failedIdOrNames.forEach(idOrName => notExistUsers.add(idOrName))
+    failedIdOrNames.forEach(idOrName => notExistUsers.add(idOrName.toLowerCase()))
     console.error(err)
   }
 }
