@@ -1,7 +1,7 @@
 import flatten from 'flat'
 
-import enUS from './enUS.yaml'
-import koKR from './koKR.yaml'
+import enUS from './enUS.json'
+import koKR from './koKR.json'
 
 export default {
   en: {
