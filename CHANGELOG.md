@@ -1,3 +1,7 @@
+## v0.14.6.1
+
+- WebRequest API 관련 코드 제거
+
 ## v0.14.6.0
 
 - 영어번역 추가 [#13](https://github.com/gaeulbyul/MirrorBlock/pull/13)
