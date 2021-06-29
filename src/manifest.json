@@ -24,9 +24,7 @@
     "https://mobile.twitter.com/*",
     "storage",
     "contextMenus",
-    "activeTab",
-    "webRequest",
-    "webRequestBlocking"
+    "activeTab"
   ],
 
   "options_ui": {

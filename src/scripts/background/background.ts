@@ -1,6 +1,5 @@
 import * as Options from '미러블락/extoption'
 import { initializeContextMenus } from './context-menus'
-import { initializeWebRequests } from './webrequest'
 import * as i18n from '미러블락/scripts/i18n'
 
 async function updateBadge(option: MirrorBlockOption) {
@@ -32,4 +31,3 @@ async function initialize() {
 
 initialize()
 initializeContextMenus()
-initializeWebRequests()
