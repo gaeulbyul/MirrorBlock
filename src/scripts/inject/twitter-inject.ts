@@ -23,7 +23,7 @@ function isReduxStore(something: any): something is ReduxStore {
   return true
 }
 function findReduxStore(reactRoot: HTMLElement): ReduxStore {
-  const rEventHandler = getReactEventHandler(reactRoot.children[0])
+  const rEventHandler = getReactEventHandler(reactRoot.children[0]!)
   const reduxStore = rEventHandler.children.props.children.props.store
   if (!isReduxStore(reduxStore)) {
     throw new Error('fail to find redux store')

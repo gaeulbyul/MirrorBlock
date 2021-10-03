@@ -18,10 +18,10 @@ async function alertToTab(tabId: number, message: string) {
 async function getCurrentTab(): Promise<Tab | null> {
   const tabs = await browser.tabs.query({ active: true, currentWindow: true })
   const currentTab = tabs[0]
-  if (!currentTab.url || !currentTab.id) {
-    return null
+  if (currentTab && currentTab.url && currentTab.id) {
+    return currentTab
   }
-  return currentTab
+  return null
 }
 
 async function executeChainBlock(followKind: FollowKind) {

@@ -21,7 +21,7 @@ export function listenEvent(reduxStore: ReduxStore): void {
     const result: { [id: string]: TwitterUser } = {}
     const userEntities: TwitterUserEntities = dig(() => state.entities.users.entities) || []
     for (const userId of userIds) {
-      result[userId] = userEntities[userId]
+      result[userId] = userEntities[userId]!
     }
     return result
   })

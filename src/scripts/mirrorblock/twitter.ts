@@ -5,7 +5,11 @@ import * as Options from '미러블락/extoption'
 
 function initialize() {
   browser.storage.onChanged.addListener(changes => {
-    const option = changes.option.newValue
+    const optionChange = changes.option
+    if (!optionChange) {
+      return
+    }
+    const option = optionChange.newValue
     document.documentElement.classList.toggle('mob-enable-outline', option.outlineBlockUser)
   })
 

@@ -12,6 +12,9 @@ function findTweetIdFromElement(elem: HTMLElement): string | null {
   for (const plink of permalinks) {
     const tweetIdMatch = /\/status\/(\d+)/.exec(plink.pathname)
     const tweetId = tweetIdMatch![1]
+    if (!tweetId) {
+      continue
+    }
     const firstChild = plink.firstElementChild
     if (firstChild?.tagName === 'TIME') {
       return tweetId
@@ -42,7 +45,7 @@ function findUserIdFromElement(elem: HTMLElement): string | null {
   if (!userIdMatch) {
     return null
   }
-  const userId = userIdMatch[1]
+  const userId = userIdMatch[1]!
   return userId
 }
 

@@ -21,7 +21,11 @@ async function updateBadge(option: MirrorBlockOption) {
 
 async function initialize() {
   browser.storage.onChanged.addListener(changes => {
-    const option = changes.option.newValue as MirrorBlockOption
+    const optionChange = changes.option
+    if (!optionChange) {
+      return
+    }
+    const option = optionChange.newValue as MirrorBlockOption
     updateBadge(option)
   })
 

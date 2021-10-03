@@ -88,7 +88,7 @@ export async function getMultipleUsersById(userIds: string[]): Promise<TwitterUs
     }
   }
   if (idsToRequestAPI.length === 1) {
-    const requestedUser = await TwitterAPI.getSingleUserById(idsToRequestAPI[0]).catch(
+    const requestedUser = await TwitterAPI.getSingleUserById(idsToRequestAPI[0]!).catch(
       treatAsNonExistUser(idsToRequestAPI)
     )
     if (requestedUser) {

@@ -55,7 +55,7 @@ export abstract class EventEmitter {
     if (!(eventName in this.events)) {
       this.events[eventName] = []
     }
-    this.events[eventName].push(handler)
+    this.events[eventName]!.push(handler)
     return this
   }
   emit<T>(eventName: string, eventHandlerParameter?: T) {
@@ -155,7 +155,7 @@ export function getUserNameFromTweetUrl(
     return null
   }
   const name = matches[1]
-  if (validateTwitterUserName(name)) {
+  if (name && validateTwitterUserName(name)) {
     return name
   } else {
     return null

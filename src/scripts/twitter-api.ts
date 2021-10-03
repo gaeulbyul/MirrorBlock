@@ -241,7 +241,7 @@ export async function getFollowsScraperRateLimitStatus(followKind: FollowKind): 
 }
 
 function getCsrfTokenFromCookies(): string {
-  return /\bct0=([0-9a-f]+)/i.exec(document.cookie)![1]
+  return /\bct0=([0-9a-f]+)/i.exec(document.cookie)![1]!
 }
 
 function generateTwitterAPIOptions(obj: RequestInit): RequestInit {
