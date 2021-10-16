@@ -17,16 +17,10 @@ class ChainMirrorBlock {
   }
   private isRunning = false
   private shouldStop = false
+  private beforeUnloadHandler: (event: BeforeUnloadEvent) => void
   constructor(private options: MirrorBlockOption) {
     this.prepareUI()
-  }
-  private cleanup() {
-    this.blockResults.clear()
-    this.progress.foundUsers.length = 0
-  }
-  private prepareUI() {
-    this.ui.immediatelyBlockModeChecked = this.options.alwaysImmediatelyBlockMode
-    window.addEventListener('beforeunload', event => {
+    this.beforeUnloadHandler = ((event: BeforeUnloadEvent) => {
       if (!this.isRunning) {
         return
       }
@@ -34,7 +28,16 @@ class ChainMirrorBlock {
       const message = `[Mirror Block] ${i18n.getMessage('warning_before_close')}`
       event.returnValue = message
       return message
-    })
+    }).bind(this)
+  }
+  private cleanup() {
+    this.blockResults.clear()
+    this.progress.foundUsers.length = 0
+    window.removeEventListener('beforeunload', this.beforeUnloadHandler)
+  }
+  private prepareUI() {
+    this.ui.immediatelyBlockModeChecked = this.options.alwaysImmediatelyBlockMode
+    window.addEventListener('beforeunload', this.beforeUnloadHandler)
     this.ui.on('ui:close', () => {
       const confirmMessage = i18n.getMessage('chainblock_still_running')
       if (this.isRunning && window.confirm(confirmMessage)) {
