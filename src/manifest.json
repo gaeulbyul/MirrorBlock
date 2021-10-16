@@ -22,6 +22,7 @@
   "permissions": [
     "https://twitter.com/*",
     "https://mobile.twitter.com/*",
+    "https://tweetdeck.twitter.com/*",
     "storage",
     "contextMenus",
     "activeTab"
@@ -37,7 +38,11 @@
 
   "content_scripts": [
     {
-      "matches": ["*://twitter.com/*", "*://mobile.twitter.com/*"],
+      "matches": [
+        "https://twitter.com/*",
+        "https://mobile.twitter.com/*",
+        "https://tweetdeck.twitter.com/*"
+      ],
       "css": ["styles/mirrorblock.css", "styles/mob-badge.css", "styles/chainblock.css"],
       "js": [
         "vendor/browser-polyfill.min.js",
@@ -46,7 +51,7 @@
       ]
     },
     {
-      "matches": ["*://tweetdeck.twitter.com/*"],
+      "matches": ["https://tweetdeck.twitter.com/*"],
       "css": ["styles/tweetdeck.css"],
       "js": ["vendor/browser-polyfill.min.js", "bundled/tweetdeck.bun.js"]
     }

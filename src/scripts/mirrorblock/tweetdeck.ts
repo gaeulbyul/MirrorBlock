@@ -134,4 +134,6 @@ function main() {
   })
 }
 
-main()
+if (!document.getElementById('react-root')) {
+  main()
+}

@@ -8,6 +8,8 @@ const BEARER_TOKEN = `AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puT
 let apiPrefix = 'https://twitter.com/i/api/1.1'
 if (location.hostname === 'mobile.twitter.com') {
   apiPrefix = 'https://mobile.twitter.com/i/api/1.1'
+} else if (location.hostname === 'tweetdeck.twitter.com') {
+  apiPrefix = 'https://tweetdeck.twitter.com/i/api/1.1'
 }
 
 export class APIError extends Error {

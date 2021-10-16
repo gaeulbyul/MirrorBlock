@@ -189,6 +189,11 @@ function tweetDetector(state: any) {
 }
 
 export function observe(reactRoot: Element, reduxStore: ReduxStore): void {
+  const state = reduxStore.getState()
+  if (!checkLoginViaReduxStoreState(state)) {
+    console.log('not logged in')
+    return
+  }
   new MutationObserver(() => {
     const state = reduxStore.getState()
     tweetDetector(state)
@@ -199,4 +204,8 @@ export function observe(reactRoot: Element, reduxStore: ReduxStore): void {
     childList: true,
     // characterData: true,
   })
+}
+
+function checkLoginViaReduxStoreState(state: any) {
+  return typeof state.session.user_id === 'string'
 }
