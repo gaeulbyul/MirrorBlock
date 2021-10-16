@@ -1,5 +1,4 @@
 import * as Options from '미러블락/extoption'
-import { APIError } from '미러블락/scripts/twitter-api'
 import { Action, sleep, copyFrozenObject, checkLogin } from '미러블락/scripts/common'
 import ChainMirrorBlockUI from './chainblock-ui'
 import * as TwitterAPI from '미러블락/scripts/twitter-api'
@@ -228,7 +227,7 @@ export async function startChainBlock(targetUserName: string, followKind: Follow
     return
   }
   const targetUser = await TwitterAPI.getSingleUserByName(targetUserName).catch(err => {
-    if (err instanceof APIError) {
+    if (err instanceof TwitterAPI.APIError) {
       const json = err.response.body
       const jsonstr = JSON.stringify(json, null, 2)
       window.alert(`${i18n.getMessage('error_occured_from_twitter_server')}\n${jsonstr}`)
