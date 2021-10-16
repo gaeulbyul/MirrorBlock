@@ -86,7 +86,7 @@ class UserList {
       userPrefix = `[${i18n.getMessage('skipped')}]`
     }
     let tooltip = `${userPrefix} @${user.screen_name} (${user.name})`
-    tooltip += `\${i18n.getMessage('profile')}:\n${user.description}`
+    tooltip += `\n${i18n.getMessage('profile')}: ${user.description}`
     const ul = this.rootElem.querySelector('ul')!
     const item = document.createElement('li')
     const link = document.createElement('a')
