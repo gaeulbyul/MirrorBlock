@@ -1,3 +1,5 @@
+import * as TwitterAPI from '미러블락/scripts/twitter-api'
+
 export const enum Action {
   StartChainBlock = 'MirrorBlock/Start',
   StopChainBlock = 'MirrorBlock/Stop',
@@ -159,5 +161,22 @@ export function getUserNameFromTweetUrl(
     return name
   } else {
     return null
+  }
+}
+
+export async function checkLogin(): Promise<boolean> {
+  try {
+    const scripts = Array.from(document.querySelectorAll('script:not([src])'))
+    const result = scripts
+      .map(script => /"isLoggedIn":(true|false)/.exec(script.innerHTML))
+      .filter(n => !!n)
+      .pop()!
+      .pop()
+    return result === 'true'
+  } catch (err) {
+    console.warn('warning. login-check logic should update.')
+    console.warn('error: %o', err)
+    const checkViaAPI = await TwitterAPI.getMyself().catch(() => null)
+    return !!checkViaAPI
   }
 }

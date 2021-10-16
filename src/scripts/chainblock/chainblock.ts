@@ -1,6 +1,6 @@
 import * as Options from '미러블락/extoption'
 import { APIError } from '미러블락/scripts/twitter-api'
-import { Action, sleep, copyFrozenObject } from '미러블락/scripts/common'
+import { Action, sleep, copyFrozenObject, checkLogin } from '미러블락/scripts/common'
 import ChainMirrorBlockUI from './chainblock-ui'
 import * as TwitterAPI from '미러블락/scripts/twitter-api'
 import * as i18n from '미러블락/scripts/i18n'
@@ -219,8 +219,8 @@ export async function startChainBlock(targetUserName: string, followKind: Follow
     window.alert(i18n.getMessage('chainblock_already_running'))
     return
   }
-  const myself = await TwitterAPI.getMyself() //.catch(() => null)
-  if (!myself) {
+  const loggedIn = await checkLogin()
+  if (!loggedIn) {
     window.alert(i18n.getMessage('please_check_login_before_chainblock'))
     return
   }
@@ -242,13 +242,9 @@ export async function startChainBlock(targetUserName: string, followKind: Follow
     window.alert(i18n.getMessage('nobody_follows_them'))
     return
   }
-  if (targetUser.protected) {
-    const relationship = await TwitterAPI.getRelationship(myself, targetUser)
-    const { following } = relationship.source
-    if (!following) {
-      window.alert(i18n.getMessage('cant_chainblock_they_protected', targetUserName))
-      return
-    }
+  if (targetUser.protected && !targetUser.following) {
+    window.alert(i18n.getMessage('cant_chainblock_they_protected', targetUserName))
+    return
   }
   let confirmMessage: string
   switch (followKind) {
