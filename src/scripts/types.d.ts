@@ -94,7 +94,7 @@ interface FollowsScraperOptions {
   delay: number
 }
 
-type ConnectionType =
+type UserConnectionType =
   | 'following'
   | 'following_requested'
   | 'followed_by'
@@ -107,7 +107,7 @@ interface Friendship {
   name: string
   screen_name: string
   id_str: string
-  connections: ConnectionType[]
+  connections: UserConnectionType[]
 }
 
 type FriendshipResponse = Friendship[]
