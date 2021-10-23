@@ -1,3 +1,11 @@
+@keyframes mb-fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 .mobcb-bg {
   position: fixed;
   display: flex;
@@ -10,6 +18,7 @@
   z-index: 9999;
   overflow: hidden;
   background-color: rgba(0, 0, 0, 0.6);
+  animation: mb-fadein 0.5s;
 }
 hr.mobcb-hr {
   margin: 3px 0;
@@ -23,9 +32,7 @@ hr.mobcb-hr {
   flex-direction: column;
   width: 450px;
   max-height: 80vh;
-}
-.mobcb-titlebar {
-  margin-bottom: 5px;
+  animation: mb-fadein 0.5s;
 }
 .mobcb-title {
   font-size: 1.25em;
@@ -80,22 +87,26 @@ hr.mobcb-hr {
 .mobcb-controls .btn ~ .btn {
   margin: 0 5px;
 }
-
-/* ---------- 모바일 ---------- */
+.mobcb-user a {
+  text-decoration: none;
+}
+.mobcb-user a:hover {
+  text-decoration: underline;
+}
 .mob-mobile .mobcb-bg {
   background-color: rgba(0, 0, 0, 0.8);
 }
 .mob-mobile .mobcb-dialog {
-  border-radius: 10px;
+  border-radius: 20px;
   min-width: 250px;
   width: 90vw;
+  max-width: 600px;
   max-height: 95vh;
   font-size: 16px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
 }
-.mob-mobile .mobcb-users > ul {
-  padding-left: 0;
-  margin: 0;
-  line-height: 200%;
+.mob-mobile .mobcb-users ul.mobcb-userlist {
+  padding-left: 10px;
 }
 .mob-mobile hr.mobcb-hr {
   border-top: 1px solid;
@@ -106,8 +117,14 @@ hr.mobcb-hr {
 }
 .mob-mobile .btn {
   padding: 10px 25px;
-  border: 1px solid;
+  border: 0;
+  border-radius: 100px;
   font-size: 1.25em;
+  transition: filter 0.3s ease;
+  cursor: pointer;
+}
+.mob-mobile .btn:hover {
+  filter: brightness(120%);
 }
 /* 버튼 순서가 차단-닫기 순이 되도록 */
 .block-dialog .btn {
@@ -131,11 +148,13 @@ hr.mobcb-hr {
 }
 .mob-mobile .mobcb-user a {
   color: crimson;
-  text-decoration: underline;
 }
 .mob-mobile .btn.caution-btn {
   background-color: crimson;
   color: white;
+}
+.mob-mobile hr.mobcb-hr {
+  border-color: #ccc;
 }
 
 /* --- 야간모드 on --- */
@@ -149,9 +168,11 @@ hr.mobcb-hr {
 }
 .mob-mobile.mob-nightmode .mobcb-user a {
   color: #f47189;
-  text-decoration: underline;
 }
 .mob-mobile.mob-nightmode .btn.caution-btn {
   background-color: crimson;
   color: white;
+}
+.mob-mobile.mob-nightmode hr {
+  border-color: #1b2836;
 }
