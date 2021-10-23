@@ -21,7 +21,7 @@ task('build', async () => {
         return !/\.tsx?$/.test(filename)
       },
     }),
-    exec('webpack'),
+    exec('webpack-cli --mode=production'),
   ])
 })
 

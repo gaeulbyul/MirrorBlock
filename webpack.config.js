@@ -2,8 +2,8 @@ const path = require('path')
 const webpack = require('webpack')
 
 module.exports = {
-  mode: 'development',
-  devtool: 'inline-source-map',
+  // mode: 'development',
+  devtool: 'source-map',
   entry: {
     background: './src/scripts/background/background.ts',
     twitter: './src/scripts/mirrorblock/twitter.ts',
@@ -28,11 +28,7 @@ module.exports = {
       },
     ],
   },
-  plugins: [
-    // new webpack.ProvidePlugin({
-    //   browser: 'webextension-polyfill'
-    // })
-  ],
+  plugins: [],
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
     alias: {
