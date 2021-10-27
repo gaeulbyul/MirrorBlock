@@ -1,3 +1,4 @@
+import { iterateUntouchedElems } from '../../common'
 import { dig, getReactEventHandler } from './inject-common'
 import * as EventNames from '미러블락/scripts/event-names'
 
@@ -158,13 +159,7 @@ function sendDMConversationsToExtension() {
 
 function tweetDetector(state: any) {
   const tweetElems = document.querySelectorAll<HTMLElement>('[data-testid=tweet]')
-  for (const elem of tweetElems) {
-    // Tree-UI 등에서, 트윗을 접었다 펴면 붙었던 뱃지가 사라져 다시 붙여야 함
-    // 그냥 중복처리를 허용하기로?
-    // if (touchedElems.has(elem)) {
-    //   continue
-    // }
-    // touchedElems.add(elem)
+  for (const elem of iterateUntouchedElems(tweetElems)) {
     const tweet = inspectTweetElement(state, elem)
     if (!tweet) {
       continue
@@ -194,6 +189,7 @@ export function observe(reactRoot: Element, reduxStore: ReduxStore): void {
     console.log('not logged in')
     return
   }
+  tweetDetector(state)
   new MutationObserver(() => {
     const state = reduxStore.getState()
     tweetDetector(state)
