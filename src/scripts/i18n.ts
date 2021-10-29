@@ -1,34 +1,71 @@
-type I18NMessages = typeof import('../_locales/ko/messages.json')
-type SubstItem = number | string
-type Substitutions = SubstItem | SubstItem[] | undefined
-export type I18NMessageKeys = keyof I18NMessages
+/// <reference path="./i18n.d.ts" />
 
-export function getMessage(key: string & I18NMessageKeys, substs: Substitutions = undefined) {
-  if (Array.isArray(substs)) {
-    return browser.i18n.getMessage(
-      key,
-      substs.map(s => s.toLocaleString())
-    )
-  } else if (typeof substs === 'number') {
-    return browser.i18n.getMessage(key, substs.toLocaleString())
-  } else {
-    return browser.i18n.getMessage(key, substs)
-  }
+import * as KoreanMessages from '../_locales/ko/messages.json'
+import * as EnglishMessages from '../_locales/en/messages.json'
+
+// MV3 & Service-worker 에서 못 쓰는거:
+// i18n.getMessage
+// i18n.getUILanguage
+
+let messages: typeof KoreanMessages
+switch (navigator.language) {
+  case 'ko-KR':
+    messages = KoreanMessages
+    break
+  default:
+    messages = EnglishMessages
+    break
 }
 
-function tryGetMessage(messageName: string) {
-  const message = getMessage(messageName as any)
-  if (!message) {
-    throw new Error(`invalid messageName? "${messageName}"`)
-  }
-  return message
-}
+const i18n: MirrorBlockI18NTranslates = new Proxy(messages, {
+  get(obj, name: string, p) {
+    const translate = Reflect.get(obj, name, p)
+    if (!translate) {
+      throw new TypeError(`can't find translation with key '${name}'`)
+    }
+    return function fn(...substitutes: Array<number | string>) {
+      const { message } = translate
+      const placeholders = translate.placeholders || {}
+      if (Object.keys(placeholders).length !== substitutes.length) {
+        console.warn(
+          'placeholder length mismatch! name="%s", expected %d, got %d',
+          name,
+          Object.keys(placeholders).length,
+          substitutes.length
+        )
+      }
+      if (substitutes.length > 9) {
+        throw new Error('chrome/chromium does not support more-than 9 substitutes')
+      }
+      return message.replace(/\$(\w+)\$/g, (_match: any, key: string) => {
+        return placeholders[key].content.replace(/\$(\d)/g, (_pmatch: any, pn: string) => {
+          const n = parseInt(pn, 10) - 1
+          const subst = substitutes[n]
+          if (typeof subst === 'number') {
+            return subst.toLocaleString()
+          } else {
+            return subst
+          }
+        })
+      })
+      /*
+      placeholders.forEach(([key, {content}], index) => {
+        message = message.replaceAll(`$${key}$`, substitutes[index])
+      })
+      return message
+      */
+    }
+  },
+}) as any
+
+export default i18n
 
 export function applyI18nOnHtml() {
   const i18nTextElements = document.querySelectorAll('[data-i18n-text]')
   for (const elem of i18nTextElements) {
     const messageName = elem.getAttribute('data-i18n-text')!
-    const message = tryGetMessage(messageName)
+    // @ts-ignore
+    const message = i18n[messageName]()
     // console.debug('%o .textContent = %s [from %s]', elem, message, messageName)
     elem.textContent = message
   }
@@ -40,7 +77,8 @@ export function applyI18nOnHtml() {
     const attrsToNameParsed = new URLSearchParams(attrsToNameSerialized)
     attrsToNameParsed.forEach((value, key) => {
       // console.debug('|attr| key:"%s", value:"%s"', key, value)
-      const message = tryGetMessage(value)
+      // @ts-ignore
+      const message = i18n[value]()
       elem.setAttribute(key, message)
     })
   }
@@ -51,14 +89,8 @@ function checkMissingTranslations(
   // TypeScript 컴파일러가 타입에러를 일으킨다.
   // tsconfig.json의 resolveJsonModule 옵션을 켜야 함
   keys:
-    | Exclude<
-        keyof typeof import('../_locales/ko/messages.json'),
-        keyof typeof import('../_locales/en/messages.json')
-      >
-    | Exclude<
-        keyof typeof import('../_locales/en/messages.json'),
-        keyof typeof import('../_locales/ko/messages.json')
-      >,
+    | Exclude<keyof typeof KoreanMessages, keyof typeof EnglishMessages>
+    | Exclude<keyof typeof EnglishMessages, keyof typeof KoreanMessages>,
   find: (_keys: never) => void,
   _check = find(keys)
 ) {}

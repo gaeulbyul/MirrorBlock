@@ -1,4 +1,4 @@
-import * as i18n from '미러블락/scripts/i18n'
+import i18n from '미러블락/scripts/i18n'
 
 export default class Badge {
   private readonly badgedAttr = 'data-mirrorblock-badged'
@@ -10,19 +10,19 @@ export default class Badge {
     this.baseElem.innerHTML = `\
 <span class="badge-wrapper">
   <span class="badge blocks-you">
-    ${i18n.getMessage('blocks_you')}
+    ${i18n.blocks_you()}
     <span hidden class="badge-username"></span>
   </span>
   <span hidden class="badge block-reflected">
-    ${i18n.getMessage('block_reflected')}
+    ${i18n.block_reflected()}
   </span>
 </span>`
     this.baseElem
       .querySelector('.badge.blocks-you')!
-      .setAttribute('title', i18n.getMessage('blocks_you_description', userName))
+      .setAttribute('title', i18n.blocks_you_description(userName))
     this.baseElem
       .querySelector('.badge.block-reflected')!
-      .setAttribute('title', i18n.getMessage('block_reflected_description', userName))
+      .setAttribute('title', i18n.block_reflected_description(userName))
   }
 
   public showUserName() {

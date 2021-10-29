@@ -1,9 +1,10 @@
 {
   "description": "__MSG_extension_description__",
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Mirror Block",
   "author": "Gaeulbyul <aeiou256@gmail.com>",
   "version": "0.15.0.0",
+  "version_name": "0.15.0.0 [MV3]",
   "default_locale": "en",
   "homepage_url": "https://github.com/gaeulbyul/MirrorBlock",
   "icons": {
@@ -12,21 +13,20 @@
     "128": "icons/icon-128.png"
   },
 
-  "permissions": [
+  "host_permissions": [
     "https://twitter.com/*",
     "https://mobile.twitter.com/*",
-    "https://tweetdeck.twitter.com/*",
-    "storage",
-    "contextMenus",
-    "activeTab"
+    "https://tweetdeck.twitter.com/*"
   ],
+
+  "permissions": ["storage", "contextMenus", "activeTab"],
 
   "options_ui": {
     "page": "options/options.html"
   },
 
   "background": {
-    "scripts": ["vendor/browser-polyfill.min.js", "bundled/background.bun.js"]
+    "service_worker": "service-worker-loader.js"
   },
 
   "content_scripts": [
@@ -50,9 +50,18 @@
     }
   ],
 
-  "web_accessible_resources": ["bundled/tweetdeck_inject.bun.js", "bundled/twitter_inject.bun.js"],
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "https://twitter.com/*",
+        "https://mobile.twitter.com/*",
+        "https://tweetdeck.twitter.com/*"
+      ],
+      "resources": ["bundled/tweetdeck_inject.bun.js", "bundled/twitter_inject.bun.js"]
+    }
+  ],
 
-  "browser_action": {
+  "action": {
     "default_icon": "icons/icon-48.png",
     "default_title": "Mirror Block",
     "default_popup": "popup/popup.html"

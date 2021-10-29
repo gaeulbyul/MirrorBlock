@@ -1,6 +1,6 @@
 import * as Options from '미러블락/extoption'
 import { Action, getUserNameFromTweetUrl } from '미러블락/scripts/common'
-import * as i18n from '미러블락/scripts/i18n'
+import i18n, { applyI18nOnHtml } from '미러블락/scripts/i18n'
 
 type Tab = browser.tabs.Tab
 
@@ -42,8 +42,8 @@ async function executeChainBlock(followKind: FollowKind) {
   }
   const userName = getUserNameFromTweetUrl(url)
   if (!userName) {
-    const a = i18n.getMessage('please_run_on_profile_page_1')
-    const b = i18n.getMessage('please_run_on_profile_page_2')
+    const a = i18n.please_run_on_profile_page_1()
+    const b = i18n.please_run_on_profile_page_2()
     const message = `${a}\n${b}`
     alertToTab(tabId, message)
     closePopup()
@@ -59,7 +59,7 @@ async function executeChainBlock(followKind: FollowKind) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  i18n.applyI18nOnHtml()
+  applyI18nOnHtml()
   const currentTab = await getCurrentTab()
   if (currentTab && currentTab.url) {
     const currentUrl = new URL(currentTab.url!)
@@ -68,9 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (supportingHostname.includes(currentUrl.hostname)) {
       cbButtons.forEach(el => (el.disabled = false))
     } else {
-      cbButtons.forEach(
-        el => (el.title = i18n.getMessage('running_chainblock_is_only_available_on_twitter'))
-      )
+      cbButtons.forEach(el => (el.title = i18n.running_chainblock_is_only_available_on_twitter()))
     }
   }
   document.querySelector('.menu-item.chain-block-followers')!.addEventListener('click', event => {
@@ -95,8 +93,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const blockReflection = document.querySelector<HTMLElement>('.blockReflection')!
     const val = options.enableBlockReflection
     blockReflection.classList.toggle('on', val)
-    blockReflection.textContent = `${i18n.getMessage('block_reflection')}: ${
-      val ? 'On \u2714' : 'Off'
-    }`
+    blockReflection.textContent = `${i18n.block_reflection()}: ${val ? 'On \u2714' : 'Off'}`
   }
 })
