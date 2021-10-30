@@ -85,8 +85,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   })
   {
     const manifest = browser.runtime.getManifest()
+    const versionName = manifest.version_name ?? manifest.version
     const currentVersion = document.querySelector<HTMLElement>('.currentVersion')!
-    currentVersion.textContent = `Mirror Block v${manifest.version}`
+    currentVersion.textContent = `Mirror Block v${versionName}`
   }
   {
     const options = await Options.load()
