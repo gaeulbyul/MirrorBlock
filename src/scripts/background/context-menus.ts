@@ -34,20 +34,20 @@ browser.contextMenus.onClicked.addListener((clickInfo, tab) => {
   })
 })
 
-export function initializeContextMenus() {
-  const contexts: browser.contextMenus.ContextType[] = ['link']
+export async function initializeContextMenus() {
+  await browser.contextMenus.removeAll()
   const documentUrlPatterns = ['https://twitter.com/*', 'https://mobile.twitter.com/*']
   const targetUrlPatterns = documentUrlPatterns
   browser.contextMenus.create({
     id: 'run_chainblock_from_followers_contextmenu',
-    contexts,
+    contexts: ['link'],
     documentUrlPatterns,
     targetUrlPatterns,
     title: i18n.run_chainblock_from_followers_contextmenu(),
   })
   browser.contextMenus.create({
     id: 'run_chainblock_from_following_contextmenu',
-    contexts,
+    contexts: ['link'],
     documentUrlPatterns,
     targetUrlPatterns,
     title: i18n.run_chainblock_from_following_contextmenu(),
