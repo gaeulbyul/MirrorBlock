@@ -1,6 +1,6 @@
 import * as Options from '미러블락/extoption'
 import { Action, getUserNameFromTweetUrl } from '미러블락/scripts/common'
-import i18n, { applyI18nOnHtml } from '미러블락/scripts/i18n'
+import i18n, { applyI18NOnHtml } from '미러블락/scripts/i18n'
 
 type Tab = browser.tabs.Tab
 
@@ -59,7 +59,7 @@ async function executeChainBlock(followKind: FollowKind) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  applyI18nOnHtml()
+  applyI18NOnHtml()
   const currentTab = await getCurrentTab()
   if (currentTab && currentTab.url) {
     const currentUrl = new URL(currentTab.url!)

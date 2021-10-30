@@ -24,7 +24,6 @@ export default class Badge {
       .querySelector('.badge.block-reflected')!
       .setAttribute('title', i18n.block_reflected_description(userName))
   }
-
   public showUserName() {
     const name = this.user.screen_name
     const userNameElem = this.baseElem.querySelector<HTMLElement>('.badge-username')!

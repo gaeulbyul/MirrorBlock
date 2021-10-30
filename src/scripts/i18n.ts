@@ -48,19 +48,13 @@ const i18n: MirrorBlockI18NTranslates = new Proxy(messages, {
           }
         })
       })
-      /*
-      placeholders.forEach(([key, {content}], index) => {
-        message = message.replaceAll(`$${key}$`, substitutes[index])
-      })
-      return message
-      */
     }
   },
 }) as any
 
 export default i18n
 
-export function applyI18nOnHtml() {
+export function applyI18NOnHtml() {
   const i18nTextElements = document.querySelectorAll('[data-i18n-text]')
   for (const elem of i18nTextElements) {
     const messageName = elem.getAttribute('data-i18n-text')!
@@ -76,7 +70,6 @@ export function applyI18nOnHtml() {
     const attrsToNameSerialized = elem.getAttribute('data-i18n-attrs')!
     const attrsToNameParsed = new URLSearchParams(attrsToNameSerialized)
     attrsToNameParsed.forEach((value, key) => {
-      // console.debug('|attr| key:"%s", value:"%s"', key, value)
       // @ts-ignore
       const message = i18n[value]()
       elem.setAttribute(key, message)
