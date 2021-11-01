@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill'
 import * as Options from '미러블락/extoption'
 import { Action, sleep, copyFrozenObject, checkLogin } from '미러블락/scripts/common'
 import ChainMirrorBlockUI from './chainblock-ui'

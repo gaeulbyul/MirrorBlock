@@ -1,21 +1,20 @@
+import browser from 'webextension-polyfill'
 import * as Options from '미러블락/extoption'
-import { Action, getUserNameFromTweetUrl } from '미러블락/scripts/common'
+import { Action, getUserNameFromTweetUrl, sendBrowserTabMessage } from '미러블락/scripts/common'
 import i18n, { applyI18NOnHtml } from '미러블락/scripts/i18n'
-
-type Tab = browser.tabs.Tab
 
 function closePopup() {
   window.close()
 }
 
 async function alertToTab(tabId: number, message: string) {
-  return browser.tabs.sendMessage<MBAlertMessage>(tabId, {
+  return sendBrowserTabMessage<MBAlertMessage>(tabId, {
     action: Action.Alert,
     message,
   })
 }
 
-async function getCurrentTab(): Promise<Tab | null> {
+async function getCurrentTab(): Promise<browser.Tabs.Tab | null> {
   const tabs = await browser.tabs.query({ active: true, currentWindow: true })
   const currentTab = tabs[0]
   if (currentTab && currentTab.url && currentTab.id) {
@@ -49,13 +48,11 @@ async function executeChainBlock(followKind: FollowKind) {
     closePopup()
     return
   }
-  browser.tabs
-    .sendMessage<MBStartChainBlockMessage>(tabId, {
-      action: Action.StartChainBlock,
-      followKind,
-      userName,
-    })
-    .then(closePopup)
+  sendBrowserTabMessage<MBStartChainBlockMessage>(tabId, {
+    action: Action.StartChainBlock,
+    followKind,
+    userName,
+  }).then(closePopup)
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -85,6 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   })
   {
     const manifest = browser.runtime.getManifest()
+    // @ts-ignore
     const versionName = manifest.version_name ?? manifest.version
     const currentVersion = document.querySelector<HTMLElement>('.currentVersion')!
     currentVersion.textContent = `Mirror Block v${versionName}`

@@ -309,10 +309,6 @@ declare function requestIdleCallback(
 declare function cancelIdleCallback(handle: RequestIdleCallbackHandle): void
 // .end
 
-declare namespace browser {
-  export import contextMenus = browser.menus
-}
-
 declare module 'uuid' {
   function v1(): string
 }

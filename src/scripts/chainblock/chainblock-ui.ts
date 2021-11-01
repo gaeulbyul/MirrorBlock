@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill'
 import { EventEmitter, sleep } from '미러블락/scripts/common'
 import i18n from '미러블락/scripts/i18n'
 

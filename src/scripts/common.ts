@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill'
 import * as TwitterAPI from '미러블락/scripts/twitter-api'
 
 export const enum Action {
@@ -179,4 +180,8 @@ export async function checkLogin(): Promise<boolean> {
     const checkViaAPI = await TwitterAPI.getMyself().catch(() => null)
     return !!checkViaAPI
   }
+}
+
+export function sendBrowserTabMessage<T>(tabId: number, message: T) {
+  return browser.tabs.sendMessage(tabId, message)
 }

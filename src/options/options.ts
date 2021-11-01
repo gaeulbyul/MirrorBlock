@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill'
 import * as Options from '미러블락/extoption'
 import { applyI18NOnHtml } from '미러블락/scripts/i18n'
 

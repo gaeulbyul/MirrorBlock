@@ -1,7 +1,8 @@
-import { getUserNameFromTweetUrl, Action } from '미러블락/scripts/common'
+import browser from 'webextension-polyfill'
+import { getUserNameFromTweetUrl, Action, sendBrowserTabMessage } from '미러블락/scripts/common'
 import i18n from '미러블락/scripts/i18n'
 
-function getUserNameFromClickInfo(info: browser.contextMenus.OnClickData): string | null {
+function getUserNameFromClickInfo(info: browser.Menus.OnClickData): string | null {
   const { linkUrl } = info
   if (!linkUrl) {
     return null
@@ -11,6 +12,9 @@ function getUserNameFromClickInfo(info: browser.contextMenus.OnClickData): strin
 }
 
 browser.contextMenus.onClicked.addListener((clickInfo, tab) => {
+  if (!tab) {
+    return
+  }
   const tabId = tab.id!
   const userName = getUserNameFromClickInfo(clickInfo)
   if (!userName) {
@@ -27,7 +31,7 @@ browser.contextMenus.onClicked.addListener((clickInfo, tab) => {
     default:
       throw new Error('unreachable')
   }
-  browser.tabs.sendMessage<MBStartChainBlockMessage>(tabId, {
+  sendBrowserTabMessage<MBStartChainBlockMessage>(tabId, {
     action: Action.StartChainBlock,
     followKind,
     userName,
