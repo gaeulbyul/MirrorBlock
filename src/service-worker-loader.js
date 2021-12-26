@@ -4,7 +4,6 @@
 // https://stackoverflow.com/a/66408379
 
 try {
-  importScripts('vendor/browser-polyfill.min.js')
   importScripts('bundled/background.bun.js')
 } catch (err) {
   console.error(err)

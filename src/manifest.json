@@ -26,7 +26,7 @@
   },
 
   "background": {
-    "scripts": ["vendor/browser-polyfill.min.js", "bundled/background.bun.js"]
+    "scripts": ["bundled/background.bun.js"]
   },
 
   "content_scripts": [
@@ -37,16 +37,12 @@
         "https://tweetdeck.twitter.com/*"
       ],
       "css": ["styles/mirrorblock.css", "styles/mob-badge.css", "styles/chainblock.css"],
-      "js": [
-        "vendor/browser-polyfill.min.js",
-        "bundled/twitter.bun.js",
-        "bundled/chainblock.bun.js"
-      ]
+      "js": ["bundled/twitter.bun.js", "bundled/chainblock.bun.js"]
     },
     {
       "matches": ["https://tweetdeck.twitter.com/*"],
       "css": ["styles/tweetdeck.css"],
-      "js": ["vendor/browser-polyfill.min.js", "bundled/tweetdeck.bun.js"]
+      "js": ["bundled/tweetdeck.bun.js"]
     }
   ],
 
