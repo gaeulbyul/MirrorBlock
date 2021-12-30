@@ -47,5 +47,6 @@
   },
   "dependencies": {
     "uuid": "^7.0.2"
-  }
+  },
+  "packageManager": "yarn@3.1.1"
 }
