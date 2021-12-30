@@ -11,10 +11,6 @@
     "build": "just default",
     "just": "just"
   },
-  "husky": {
-    "hooks": {
-    }
-  },
   "browserslist": [
     "firefox 63",
     "chrome 70",
@@ -32,7 +28,7 @@
     "eslint": "^7.28.0",
     "eslint-plugin-compat": "^3.9.0",
     "fs-extra": "^10.0.0",
-    "husky": "^4.2.5",
+    "husky": "^7.0.4",
     "just-scripts": "^1.5.4",
     "mkdirp": "1.0.4",
     "ncp": "2.0.0",
