@@ -2,7 +2,7 @@ import { dig } from './inject-common'
 
 function addEventWithResponse(
   name: ReduxStoreEventNames,
-  callback: (event: CustomEvent) => any
+  callback: (event: CustomEvent) => any,
 ): void {
   document.addEventListener(`MirrorBlock-->${name}`, event => {
     const customEvent = event as CustomEvent

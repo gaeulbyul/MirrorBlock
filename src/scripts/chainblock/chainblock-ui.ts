@@ -127,10 +127,10 @@ export default class ChainMirrorBlockUI extends EventEmitter {
     super()
     this.rootElem.innerHTML = CHAINBLOCK_UI_HTML
     this.skippedUserList = new UserList(
-      this.rootElem.querySelector<HTMLElement>('.mobcb-skipped-users')!
+      this.rootElem.querySelector<HTMLElement>('.mobcb-skipped-users')!,
     )
     this.blockedbyUserList = new UserList(
-      this.rootElem.querySelector<HTMLElement>('.mobcb-blockedby-users')!
+      this.rootElem.querySelector<HTMLElement>('.mobcb-blockedby-users')!,
     )
     document.body.appendChild(this.rootElem)
     this.handleEvents()
@@ -195,10 +195,10 @@ export default class ChainMirrorBlockUI extends EventEmitter {
     progressBar.value = progress.scraped
     const percentage = Math.round((progress.scraped / this.total) * 100)
     this.rootElem.querySelector('.mobcb-prg-percentage')!.textContent = percentage.toString()
-    this.rootElem.querySelector('.mobcb-prg-scraped')!.textContent =
-      progress.scraped.toLocaleString()
-    this.rootElem.querySelector('.mobcb-prg-found')!.textContent =
-      progress.foundUsers.length.toLocaleString()
+    this.rootElem.querySelector('.mobcb-prg-scraped')!.textContent = progress.scraped
+      .toLocaleString()
+    this.rootElem.querySelector('.mobcb-prg-found')!.textContent = progress.foundUsers.length
+      .toLocaleString()
     this.rootElem.querySelector<HTMLElement>('.mobcb-progress-text')!.hidden = false
   }
   private completeProgressUI(progress: ChainMirrorBlockProgress) {

@@ -1,9 +1,9 @@
 import browser from 'webextension-polyfill'
 import * as Options from '미러블락/extoption'
-import { Action, sleep, copyFrozenObject, checkLogin } from '미러블락/scripts/common'
-import ChainMirrorBlockUI from './chainblock-ui'
-import * as TwitterAPI from '미러블락/scripts/twitter-api'
+import { Action, checkLogin, copyFrozenObject, sleep } from '미러블락/scripts/common'
 import i18n from '미러블락/scripts/i18n'
+import * as TwitterAPI from '미러블락/scripts/twitter-api'
+import ChainMirrorBlockUI from './chainblock-ui'
 
 class ChainMirrorBlock {
   private readonly ui = new ChainMirrorBlockUI()
@@ -155,7 +155,7 @@ class ChainMirrorBlock {
           rateLimited = false
           this.ui.rateLimitResetted()
         }
-        ++this.progress.scraped
+        ;++this.progress.scraped
         updateProgress()
         if (!follower.blocked_by) {
           continue
@@ -195,7 +195,7 @@ class ChainMirrorBlock {
             .then(result => {
               this.ui.updateBlockResult(user, result)
             })
-        })
+        }),
       )
       await blockPromises
       this.ui.completeMutualBlock()

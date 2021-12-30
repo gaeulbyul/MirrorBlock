@@ -285,7 +285,7 @@ type Either<E, T> = EitherLeft<E> | EitherRight<T>
 
 interface ReduxStore {
   getState(): any
-  dispatch(payload: { type: string; [key: string]: any }): any
+  dispatch(payload: { type: string, [key: string]: any }): any
   subscribe(callback: () => void): void
 }
 
@@ -304,7 +304,7 @@ type RequestIdleCallbackDeadline = {
 
 declare function requestIdleCallback(
   callback: (deadline: RequestIdleCallbackDeadline) => void,
-  opts?: RequestIdleCallbackOptions
+  opts?: RequestIdleCallbackOptions,
 ): RequestIdleCallbackHandle
 declare function cancelIdleCallback(handle: RequestIdleCallbackHandle): void
 // .end

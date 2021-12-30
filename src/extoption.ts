@@ -11,7 +11,7 @@ export async function save(newOption: MirrorBlockOption) {
   const option = Object.assign<object, MirrorBlockOption, Partial<MirrorBlockOption>>(
     {},
     defaults,
-    newOption
+    newOption,
   )
   return browser.storage.local.set({
     option,

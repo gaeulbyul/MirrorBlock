@@ -1,6 +1,6 @@
+import * as Detector from './twitter-inject/detector'
 import * as ReduxDispatcher from './twitter-inject/redux-dispatcher'
 import * as ReduxFetcher from './twitter-inject/redux-fetchter'
-import * as Detector from './twitter-inject/detector'
 
 import { getReactEventHandler } from './twitter-inject/inject-common'
 

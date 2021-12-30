@@ -7,7 +7,7 @@ const elements: { [key in keyof MirrorBlockOption]: HTMLInputElement } = {
   enableBlockReflection: document.getElementById('enableBlockReflection') as HTMLInputElement,
   blockMutedUser: document.getElementById('blockMutedUser') as HTMLInputElement,
   alwaysImmediatelyBlockMode: document.getElementById(
-    'alwaysImmediatelyBlockMode'
+    'alwaysImmediatelyBlockMode',
   ) as HTMLInputElement,
 }
 

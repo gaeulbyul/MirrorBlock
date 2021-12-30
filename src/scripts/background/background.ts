@@ -1,7 +1,7 @@
 import browser from 'webextension-polyfill'
 import * as Options from '미러블락/extoption'
-import { initializeContextMenus } from './context-menus'
 import i18n from '미러블락/scripts/i18n'
+import { initializeContextMenus } from './context-menus'
 
 type BrowserAction = typeof browser.browserAction
 

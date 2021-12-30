@@ -90,7 +90,7 @@ export function copyFrozenObject<T extends object>(obj: T): Readonly<T> {
 }
 
 export function* getAddedElementsFromMutations(
-  mutations: MutationRecord[]
+  mutations: MutationRecord[],
 ): IterableIterator<HTMLElement> {
   for (const mut of mutations) {
     for (const node of mut.addedNodes) {
@@ -146,7 +146,7 @@ export function validateTwitterUserName(userName: string): boolean {
 }
 
 export function getUserNameFromTweetUrl(
-  extractMe: HTMLAnchorElement | URL | Location
+  extractMe: HTMLAnchorElement | URL | Location,
 ): string | null {
   const { hostname, pathname } = extractMe
   const supportingHostname = ['twitter.com', 'mobile.twitter.com']

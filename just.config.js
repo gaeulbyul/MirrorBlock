@@ -58,7 +58,7 @@ task('srczip', async () => {
 
 task('generate-i18n-interface', async () => {
   await exec(
-    'node scripts/generate-i18n-interface.js < src/_locales/ko/messages.json > src/scripts/i18n.d.ts'
+    'node scripts/generate-i18n-interface.js < src/_locales/ko/messages.json > src/scripts/i18n.d.ts',
   )
 })
 

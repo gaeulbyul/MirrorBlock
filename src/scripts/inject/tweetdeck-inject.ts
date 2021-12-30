@@ -2,7 +2,7 @@
   function applyMagicToTD(TD: any) {
     // 트윗덱의 AJAX요청에 차단여부 정보를 포함하게 해주는 옵션을 추가한다.
     TD.services.TwitterClient.prototype.request$REAL = TD.services.TwitterClient.prototype.request
-    TD.services.TwitterClient.prototype.request = function (url: any, option: any) {
+    TD.services.TwitterClient.prototype.request = function(url: any, option: any) {
       Object.assign(option.params || {}, {
         include_blocking: 1,
         include_blocked_by: 1,
@@ -24,13 +24,13 @@
     }
     TD.services.TwitterUser.prototype.fromJSONObject$REAL =
       TD.services.TwitterUser.prototype.fromJSONObject
-    TD.services.TwitterUser.prototype.fromJSONObject = function (json: any, t: any) {
+    TD.services.TwitterUser.prototype.fromJSONObject = function(json: any, t: any) {
       insertAdditionalInfo(this, json)
       return TD.services.TwitterUser.prototype.fromJSONObject$REAL.call(this, json, t)
     }
     TD.services.TwitterUser.prototype.fromGraphQLJSONObject$REAL =
       TD.services.TwitterUser.prototype.fromGraphQLJSONObject
-    TD.services.TwitterUser.prototype.fromGraphQLJSONObject = function (json: any, t: any) {
+    TD.services.TwitterUser.prototype.fromGraphQLJSONObject = function(json: any, t: any) {
       insertAdditionalInfo(this, json.legacy)
       return TD.services.TwitterUser.prototype.fromGraphQLJSONObject$REAL.call(this, json, t)
     }
@@ -41,7 +41,7 @@
     document.addEventListener('TDLoaded', () => {
       document.body.setAttribute(
         'data-default-account-username',
-        TD.storage.accountController.getDefault().state.username
+        TD.storage.accountController.getDefault().state.username,
       )
     })
 
@@ -61,7 +61,7 @@
     }
     // 기본계정이 바뀌면 data-default-account-username도 같이 바뀌도록
     TD.storage.notification.notify$REAL = TD.storage.notification.notify
-    TD.storage.notification.notify = function (msg: string) {
+    TD.storage.notification.notify = function(msg: string) {
       TD.storage.notification.notify$REAL.apply(this, arguments)
       if (msg !== '/storage/client/default_account_changed') {
         return
@@ -99,7 +99,7 @@
     mustaches['account_summary.mustache'] += magicalTemplate('account_summary')
     mustaches['account_summary_inline.mustache'] += magicalTemplate('account_summary_inline')
     mustaches['status/tweet_single_header.mustache'] += magicalTemplate(
-      'status/tweet_single_header'
+      'status/tweet_single_header',
     )
     /* not-workings:
      *  compose/reply_info
@@ -119,9 +119,9 @@
         }
         const target = mutation.target
         if (
-          target instanceof HTMLElement &&
-          mutation.attributeName === 'style' &&
-          target.style.display === 'none'
+          target instanceof HTMLElement
+          && mutation.attributeName === 'style'
+          && target.style.display === 'none'
         ) {
           const ev = new CustomEvent('TDLoaded')
           document.dispatchEvent(ev)

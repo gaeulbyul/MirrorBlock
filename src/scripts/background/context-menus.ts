@@ -1,5 +1,5 @@
 import browser from 'webextension-polyfill'
-import { getUserNameFromTweetUrl, Action, sendBrowserTabMessage } from '미러블락/scripts/common'
+import { Action, getUserNameFromTweetUrl, sendBrowserTabMessage } from '미러블락/scripts/common'
 import i18n from '미러블락/scripts/i18n'
 
 function getUserNameFromClickInfo(info: browser.Menus.OnClickData): string | null {

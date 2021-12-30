@@ -1445,6 +1445,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dprint@npm:^0.19.2":
+  version: 0.19.2
+  resolution: "dprint@npm:0.19.2"
+  bin:
+    dprint: bin.js
+  checksum: d9889c2710bd06924d5db9a16f684e011e06d700160da76d036fdd755872e6c1bc12f6631061777a1e592e6471ba7aac7245e47af719954e61893b1668547544
+  languageName: node
+  linkType: hard
+
 "electron-to-chromium@npm:^1.4.17":
   version: 1.4.30
   resolution: "electron-to-chromium@npm:1.4.30"
@@ -2965,6 +2974,7 @@ __metadata:
     "@swc/core": ^1.2.102
     "@types/webextension-polyfill": ^0.8.1
     "@typescript-eslint/parser": ^5.1.0
+    dprint: ^0.19.2
     eslint: ^7.28.0
     eslint-plugin-compat: ^3.9.0
     fs-extra: ^10.0.0

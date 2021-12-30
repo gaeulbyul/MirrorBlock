@@ -1,7 +1,7 @@
 /// <reference path="./i18n.d.ts" />
 
-import * as KoreanMessages from '../_locales/ko/messages.json'
 import * as EnglishMessages from '../_locales/en/messages.json'
+import * as KoreanMessages from '../_locales/ko/messages.json'
 
 // MV3 & Service-worker 에서 못 쓰는거:
 // i18n.getMessage
@@ -31,7 +31,7 @@ const i18n: MirrorBlockI18NTranslates = new Proxy(messages, {
           'placeholder length mismatch! name="%s", expected %d, got %d',
           name,
           Object.keys(placeholders).length,
-          substitutes.length
+          substitutes.length,
         )
       }
       if (substitutes.length > 9) {
@@ -85,6 +85,6 @@ function checkMissingTranslations(
     | Exclude<keyof typeof KoreanMessages, keyof typeof EnglishMessages>
     | Exclude<keyof typeof EnglishMessages, keyof typeof KoreanMessages>,
   find: (_keys: never) => void,
-  _check = find(keys)
+  _check = find(keys),
 ) {}
 checkMissingTranslations

@@ -1,6 +1,7 @@
-import { validateTwitterUserName, sleep } from './common'
+import { sleep, validateTwitterUserName } from './common'
 
-const BEARER_TOKEN = `AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA`
+const BEARER_TOKEN =
+  `AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA`
 
 // CORB* 로 인해 content scripts에서 api.twitter.com 을 사용할 수 없다.
 // https://www.chromestatus.com/feature/5629709824032768
@@ -24,8 +25,8 @@ export async function blockUser(user: TwitterUser): Promise<boolean> {
   if (user.blocking) {
     return true
   }
-  const shouldNotBlock =
-    user.following || user.followed_by || user.follow_request_sent || !user.blocked_by
+  const shouldNotBlock = user.following || user.followed_by || user.follow_request_sent
+    || !user.blocked_by
   if (shouldNotBlock) {
     const fatalErrorMessage = `!!!!!FATAL!!!!!:
 attempted to block user that should NOT block!!
@@ -46,7 +47,7 @@ export async function blockUserById(userId: string): Promise<boolean> {
 
 async function getFollowingsList(
   user: TwitterUser,
-  cursor: string = '-1'
+  cursor: string = '-1',
 ): Promise<FollowsListResponse> {
   const response = await sendRequest('get', '/friends/list.json', {
     user_id: user.id_str,
@@ -63,7 +64,7 @@ async function getFollowingsList(
 }
 async function getFollowersList(
   user: TwitterUser,
-  cursor: string = '-1'
+  cursor: string = '-1',
 ): Promise<FollowsListResponse> {
   const response = await sendRequest('get', '/followers/list.json', {
     user_id: user.id_str,
@@ -83,7 +84,7 @@ async function getFollowersList(
 export async function* getAllFollows(
   user: TwitterUser,
   followKind: FollowKind,
-  options: FollowsScraperOptions
+  options: FollowsScraperOptions,
 ): AsyncIterableIterator<Either<APIError, Readonly<TwitterUser>>> {
   let cursor = '-1'
   while (true) {
@@ -196,7 +197,7 @@ export async function getFriendships(users: TwitterUser[]): Promise<FriendshipRe
 
 export async function getRelationship(
   sourceUser: TwitterUser,
-  targetUser: TwitterUser
+  targetUser: TwitterUser,
 ): Promise<Relationship> {
   const source_id = sourceUser.id_str
   const target_id = targetUser.id_str
@@ -277,7 +278,7 @@ function setDefaultParams(params: URLSearchParams): void {
 export async function sendRequest(
   method: HTTPMethods,
   path: string,
-  paramsObj: URLParamsObj = {}
+  paramsObj: URLParamsObj = {},
 ): Promise<APIResponse> {
   const fetchOptions = generateTwitterAPIOptions({ method })
   const url = new URL(apiPrefix + path)
@@ -295,7 +296,7 @@ export async function sendRequest(
   const response = await fetch(url.toString(), fetchOptions)
   const headers = Array.from(response.headers).reduce(
     (obj, [name, value]) => ((obj[name] = value), obj),
-    {} as { [name: string]: string }
+    {} as { [name: string]: string },
   )
   const { ok, status, statusText } = response
   const body = await response.json()

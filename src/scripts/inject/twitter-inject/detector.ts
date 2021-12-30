@@ -1,6 +1,6 @@
+import * as EventNames from '미러블락/scripts/event-names'
 import { iterateUntouchedElems } from '../../common'
 import { dig, getReactEventHandler } from './inject-common'
-import * as EventNames from '미러블락/scripts/event-names'
 
 const touchedElems = new WeakSet<HTMLElement>()
 
@@ -21,7 +21,7 @@ function findTweetIdFromElement(elem: HTMLElement): string | null {
       return tweetId
     }
     const viaLabel = article.querySelector(
-      'a[href="https://help.twitter.com/using-twitter/how-to-tweet#source-labels"]'
+      'a[href="https://help.twitter.com/using-twitter/how-to-tweet#source-labels"]',
     )
     if (viaLabel?.parentElement!.contains(plink)) {
       return tweetId

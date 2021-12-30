@@ -1,8 +1,8 @@
 import * as Utils from '미러블락/scripts/common'
+import * as EventNames from '미러블락/scripts/event-names'
 import * as TwitterAPI from '미러블락/scripts/twitter-api'
 import { reflectBlock } from './mirrorblock-r'
 import { StoreRetriever, StoreUpdater, UserGetter } from './redux-store'
-import * as EventNames from '미러블락/scripts/event-names'
 
 function markOutline(elem: Element): void {
   elem.setAttribute('data-mirrorblock-blocks-you', '1')
@@ -14,7 +14,7 @@ function getElemByDmData(dmData: DMData): HTMLElement | null {
 
 async function detectProfile(rootElem: HTMLElement) {
   const helpLinks = rootElem.querySelectorAll<HTMLElement>(
-    'a[href="https://support.twitter.com/articles/20172060"]'
+    'a[href="https://support.twitter.com/articles/20172060"]',
   )
   const helpLink = Array.from(Utils.iterateUntouchedElems(helpLinks)).shift()
   if (!helpLink) {
@@ -43,7 +43,7 @@ async function detectProfile(rootElem: HTMLElement) {
 
 function findElementToIndicateQuotedTweetFromBlockedUser(
   tweetElem: HTMLElement,
-  quotedTweetUrl: URL
+  quotedTweetUrl: URL,
 ) {
   const article = tweetElem.closest('article[role=article]')!
   const quotedTweetInTimeline = tweetElem.querySelector('[data-testid=tweet] [data-testid=tweet]')
@@ -103,11 +103,11 @@ async function handleMentionsInTweet(tweet: Tweet, tweetElem: HTMLElement) {
       .map((loweredName): [string, HTMLAnchorElement[]] => [
         loweredName,
         links.filter(a => a.pathname.toLowerCase() === `/${loweredName}`),
-      ])
+      ]),
   )
   const overflowed = article.querySelector('a[aria-label][href$="/people"]')
   const mentionedUsersMap = await UserGetter.getMultipleUsersById(
-    mentionedUserEntities.map(u => u.id_str)
+    mentionedUserEntities.map(u => u.id_str),
   )
   for (const mUser of mentionedUsersMap.values()) {
     await reflectBlock({
@@ -160,7 +160,7 @@ async function handleDMConversation(convId: string) {
   const elem = getElemByDmData(dmData)!
   const badgeTarget = elem.querySelector('div[dir=ltr]')!
   const participants = await UserGetter.getMultipleUsersById(
-    dmData.participants.map(par => par.user_id)
+    dmData.participants.map(par => par.user_id),
   )
   const blockedMe = participants.filter(user => !!user.blocked_by)
   if (blockedMe.size <= 0) {

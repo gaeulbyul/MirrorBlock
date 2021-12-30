@@ -1,6 +1,6 @@
 import browser from 'webextension-polyfill'
-import { detectOnCurrentTwitter, detectOnCurrentTweetDeck } from './mirrorblock-mobile'
 import { handleDarkMode } from '미러블락/scripts/nightmode'
+import { detectOnCurrentTweetDeck, detectOnCurrentTwitter } from './mirrorblock-mobile'
 
 import * as Options from '미러블락/extoption'
 

@@ -1,4 +1,4 @@
-import { TwitterUserMap, isTwitterUser } from '미러블락/scripts/common'
+import { isTwitterUser, TwitterUserMap } from '미러블락/scripts/common'
 import * as TwitterAPI from '미러블락/scripts/twitter-api'
 import * as StoreRetriever from './retriever'
 import * as StoreUpdater from './updater'
@@ -44,7 +44,7 @@ export async function getUserById(userId: string, useAPI: boolean): Promise<Twit
 }
 export async function getUserByName(
   userName: string,
-  useAPI: boolean
+  useAPI: boolean,
 ): Promise<TwitterUser | null> {
   const loweredName = userName.toLowerCase()
   if (notExistUsers.has(loweredName)) {
@@ -58,7 +58,7 @@ export async function getUserByName(
     return userCacheByName.get(userName)!
   } else if (useAPI) {
     const user = await TwitterAPI.getSingleUserByName(userName).catch(
-      treatAsNonExistUser([userName])
+      treatAsNonExistUser([userName]),
     )
     if (user) {
       addUserToCache(user)
@@ -89,7 +89,7 @@ export async function getMultipleUsersById(userIds: string[]): Promise<TwitterUs
   }
   if (idsToRequestAPI.length === 1) {
     const requestedUser = await TwitterAPI.getSingleUserById(idsToRequestAPI[0]!).catch(
-      treatAsNonExistUser(idsToRequestAPI)
+      treatAsNonExistUser(idsToRequestAPI),
     )
     if (requestedUser) {
       addUserToCache(requestedUser)
