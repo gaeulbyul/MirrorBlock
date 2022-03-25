@@ -1,7 +1,7 @@
+import { injectScript } from '미러블락/scripts/browser-apis'
 import * as Utils from '미러블락/scripts/common'
 import * as EventNames from '미러블락/scripts/event-names'
 import * as TwitterAPI from '미러블락/scripts/twitter-api'
-import { injectScript }  from '미러블락/scripts/browser-apis'
 import { reflectBlock } from './mirrorblock-r'
 import { StoreRetriever, StoreUpdater, UserGetter } from './redux-store'
 

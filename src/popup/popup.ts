@@ -1,7 +1,7 @@
 import browser from 'webextension-polyfill'
 import * as Options from '미러블락/extoption'
-import { Action, getUserNameFromTweetUrl } from '미러블락/scripts/common'
 import { sendBrowserTabMessage } from '미러블락/scripts/browser-apis'
+import { Action, getUserNameFromTweetUrl } from '미러블락/scripts/common'
 import i18n, { applyI18NOnHtml } from '미러블락/scripts/i18n'
 
 function closePopup() {

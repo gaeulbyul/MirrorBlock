@@ -71,7 +71,6 @@ export function sleep(time: number): Promise<void> {
   return new Promise(resolve => window.setTimeout(resolve, time))
 }
 
-
 export function copyFrozenObject<T extends object>(obj: T): Readonly<T> {
   return Object.freeze(Object.assign({}, obj))
 }
