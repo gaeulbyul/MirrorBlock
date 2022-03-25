@@ -1,4 +1,3 @@
-import browser from 'webextension-polyfill'
 import * as TwitterAPI from '미러블락/scripts/twitter-api'
 
 export const enum Action {
@@ -72,18 +71,6 @@ export function sleep(time: number): Promise<void> {
   return new Promise(resolve => window.setTimeout(resolve, time))
 }
 
-export function injectScript(path: string): Promise<void> {
-  return new Promise(resolve => {
-    const script = document.createElement('script')
-    script.addEventListener('load', () => {
-      script.remove()
-      resolve()
-    })
-    script.src = browser.runtime.getURL(path)
-    const appendTarget = document.head || document.documentElement
-    appendTarget!.appendChild(script)
-  })
-}
 
 export function copyFrozenObject<T extends object>(obj: T): Readonly<T> {
   return Object.freeze(Object.assign({}, obj))
@@ -180,8 +167,4 @@ export async function checkLogin(): Promise<boolean> {
     const checkViaAPI = await TwitterAPI.getMyself().catch(() => null)
     return !!checkViaAPI
   }
-}
-
-export function sendBrowserTabMessage<T>(tabId: number, message: T) {
-  return browser.tabs.sendMessage(tabId, message)
 }

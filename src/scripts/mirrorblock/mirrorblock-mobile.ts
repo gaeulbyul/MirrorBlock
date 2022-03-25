@@ -1,6 +1,7 @@
 import * as Utils from '미러블락/scripts/common'
 import * as EventNames from '미러블락/scripts/event-names'
 import * as TwitterAPI from '미러블락/scripts/twitter-api'
+import { injectScript }  from '미러블락/scripts/browser-apis'
 import { reflectBlock } from './mirrorblock-r'
 import { StoreRetriever, StoreUpdater, UserGetter } from './redux-store'
 
@@ -228,12 +229,12 @@ export async function detectOnCurrentTwitter(reactRoot: HTMLElement) {
   if (!loggedIn) {
     return
   }
-  await Utils.injectScript('bundled/twitter_inject.bun.js')
+  await injectScript('bundled/twitter_inject.bun.js')
   startObserve(reactRoot)
 }
 
 export async function detectOnCurrentTweetDeck(reactRoot: HTMLElement) {
   // 트윗덱은 로그인여부를 나중에 판단.
-  await Utils.injectScript('bundled/twitter_inject.bun.js')
+  await injectScript('bundled/twitter_inject.bun.js')
   startObserve(reactRoot)
 }
