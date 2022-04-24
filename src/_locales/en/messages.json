@@ -88,10 +88,10 @@
   "please_check_login_before_chainblock": {
     "message": "Please check that you are logged in to Twitter."
   },
-  "error_occured_from_twitter_server": {
+  "error_occurred_from_twitter_server": {
     "message": "An error occurred on the Twitter server."
   },
-  "error_occured": {
+  "error_occurred": {
     "message": "An error has occurred."
   },
   "nobody_follows_them": {

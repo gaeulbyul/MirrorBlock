@@ -88,10 +88,10 @@
   "please_check_login_before_chainblock": {
     "message": "먼저 로그인을 해주세요"
   },
-  "error_occured_from_twitter_server": {
+  "error_occurred_from_twitter_server": {
     "message": "트위터 서버에서 오류가 발생했습니다."
   },
-  "error_occured": {
+  "error_occurred": {
     "message": "오류가 발생했습니다."
   },
   "nobody_follows_them": {

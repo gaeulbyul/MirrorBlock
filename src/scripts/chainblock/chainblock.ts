@@ -231,9 +231,9 @@ export async function startChainBlock(targetUserName: string, followKind: Follow
     if (err instanceof TwitterAPI.APIError) {
       const json = err.response.body
       const jsonstr = JSON.stringify(json, null, 2)
-      window.alert(`${i18n.error_occured_from_twitter_server()}\n${jsonstr}`)
+      window.alert(`${i18n.error_occurred_from_twitter_server()}\n${jsonstr}`)
     } else if (err instanceof Error) {
-      window.alert(`${i18n.error_occured()}\n${err.message}`)
+      window.alert(`${i18n.error_occurred()}\n${err.message}`)
     }
     return null
   })

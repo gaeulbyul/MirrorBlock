@@ -27,8 +27,8 @@ declare interface MirrorBlockI18NTranslates {
   cant_chainblock_they_blocks_you(username: string): string
   chainblock_already_running(): string
   please_check_login_before_chainblock(): string
-  error_occured_from_twitter_server(): string
-  error_occured(): string
+  error_occurred_from_twitter_server(): string
+  error_occurred(): string
   nobody_follows_them(): string
   cant_chainblock_they_protected(username: string): string
   confirm_chainblock_to_followers(username: string): string
