@@ -18,8 +18,8 @@ task('check-tsc', async () => {
   await exec('tsc --noEmit')
 })
 
-task('webpack', async () => {
-  await exec('webpack-cli --mode=production')
+task('bundle', async () => {
+  await exec('node esbuild.config.js')
 })
 
 task('copy-assets', async () => {
@@ -29,11 +29,11 @@ task('copy-assets', async () => {
       return !/\.tsx?$/.test(filename)
     },
   }
-  await Promise.all([cp('src/', 'build/', copyOptions), cp('src/', 'build-v3/', copyOptions)])
-  await fs.move('build-v3/manifest-v3.json', 'build-v3/manifest.json', {
-    overwrite: true,
-  })
-  // TODO: remove manifest-v3.json in mv2 build/ dir.
+  const mv2 = cp('src/', 'build/', copyOptions)
+    .then(() => fs.unlink('build/manifest-v3.json').catch(() => {}))
+  const mv3 = cp('src/', 'build-v3/', copyOptions)
+    .then(() => fs.move('build-v3/manifest-v3.json', 'build-v3/manifest.json', { overwrite: true }))
+  await Promise.all([mv2, mv3])
 })
 
 task('clean', async () => {
@@ -43,7 +43,7 @@ task('clean', async () => {
 task('zip', async () => {
   const filename = `${name}-v${version}.zip`
   const filenamev3 = `${name}-v${version} [MV3].zip`
-  logger.info(`zipping into "${filename}"...`)
+  logger.info(`zipping into "dist/${filename}"...`)
   await mkdirp('dist/')
   await Promise.all([
     exec(`7z a -r "dist/${filename}" build/.`),
@@ -62,7 +62,7 @@ task('generate-i18n-interface', async () => {
   )
 })
 
-task('build', parallel('copy-assets', 'webpack'))
+task('build', parallel('copy-assets', 'bundle'))
 task('default', series('clean', 'build'))
 task('dist', parallel('zip', 'srczip'))
 task('all', series('default', 'dist'))
