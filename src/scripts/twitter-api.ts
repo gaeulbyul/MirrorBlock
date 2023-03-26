@@ -25,8 +25,8 @@ export async function blockUser(user: TwitterUser): Promise<boolean> {
   if (user.blocking) {
     return true
   }
-  const shouldNotBlock = user.following || user.followed_by || user.follow_request_sent
-    || !user.blocked_by
+  const shouldNotBlock = user.following || user.followed_by || user.follow_request_sent ||
+    !user.blocked_by
   if (shouldNotBlock) {
     const fatalErrorMessage = `!!!!!FATAL!!!!!:
 attempted to block user that should NOT block!!

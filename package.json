@@ -12,7 +12,7 @@
     "just": "just"
   },
   "nano-staged": {
-    "*.{ts,tsx,js,jsx,cjs,mjs,json,md}": "dprint fmt",
+    "*.{ts,tsx,js,jsx,cjs,mjs}": "sane-fmt -w",
     "*.{ts,tsx}": "tsc-files --noEmit"
   },
   "browserslist": [
@@ -24,9 +24,9 @@
     "not dead"
   ],
   "devDependencies": {
+    "@sane-fmt/wasm32-wasi": "^0.17.0",
     "@types/webextension-polyfill": "^0.10.0",
     "@typescript-eslint/parser": "^5.56.0",
-    "dprint": "^0.35.3",
     "esbuild": "^0.17.13",
     "esbuild-plugin-alias": "^0.2.1",
     "eslint": "^7.28.0",
