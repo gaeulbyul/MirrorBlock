@@ -33,7 +33,7 @@ const base = {
 }
 
 async function main() {
-	console.log('<esbuild> building...')
+  console.log('<esbuild> building...')
   const mv2 = esbuild.build({
     ...base,
     outdir: './build/bundled',
