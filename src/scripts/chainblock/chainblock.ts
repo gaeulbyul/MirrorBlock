@@ -1,6 +1,6 @@
 import browser from 'webextension-polyfill'
 import * as Options from '미러블락/extoption'
-import { Action, checkLogin, copyFrozenObject, sleep } from '미러블락/scripts/common'
+import { checkLogin, copyFrozenObject, sleep } from '미러블락/scripts/common'
 import i18n from '미러블락/scripts/i18n'
 import * as TwitterAPI from '미러블락/scripts/twitter-api'
 import ChainMirrorBlockUI from './chainblock-ui'
@@ -271,10 +271,12 @@ export async function startChainBlock(targetUserName: string, followKind: Follow
 
 browser.runtime.onMessage.addListener((msg: object) => {
   const message = msg as MBMessage
-  if (message.action === Action.StartChainBlock) {
-    startChainBlock(message.userName, message.followKind)
-  } else if (message.action === Action.Alert) {
-    const msg = message.message
-    window.alert(msg)
+  switch (message.action) {
+    case 'MirrorBlock/StartChainBlock':
+      startChainBlock(message.userName, message.followKind)
+      break
+    case 'MirrorBlock/Alert':
+      window.alert(message.message)
+      break
   }
 })

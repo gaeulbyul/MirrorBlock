@@ -1,11 +1,5 @@
 import * as TwitterAPI from '미러블락/scripts/twitter-api'
 
-export const enum Action {
-  StartChainBlock = 'MirrorBlock/Start',
-  StopChainBlock = 'MirrorBlock/Stop',
-  Alert = 'MirrorBlock/Alert',
-}
-
 const USER_NAME_BLACKLIST = Object.freeze([
   '1',
   'about',

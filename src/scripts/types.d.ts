@@ -1,5 +1,3 @@
-type Action = typeof import('./common').Action
-
 type HTTPMethods = 'get' | 'delete' | 'post' | 'put'
 type URLParamsObj = { [key: string]: string | number | boolean }
 
@@ -227,14 +225,22 @@ interface EventStore {
   [eventName: string]: Function[]
 }
 
+// ------------------------------
+// MirrorBlock Internal
+// ------------------------------
+
+type MBAction =
+  | 'MirrorBlock/StartChainBlock'
+  | 'MirrorBlock/Alert'
+
 interface MBStartChainBlockMessage {
-  action: Action['StartChainBlock']
+  action: 'MirrorBlock/StartChainBlock'
   userName: string
   followKind: FollowKind
 }
 
 interface MBAlertMessage {
-  action: Action['Alert']
+  action: 'MirrorBlock/Alert'
   message: string
 }
 

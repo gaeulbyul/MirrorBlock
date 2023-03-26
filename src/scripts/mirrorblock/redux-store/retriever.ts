@@ -2,7 +2,7 @@ import { cloneDetail } from './updater'
 
 async function triggerPageEventWithResponse(
   eventName: ReduxStoreEventNames,
-  eventDetail?: object,
+  eventDetail: object,
 ): Promise<any> {
   const detail = cloneDetail(eventDetail)
   const nonce = Math.random()

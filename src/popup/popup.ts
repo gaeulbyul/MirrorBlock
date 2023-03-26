@@ -1,7 +1,7 @@
 import browser from 'webextension-polyfill'
 import * as Options from '미러블락/extoption'
 import { sendBrowserTabMessage } from '미러블락/scripts/browser-apis'
-import { Action, getUserNameFromTweetUrl } from '미러블락/scripts/common'
+import { getUserNameFromTweetUrl } from '미러블락/scripts/common'
 import i18n, { applyI18NOnHtml } from '미러블락/scripts/i18n'
 
 function closePopup() {
@@ -10,7 +10,7 @@ function closePopup() {
 
 async function alertToTab(tabId: number, message: string) {
   return sendBrowserTabMessage<MBAlertMessage>(tabId, {
-    action: Action.Alert,
+    action: 'MirrorBlock/Alert',
     message,
   })
 }
@@ -50,7 +50,7 @@ async function executeChainBlock(followKind: FollowKind) {
     return
   }
   sendBrowserTabMessage<MBStartChainBlockMessage>(tabId, {
-    action: Action.StartChainBlock,
+    action: 'MirrorBlock/StartChainBlock',
     followKind,
     userName,
   }).then(closePopup)

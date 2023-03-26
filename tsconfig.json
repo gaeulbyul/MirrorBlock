@@ -14,7 +14,7 @@
     "noEmit": true,
     "incremental": true,
     "tsBuildInfoFile": "./.cache/tsBuildInfo.dat",
-
+    "isolatedModules": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
     "alwaysStrict": true,
