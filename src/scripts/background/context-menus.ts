@@ -41,7 +41,7 @@ browser.contextMenus.onClicked.addListener((clickInfo, tab) => {
 
 export async function initializeContextMenus() {
   await browser.contextMenus.removeAll()
-  const documentUrlPatterns = ['https://twitter.com/*', 'https://mobile.twitter.com/*']
+  const documentUrlPatterns = ['https://twitter.com/*']
   const targetUrlPatterns = documentUrlPatterns
   browser.contextMenus.create({
     id: 'run_chainblock_from_followers_contextmenu',

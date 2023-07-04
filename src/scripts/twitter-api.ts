@@ -6,12 +6,7 @@ const BEARER_TOKEN =
 // CORB* 로 인해 content scripts에서 api.twitter.com 을 사용할 수 없다.
 // https://www.chromestatus.com/feature/5629709824032768
 // https://www.chromium.org/Home/chromium-security/corb-for-developers
-let apiPrefix = 'https://twitter.com/i/api/1.1'
-if (location.hostname === 'mobile.twitter.com') {
-  apiPrefix = 'https://mobile.twitter.com/i/api/1.1'
-} else if (location.hostname === 'tweetdeck.twitter.com') {
-  apiPrefix = 'https://tweetdeck.twitter.com/i/api/1.1'
-}
+const apiPrefix = 'https://twitter.com/i/api/1.1'
 
 export class APIError extends Error {
   constructor(public readonly response: APIResponse) {

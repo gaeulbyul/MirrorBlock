@@ -232,9 +232,3 @@ export async function detectOnCurrentTwitter(reactRoot: HTMLElement) {
   await injectScript('bundled/twitter_inject.bun.js')
   startObserve(reactRoot)
 }
-
-export async function detectOnCurrentTweetDeck(reactRoot: HTMLElement) {
-  // 트윗덱은 로그인여부를 나중에 판단.
-  await injectScript('bundled/twitter_inject.bun.js')
-  startObserve(reactRoot)
-}

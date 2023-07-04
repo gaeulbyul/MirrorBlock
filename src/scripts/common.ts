@@ -129,8 +129,7 @@ export function getUserNameFromTweetUrl(
   extractMe: HTMLAnchorElement | URL | Location,
 ): string | null {
   const { hostname, pathname } = extractMe
-  const supportingHostname = ['twitter.com', 'mobile.twitter.com']
-  if (!supportingHostname.includes(hostname)) {
+  if (hostname !== 'twitter.com') {
     return null
   }
   const matches = /^\/([0-9a-z_]{1,15})/i.exec(pathname)

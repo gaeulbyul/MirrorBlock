@@ -14,9 +14,7 @@
   },
 
   "host_permissions": [
-    "https://twitter.com/*",
-    "https://mobile.twitter.com/*",
-    "https://tweetdeck.twitter.com/*"
+    "https://twitter.com/*"
   ],
 
   "permissions": ["storage", "contextMenus", "activeTab"],
@@ -32,28 +30,19 @@
   "content_scripts": [
     {
       "matches": [
-        "https://twitter.com/*",
-        "https://mobile.twitter.com/*",
-        "https://tweetdeck.twitter.com/*"
+        "https://twitter.com/*"
       ],
       "css": ["styles/mirrorblock.css", "styles/mob-badge.css", "styles/chainblock.css"],
       "js": ["bundled/twitter.bun.js", "bundled/chainblock.bun.js"]
-    },
-    {
-      "matches": ["https://tweetdeck.twitter.com/*"],
-      "css": ["styles/tweetdeck.css"],
-      "js": ["bundled/tweetdeck.bun.js"]
     }
   ],
 
   "web_accessible_resources": [
     {
       "matches": [
-        "https://twitter.com/*",
-        "https://mobile.twitter.com/*",
-        "https://tweetdeck.twitter.com/*"
+        "https://twitter.com/*"
       ],
-      "resources": ["bundled/tweetdeck_inject.bun.js", "bundled/twitter_inject.bun.js"]
+      "resources": ["bundled/twitter_inject.bun.js"]
     }
   ],
 

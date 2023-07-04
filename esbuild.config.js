@@ -10,9 +10,7 @@ const base = {
   entryPoints: {
     background: './src/scripts/background/background.ts',
     twitter: './src/scripts/mirrorblock/twitter.ts',
-    tweetdeck: './src/scripts/mirrorblock/tweetdeck.ts',
     twitter_inject: './src/scripts/inject/twitter-inject.ts',
-    tweetdeck_inject: './src/scripts/inject/tweetdeck-inject.ts',
     chainblock: './src/scripts/chainblock/chainblock.ts',
     popup: './src/popup/popup.ts',
     options_ui: './src/options/options.ts',

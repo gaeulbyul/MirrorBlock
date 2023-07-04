@@ -62,8 +62,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (currentTab && currentTab.url) {
     const currentUrl = new URL(currentTab.url!)
     const cbButtons = document.querySelectorAll<HTMLButtonElement>('button.chain-block')
-    const supportingHostname = ['twitter.com', 'mobile.twitter.com']
-    if (supportingHostname.includes(currentUrl.hostname)) {
+    if (currentUrl.hostname === 'twitter.com') {
       cbButtons.forEach(el => (el.disabled = false))
     } else {
       cbButtons.forEach(el => (el.title = i18n.running_chainblock_is_only_available_on_twitter()))

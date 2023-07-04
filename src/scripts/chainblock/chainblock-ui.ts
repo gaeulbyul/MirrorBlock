@@ -86,9 +86,6 @@ class UserList {
     const link = document.createElement('a')
     item.className = 'mobcb-user'
     link.href = `https://twitter.com/${user.screen_name}`
-    if (location.hostname === 'mobile.twitter.com') {
-      link.hostname = 'mobile.twitter.com'
-    }
     link.setAttribute('rel', 'noreferer noopener')
     link.setAttribute('target', '_blank')
     link.setAttribute('title', tooltip)
