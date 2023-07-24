@@ -13,10 +13,10 @@
   },
 
   "permissions": [
-    "https://twitter.com/*"
-    "storage",
+    "activeTab",
     "contextMenus",
-    "activeTab"
+    "storage",
+    "https://twitter.com/*"
   ],
 
   "options_ui": {
@@ -34,7 +34,7 @@
       ],
       "css": ["styles/mirrorblock.css", "styles/mob-badge.css", "styles/chainblock.css"],
       "js": ["bundled/twitter.bun.js", "bundled/chainblock.bun.js"]
-    },
+    }
   ],
 
   "web_accessible_resources": ["bundled/twitter_inject.bun.js"],
