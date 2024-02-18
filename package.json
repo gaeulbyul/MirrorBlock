@@ -12,8 +12,8 @@
     "just": "just"
   },
   "nano-staged": {
-    "*.{ts,tsx,js,jsx,cjs,mjs}": "sane-fmt -w",
-    "*.{ts,tsx}": "tsc-files --noEmit"
+    "src/**/*.{ts,tsx,js,jsx,cjs,mjs}": "sane-fmt -w",
+    "src/**/*.{ts,tsx}": "tsc-files --noEmit"
   },
   "browserslist": [
     "firefox 63",
