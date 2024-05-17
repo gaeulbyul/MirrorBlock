@@ -38,24 +38,17 @@ function inject(reactRoot: HTMLElement): void {
   Detector.observe(reactRoot, reduxStore)
 }
 
+function isReactLoaded(elem: HTMLElement) {
+  return Object.keys(elem).find(k => k.startsWith('_reactListening'))
+}
+
 export function initialize() {
-  deSentry()
   const reactRoot = document.getElementById('react-root')!
-  if ('_reactRootContainer' in reactRoot) {
+  if (reactRoot && isReactLoaded(reactRoot)) {
     inject(reactRoot)
   } else {
     setTimeout(initialize, 500)
   }
-}
-
-function deSentry() {
-  const methods = ['debug', 'info', 'warn', 'error', 'log', 'assert']
-  const con = console as any
-  methods.forEach(method => {
-    if ('__sentry_original__' in con[method]) {
-      con[method] = con[method].__sentry_original__
-    }
-  })
 }
 
 requestIdleCallback(initialize, {
