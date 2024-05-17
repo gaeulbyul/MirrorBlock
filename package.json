@@ -15,22 +15,11 @@
     "src/**/*.{ts,tsx,js,jsx,cjs,mjs}": "sane-fmt -w",
     "src/**/*.{ts,tsx}": "tsc-files --noEmit"
   },
-  "browserslist": [
-    "firefox 63",
-    "chrome 70",
-    "not safari <= 99",
-    "not edge <= 99",
-    "not ie <= 99",
-    "not dead"
-  ],
   "devDependencies": {
     "@sane-fmt/wasm32-wasi": "^0.17.0",
     "@types/webextension-polyfill": "^0.10.0",
-    "@typescript-eslint/parser": "^5.56.0",
     "esbuild": "^0.20.0",
     "esbuild-plugin-alias": "^0.2.1",
-    "eslint": "^8.56.0",
-    "eslint-plugin-compat": "^4.2.0",
     "fs-extra": "^10.0.0",
     "husky": "^7.0.4",
     "just-scripts": "^1.5.4",
