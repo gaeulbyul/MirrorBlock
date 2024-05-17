@@ -104,7 +104,7 @@ export async function* getAllFollows(
       const users = json.users as TwitterUser[]
       yield* users.map(user => ({
         ok: true as const,
-        value: Object.freeze(user),
+        value: user,
       }))
       if (cursor === '0') {
         break
