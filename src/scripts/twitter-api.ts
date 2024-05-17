@@ -47,7 +47,7 @@ export async function blockUserById(userId: string): Promise<boolean> {
 
 async function getFollowingsList(
   user: TwitterUser,
-  cursor: string = '-1',
+  cursor = '-1',
 ): Promise<FollowsListResponse> {
   const response = await sendRequest('get', '/friends/list.json', {
     user_id: user.id_str,
@@ -64,7 +64,7 @@ async function getFollowingsList(
 }
 async function getFollowersList(
   user: TwitterUser,
-  cursor: string = '-1',
+  cursor = '-1',
 ): Promise<FollowsListResponse> {
   const response = await sendRequest('get', '/followers/list.json', {
     user_id: user.id_str,

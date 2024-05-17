@@ -1,6 +1,6 @@
 import * as EventNames from '미러블락/scripts/event-names'
 import { iterateUntouchedElems } from '../../common'
-import { dig, getReactEventHandler } from './inject-common'
+import { getReactEventHandler } from './inject-common'
 
 const touchedElems = new WeakSet<HTMLElement>()
 
@@ -145,7 +145,7 @@ function sendDMConversationsToExtension() {
   for (const elem of convElems) {
     const parent = elem.parentElement!
     const rEventHandler = getReactEventHandler(parent)!
-    const convId = dig(() => rEventHandler.children[0].props.conversationId)
+    const convId = rEventHandler?.children?.[0]?.props?.conversationId
     if (typeof convId !== 'string') {
       throw new Error('failed to get conv. id')
     }

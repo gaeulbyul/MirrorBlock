@@ -1,5 +1,3 @@
-import { dig } from './inject-common'
-
 function addEventWithResponse(
   name: ReduxStoreEventNames,
   callback: (event: CustomEvent) => any,
@@ -19,7 +17,7 @@ export function listenEvent(reduxStore: ReduxStore): void {
     const state = reduxStore.getState()
     const { userIds } = event.detail
     const result: { [id: string]: TwitterUser } = {}
-    const userEntities: TwitterUserEntities = dig(() => state.entities.users.entities) || []
+    const userEntities: TwitterUserEntities = (state?.entities?.users?.entities) || []
     for (const userId of userIds) {
       result[userId] = userEntities[userId]!
     }
@@ -29,7 +27,7 @@ export function listenEvent(reduxStore: ReduxStore): void {
     const state = reduxStore.getState()
     const { userName } = event.detail
     const targetUserName = userName.toLowerCase()
-    const userEntities: TwitterUserEntities = dig(() => state.entities.users.entities) || []
+    const userEntities: TwitterUserEntities = (state?.entities?.users?.entities) || []
     for (const userEntity of Object.values(userEntities)) {
       const name = userEntity.screen_name.toLowerCase()
       if (targetUserName === name) {
@@ -41,11 +39,11 @@ export function listenEvent(reduxStore: ReduxStore): void {
   addEventWithResponse('getDMData', event => {
     const state = reduxStore.getState()
     const { convId } = event.detail
-    const conversations = dig(() => state.directMessages.conversations)
+    const conversations = state?.directMessages?.conversations
     if (!conversations) {
       return null
     }
-    const convData = dig(() => conversations[convId])
+    const convData = conversations?.[convId]
     return convData || null
   })
 }

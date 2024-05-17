@@ -296,25 +296,3 @@ interface ReduxStore {
 }
 
 declare function cloneInto<T>(detail: T, view: Window | null): T
-
-// r.i.c
-// copied from https://github.com/Microsoft/TypeScript/issues/21309#issuecomment-376338415
-type RequestIdleCallbackHandle = any
-type RequestIdleCallbackOptions = {
-  timeout: number
-}
-type RequestIdleCallbackDeadline = {
-  readonly didTimeout: boolean
-  timeRemaining: () => number
-}
-
-declare function requestIdleCallback(
-  callback: (deadline: RequestIdleCallbackDeadline) => void,
-  opts?: RequestIdleCallbackOptions,
-): RequestIdleCallbackHandle
-declare function cancelIdleCallback(handle: RequestIdleCallbackHandle): void
-// .end
-
-declare module 'uuid' {
-  function v1(): string
-}

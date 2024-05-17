@@ -1,17 +1,5 @@
-export function dig(obj: () => any): any {
-  try {
-    return obj()
-  } catch (err) {
-    if (err instanceof TypeError) {
-      return null
-    } else {
-      throw err
-    }
-  }
-}
-
 function isReactPropsKey(name: string) {
-  return name.startsWith('__reactProps') || name.startsWith('__reactEventHandlers')
+  return name.startsWith('__reactProps')
 }
 
 export function getReactEventHandler(target: Element): any {

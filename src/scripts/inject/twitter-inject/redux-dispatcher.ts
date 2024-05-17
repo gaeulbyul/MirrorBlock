@@ -1,5 +1,3 @@
-import { v1 as uuidv1 } from 'uuid'
-
 function addEvent(name: ReduxStoreEventNames, callback: (event: CustomEvent) => void): void {
   document.addEventListener(`MirrorBlock->${name}`, event => {
     const customEvent = event as CustomEvent
@@ -30,7 +28,7 @@ export function listenEvent(reduxStore: ReduxStore): void {
   addEvent('afterBlockUser', event => {
     const { user } = event.detail
     const userId = user.id_str
-    const uniqId = uuidv1()
+    const uniqId = crypto.randomUUID()
     reduxStore.dispatch({
       type: 'rweb/blockedUsers/BLOCK_REQUEST',
       optimist: {

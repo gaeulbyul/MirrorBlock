@@ -1,4 +1,4 @@
-import { TwitterUserMap } from '미러블락/scripts/common'
+import type { TwitterUserMap } from '미러블락/scripts/common'
 
 // 파이어폭스에서 CustomEvent의 detail 개체 전달용
 export function cloneDetail<T>(detail: T): T {
