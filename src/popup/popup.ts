@@ -2,7 +2,7 @@ import browser from 'webextension-polyfill'
 import * as Options from '미러블락/extoption'
 import { sendBrowserTabMessage } from '미러블락/scripts/browser-apis'
 import { getUserNameFromTweetUrl } from '미러블락/scripts/common'
-import i18n, { applyI18NOnHtml } from '미러블락/scripts/i18n'
+import { applyI18NOnHtml } from '미러블락/scripts/i18n'
 
 function closePopup() {
   window.close()
@@ -31,19 +31,10 @@ async function executeChainBlock(followKind: FollowKind) {
   }
   const tabId = currentTab.id
   const url = new URL(currentTab.url!)
-  if (url.hostname === 'tweetdeck.twitter.com') {
-    // TODO
-    const a = 'Mirror Block: 트윗덱에선 작동하지 않습니다.'
-    const b = '트위터(https://twitter.com)에서 실행해주세요.'
-    const message = `${a}\n${b}`
-    alertToTab(tabId, message)
-    closePopup()
-    return
-  }
   const userName = getUserNameFromTweetUrl(url)
   if (!userName) {
-    const a = i18n.please_run_on_profile_page_1()
-    const b = i18n.please_run_on_profile_page_2()
+    const a = browser.i18n.getMessage('please_run_on_profile_page_1')
+    const b = browser.i18n.getMessage('please_run_on_profile_page_2')
     const message = `${a}\n${b}`
     alertToTab(tabId, message)
     closePopup()
@@ -63,9 +54,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const currentUrl = new URL(currentTab.url!)
     const cbButtons = document.querySelectorAll<HTMLButtonElement>('button.chain-block')
     if (currentUrl.hostname === 'twitter.com' || currentUrl.hostname === 'x.com') {
-      cbButtons.forEach(el => (el.disabled = false))
+      cbButtons.forEach(el => {
+        el.disabled = false
+      })
     } else {
-      cbButtons.forEach(el => (el.title = i18n.running_chainblock_is_only_available_on_twitter()))
+      cbButtons.forEach(el => {
+        el.title = browser.i18n.getMessage('running_chainblock_is_only_available_on_twitter')
+      })
     }
   }
   document.querySelector('.menu-item.chain-block-followers')!.addEventListener('click', event => {
@@ -82,7 +77,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   })
   {
     const manifest = browser.runtime.getManifest()
-    // @ts-ignore
     const versionName = manifest.version_name ?? manifest.version
     const currentVersion = document.querySelector<HTMLElement>('.currentVersion')!
     currentVersion.textContent = `Mirror Block v${versionName}`
@@ -92,6 +86,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const blockReflection = document.querySelector<HTMLElement>('.blockReflection')!
     const val = options.enableBlockReflection
     blockReflection.classList.toggle('on', val)
-    blockReflection.textContent = `${i18n.block_reflection()}: ${val ? 'On \u2714' : 'Off'}`
+    blockReflection.textContent = `${browser.i18n.getMessage('block_reflection')}: ${val ? 'On \u2714' : 'Off'}`
   }
 })

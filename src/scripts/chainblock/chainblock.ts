@@ -1,7 +1,6 @@
 import browser from 'webextension-polyfill'
 import * as Options from '미러블락/extoption'
 import { checkLogin, copyFrozenObject, sleep } from '미러블락/scripts/common'
-import i18n from '미러블락/scripts/i18n'
 import * as TwitterAPI from '미러블락/scripts/twitter-api'
 import ChainMirrorBlockUI from './chainblock-ui'
 
@@ -25,7 +24,7 @@ class ChainMirrorBlock {
         return
       }
       event.preventDefault()
-      const message = `[Mirror Block] ${i18n.warning_before_close()}`
+      const message = `[Mirror Block] ${browser.i18n.getMessage('warning_before_close')}`
       event.returnValue = message
       return message
     }).bind(this)
@@ -39,7 +38,7 @@ class ChainMirrorBlock {
     this.ui.immediatelyBlockModeChecked = this.options.alwaysImmediatelyBlockMode
     window.addEventListener('beforeunload', this.beforeUnloadHandler)
     this.ui.on('ui:close', () => {
-      const confirmMessage = i18n.chainblock_still_running()
+      const confirmMessage = browser.i18n.getMessage('chainblock_still_running')
       if (this.isRunning && window.confirm(confirmMessage)) {
         this.stopAndClose()
       } else if (!this.isRunning) {
@@ -52,13 +51,13 @@ class ChainMirrorBlock {
     this.ui.on('ui:execute-mutual-block', () => {
       const shouldBlocks = this.progress.foundUsers.filter(user => user.state === 'shouldBlock')
       if (shouldBlocks.length > 0) {
-        const confirmMessage = i18n.confirm_mutual_block(shouldBlocks.length.toLocaleString())
+        const confirmMessage = browser.i18n.getMessage('confirm_mutual_block', shouldBlocks.length.toLocaleString())
         if (!window.confirm(confirmMessage)) {
           return
         }
         this.executeMutualBlock()
       } else {
-        window.alert(i18n.no_users_to_mutual_block())
+        window.alert(browser.i18n.getMessage('no_users_to_mutual_block'))
       }
     })
   }
@@ -99,7 +98,7 @@ class ChainMirrorBlock {
     this.isRunning = true
     try {
       if (targetUser.blocked_by) {
-        window.alert(i18n.cant_chainblock_they_blocks_you(targetUser.screen_name))
+        window.alert(browser.i18n.getMessage('cant_chainblock_they_blocks_you', targetUser.screen_name))
         this.stopAndClose()
         return
       }
@@ -219,21 +218,21 @@ function getTotalFollows(user: TwitterUser, followKind: FollowKind): number {
 export async function startChainBlock(targetUserName: string, followKind: FollowKind) {
   const alreadyRunning = document.querySelector('.mobcg-bg')
   if (alreadyRunning) {
-    window.alert(i18n.chainblock_already_running())
+    window.alert(browser.i18n.getMessage('chainblock_already_running'))
     return
   }
   const loggedIn = await checkLogin()
   if (!loggedIn) {
-    window.alert(i18n.please_check_login_before_chainblock())
+    window.alert(browser.i18n.getMessage('please_check_login_before_chainblock'))
     return
   }
   const targetUser = await TwitterAPI.getSingleUserByName(targetUserName).catch(err => {
     if (err instanceof TwitterAPI.APIError) {
       const json = err.response.body
       const jsonstr = JSON.stringify(json, null, 2)
-      window.alert(`${i18n.error_occurred_from_twitter_server()}\n${jsonstr}`)
+      window.alert(`${browser.i18n.getMessage('error_occurred_from_twitter_server')}\n${jsonstr}`)
     } else if (err instanceof Error) {
-      window.alert(`${i18n.error_occurred()}\n${err.message}`)
+      window.alert(`${browser.i18n.getMessage('error_occurred')}\n${err.message}`)
     }
     return null
   })
@@ -242,25 +241,25 @@ export async function startChainBlock(targetUserName: string, followKind: Follow
   }
   const followsCount = getTotalFollows(targetUser, followKind)
   if (followsCount <= 0) {
-    window.alert(i18n.nobody_follows_them())
+    window.alert(browser.i18n.getMessage('nobody_follows_them'))
     return
   }
   if (targetUser.protected && !targetUser.following) {
-    window.alert(i18n.cant_chainblock_they_protected(targetUserName))
+    window.alert(browser.i18n.getMessage('cant_chainblock_they_protected', targetUserName))
     return
   }
   let confirmMessage: string
   switch (followKind) {
     case 'followers':
-      confirmMessage = i18n.confirm_chainblock_to_followers(targetUser.screen_name)
+      confirmMessage = browser.i18n.getMessage('confirm_chainblock_to_followers', targetUser.screen_name)
       break
     case 'following':
-      confirmMessage = i18n.confirm_chainblock_to_following(targetUser.screen_name)
+      confirmMessage = browser.i18n.getMessage('confirm_chainblock_to_following', targetUser.screen_name)
       break
   }
   let confirmed = window.confirm(confirmMessage)
   if (followsCount > 200000) {
-    confirmed = window.confirm(i18n.warning_too_many_followers())
+    confirmed = window.confirm(browser.i18n.getMessage('warning_too_many_followers'))
   }
   if (confirmed) {
     const options = await Options.load()

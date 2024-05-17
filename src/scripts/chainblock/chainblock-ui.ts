@@ -1,19 +1,18 @@
 import browser from 'webextension-polyfill'
 import { EventEmitter, sleep } from '미러블락/scripts/common'
-import i18n from '미러블락/scripts/i18n'
 
 const CHAINBLOCK_UI_HTML = `
   <div class="mobcb-bg modal-container block-dialog" style="display:flex">
     <div class="mobcb-dialog modal modal-content is-autoPosition">
       <div class="mobcb-titlebar">
-        <span class="mobcb-title">${i18n.chainblock()}</span>
-        <span class="mobcb-title-status">(${i18n.preparing()})</span>
+        <span class="mobcb-title">${browser.i18n.getMessage('chainblock')}</span>
+        <span class="mobcb-title-status">(${browser.i18n.getMessage('preparing')})</span>
       </div>
       <div class="mobcb-progress">
         <progress class="mobcb-progress-bar"></progress>
         <div class="mobcb-progress-text" hidden>
           (<span class="mobcb-prg-percentage"></span>%)
-          ${i18n.chainblock_progress('0', '0', '0')}
+          ${browser.i18n.getMessage('chainblock_progress', ['0', '0', '0'])}
         </div>
       </div>
       <hr class="mobcb-hr">
@@ -27,30 +26,32 @@ const CHAINBLOCK_UI_HTML = `
       </div>
       <hr class="mobcb-hr">
       <div class="mobcb-extra-options">
-        <label title="${i18n.chainblock_immediately_block_mode_tooltip()}">
-          <input type="checkbox" id="mobcb-block-immediately">${i18n.chainblock_immediately_block_mode_label()}
+        <label title="${browser.i18n.getMessage('chainblock_immediately_block_mode_tooltip')}">
+          <input type="checkbox" id="mobcb-block-immediately">${
+  browser.i18n.getMessage('chainblock_immediately_block_mode_label')
+}
         </label>
       </div>
       <div class="mobcb-controls">
         <div class="mobcb-message-container">
           <div class="mobcb-bottom-message">
             <span class="mobcb-rate-limited mobcb-rate-limited-msg" hidden>
-              ${i18n.chainblock_rate_limited()}
+              ${browser.i18n.getMessage('chainblock_rate_limited')}
             </span>
           </div>
           <div class="mobcb-rate-limited mobcb-limit-status" hidden>
-            ${i18n.chainblock_reset_time_label()}: <span class="resettime"></span>
+            ${browser.i18n.getMessage('chainblock_reset_time_label')}: <span class="resettime"></span>
           </div>
         </div>
-        <button class="mobcb-close btn normal-btn">${i18n.close()}</button>
-        <button disabled class="mobcb-execute btn caution-btn">${i18n.block()}</button>
+        <button class="mobcb-close btn normal-btn">${browser.i18n.getMessage('close')}</button>
+        <button disabled class="mobcb-execute btn caution-btn">${browser.i18n.getMessage('block')}</button>
       </div>
     </div>
   </div>
 `
 
 function getLimitResetTime(limit: Limit): string {
-  const uiLanguage = browser.i18n.getUILanguage()
+  const uiLanguage = browser.i18n.getMessage('getUILanguage')
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
   const formatter = new Intl.DateTimeFormat(uiLanguage, {
     timeZone,
@@ -75,12 +76,12 @@ class UserList {
     }
     let userPrefix = ''
     if (found.state === 'alreadyBlocked') {
-      userPrefix = `[${i18n.already_blocked()}]`
+      userPrefix = `[${browser.i18n.getMessage('already_blocked')}]`
     } else if (found.state === 'muteSkip') {
-      userPrefix = `[${i18n.skipped()}]`
+      userPrefix = `[${browser.i18n.getMessage('skipped')}]`
     }
     let tooltip = `${userPrefix} @${user.screen_name} (${user.name})`
-    tooltip += `\n${i18n.profile()}: ${user.description}`
+    tooltip += `\n${browser.i18n.getMessage('profile')}: ${user.description}`
     const ul = this.rootElem.querySelector('ul')!
     const item = document.createElement('li')
     const link = document.createElement('a')
@@ -181,7 +182,7 @@ export default class ChainMirrorBlockUI extends EventEmitter {
     })
   }
   public updateProgress(progress: ChainMirrorBlockProgress) {
-    this.rootElem.querySelector('.mobcb-title-status')!.textContent = `(${i18n.scrape_running()})`
+    this.rootElem.querySelector('.mobcb-title-status')!.textContent = `(${browser.i18n.getMessage('scrape_running')})`
     progress.foundUsers
       .filter(found => found.state === 'shouldBlock')
       .forEach(found => this.blockedbyUserList.add(found))
@@ -199,13 +200,13 @@ export default class ChainMirrorBlockUI extends EventEmitter {
     this.rootElem.querySelector<HTMLElement>('.mobcb-progress-text')!.hidden = false
   }
   private completeProgressUI(progress: ChainMirrorBlockProgress) {
-    this.rootElem.querySelector('.mobcb-title-status')!.textContent = `(${i18n.scrape_completed()})`
+    this.rootElem.querySelector('.mobcb-title-status')!.textContent = `(${browser.i18n.getMessage('scrape_completed')})`
     const shouldBlocks = progress.foundUsers.filter(user => user.state === 'shouldBlock')
     const executeButton = this.rootElem.querySelector<HTMLButtonElement>('.mobcb-execute')!
     if (shouldBlocks.length > 0) {
       executeButton.disabled = false
     } else {
-      executeButton.title = i18n.no_blockable_user()
+      executeButton.title = browser.i18n.getMessage('no_blockable_user')
     }
     this.rootElem.querySelector<HTMLInputElement>('#mobcb-block-immediately')!.disabled = true
     this.rootElem.querySelector('.mobcb-prg-scraped')!.textContent = this.total.toLocaleString()
@@ -218,16 +219,16 @@ export default class ChainMirrorBlockUI extends EventEmitter {
     if (progress.foundUsers.length <= 0) {
       // sleep: progress가 100%되기 전에 메시지가 뜨며 닫히는 현상 방지
       sleep(100).then(() => {
-        window.alert(i18n.nobody_blocks_you())
+        window.alert(browser.i18n.getMessage('nobody_blocks_you'))
         this.emit('ui:close-without-confirm')
       })
     }
   }
   public startMutualBlock() {
-    this.rootElem.querySelector('.mobcb-title-status')!.textContent = `(${i18n.block_running()})`
+    this.rootElem.querySelector('.mobcb-title-status')!.textContent = `(${browser.i18n.getMessage('block_running')})`
     this.rootElem.querySelector<HTMLButtonElement>('.mobcb-execute.btn')!.disabled = true
   }
   public completeMutualBlock() {
-    this.rootElem.querySelector('.mobcb-title-status')!.textContent = `(${i18n.block_completed()})`
+    this.rootElem.querySelector('.mobcb-title-status')!.textContent = `(${browser.i18n.getMessage('block_completed')})`
   }
 }

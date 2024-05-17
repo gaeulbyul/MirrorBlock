@@ -137,10 +137,10 @@
         "content": "<span class=\"mobcb-prg-total\">$1</span>"
       },
       "scraped": {
-        "content": "<span class=\"mobcb-prg-scraped\">$1</span>"
+        "content": "<span class=\"mobcb-prg-scraped\">$2</span>"
       },
       "found": {
-        "content": "<span class=\"mobcb-prg-found\">$1</span>"
+        "content": "<span class=\"mobcb-prg-found\">$3</span>"
       }
     }
   },

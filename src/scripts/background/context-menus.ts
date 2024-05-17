@@ -1,7 +1,6 @@
 import browser from 'webextension-polyfill'
 import { sendBrowserTabMessage } from '미러블락/scripts/browser-apis'
 import { getUserNameFromTweetUrl } from '미러블락/scripts/common'
-import i18n from '미러블락/scripts/i18n'
 
 function getUserNameFromClickInfo(info: browser.Menus.OnClickData): string | null {
   const { linkUrl } = info
@@ -48,13 +47,13 @@ export async function initializeContextMenus() {
     contexts: ['link'],
     documentUrlPatterns,
     targetUrlPatterns,
-    title: i18n.run_chainblock_from_followers_contextmenu(),
+    title: browser.i18n.getMessage('run_chainblock_from_followers_contextmenu'),
   })
   browser.contextMenus.create({
     id: 'run_chainblock_from_following_contextmenu',
     contexts: ['link'],
     documentUrlPatterns,
     targetUrlPatterns,
-    title: i18n.run_chainblock_from_following_contextmenu(),
+    title: browser.i18n.getMessage('run_chainblock_from_following_contextmenu'),
   })
 }
