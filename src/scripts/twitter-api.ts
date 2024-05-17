@@ -1,12 +1,17 @@
 import { sleep, validateTwitterUserName } from './common'
 
 const BEARER_TOKEN =
-  `AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA`
+  'AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA'
 
 // CORB* 로 인해 content scripts에서 api.twitter.com 을 사용할 수 없다.
 // https://www.chromestatus.com/feature/5629709824032768
 // https://www.chromium.org/Home/chromium-security/corb-for-developers
-const apiPrefix = 'https://twitter.com/i/api/1.1'
+
+const isTwitterHostname = location.hostname === 'twitter.com'
+
+const apiPrefix = isTwitterHostname ? 'https://twitter.com/i/api/1.1' : 'https://x.com/i/api/1.1'
+
+const referrer = isTwitterHostname ? 'https://twitter.com/' : 'https://x.com/'
 
 export class APIError extends Error {
   constructor(public readonly response: APIResponse) {
@@ -253,7 +258,7 @@ function generateTwitterAPIOptions(obj: RequestInit): RequestInit {
     method: 'get',
     mode: 'cors',
     credentials: 'include',
-    referrer: 'https://twitter.com/',
+    referrer,
     headers,
   }
   Object.assign(result, obj)
