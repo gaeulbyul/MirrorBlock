@@ -10,6 +10,9 @@ const manifest = require('./src/manifest.json')
 const name = manifest.name.replace(/[^\w\-]+/gi, '')
 const version = manifest.version
 
+const esbuild = require('esbuild')
+const buildConfig = require('./esbuild.config.js')
+
 const cp = util.promisify(ncp)
 const rmrf = util.promisify(rimraf)
 const exec = util.promisify(proc.exec)
@@ -19,7 +22,30 @@ task('check-tsc', async () => {
 })
 
 task('bundle', async () => {
-  await exec('node esbuild.config.js')
+  // await exec('node esbuild.config.js')
+  await esbuild.build(buildConfig)
+})
+
+task('esbuild-watch', async () => {
+  const watchLogger = () => [{
+    name: 'log-on-build',
+    setup(build) {
+      build.onEnd(result =>
+        void console.log(
+          'build ended at: %s, with: %d Errors, %d Warnings',
+          new Date().toLocaleTimeString(),
+          result.errors.length,
+          result.warnings.length,
+        )
+      )
+    },
+  }]
+  const ctx = await esbuild.context({
+    ...buildConfig,
+    plugins: watchLogger(),
+  })
+  logger.info('esbuild: watching...')
+  await ctx.watch()
 })
 
 task('copy-assets', async () => {
@@ -29,11 +55,7 @@ task('copy-assets', async () => {
       return !/\.tsx?$/.test(filename)
     },
   }
-  const mv2 = cp('src/', 'build/', copyOptions)
-    .then(() => fs.unlink('build/manifest-v3.json').catch(() => {}))
-  const mv3 = cp('src/', 'build-v3/', copyOptions)
-    .then(() => fs.move('build-v3/manifest-v3.json', 'build-v3/manifest.json', { overwrite: true }))
-  await Promise.all([mv2, mv3])
+  await cp('src/', 'build/', copyOptions)
 })
 
 task('clean', async () => {
@@ -42,13 +64,9 @@ task('clean', async () => {
 
 task('zip', async () => {
   const filename = `${name}-v${version}.zip`
-  const filenamev3 = `${name}-v${version} [MV3].zip`
   logger.info(`zipping into "dist/${filename}"...`)
   await mkdirp('dist/')
-  await Promise.all([
-    exec(`7z a -r "dist/${filename}" build/.`),
-    exec(`7z a -r "dist/${filenamev3}" build-v3/.`),
-  ])
+  await exec(`7z a -r "dist/${filename}" build/.`)
 })
 
 task('srczip', async () => {

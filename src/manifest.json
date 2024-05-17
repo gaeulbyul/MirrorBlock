@@ -1,9 +1,10 @@
 {
   "description": "__MSG_extension_description__",
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Mirror Block",
   "author": "Gaeulbyul <aeiou256@gmail.com>",
   "version": "0.15.0.0",
+  "version_name": "0.15.0.0 [MV3]",
   "default_locale": "en",
   "homepage_url": "https://github.com/gaeulbyul/MirrorBlock",
   "icons": {
@@ -12,19 +13,18 @@
     "128": "icons/icon-128.png"
   },
 
-  "permissions": [
-    "activeTab",
-    "contextMenus",
-    "storage",
+  "host_permissions": [
     "https://twitter.com/*"
   ],
+
+  "permissions": ["storage", "contextMenus", "activeTab"],
 
   "options_ui": {
     "page": "options/options.html"
   },
 
   "background": {
-    "scripts": ["bundled/background.bun.js"]
+    "service_worker": "service-worker-loader.js"
   },
 
   "content_scripts": [
@@ -37,9 +37,16 @@
     }
   ],
 
-  "web_accessible_resources": ["bundled/twitter_inject.bun.js"],
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "https://twitter.com/*"
+      ],
+      "resources": ["bundled/twitter_inject.bun.js"]
+    }
+  ],
 
-  "browser_action": {
+  "action": {
     "default_icon": "icons/icon-48.png",
     "default_title": "Mirror Block",
     "default_popup": "popup/popup.html"

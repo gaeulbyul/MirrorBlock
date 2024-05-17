@@ -1175,12 +1175,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"husky@npm:^7.0.4":
-  version: 7.0.4
-  resolution: "husky@npm:7.0.4"
+"husky@npm:^9.0.11":
+  version: 9.0.11
+  resolution: "husky@npm:9.0.11"
   bin:
-    husky: lib/bin.js
-  checksum: 10/8fecb619ab924bd99b2c9ce494bff88e45369c1125e07a603dfacb4bd60ef86840e08c689794c476189183e6223f0ea93aadebf78e3508479453c219358ca787
+    husky: bin.mjs
+  checksum: 10/8a9b7cb9dc8494b470b3b47b386e65d579608c6206da80d3cc8b71d10e37947264af3dfe00092368dad9673b51d2a5ee87afb4b2291e77ba9e7ec1ac36e56cd1
   languageName: node
   linkType: hard
 
@@ -1631,7 +1631,7 @@ __metadata:
     esbuild: "npm:^0.20.0"
     esbuild-plugin-alias: "npm:^0.2.1"
     fs-extra: "npm:^10.0.0"
-    husky: "npm:^7.0.4"
+    husky: "npm:^9.0.11"
     just-scripts: "npm:^1.5.4"
     mkdirp: "npm:1.0.4"
     nano-staged: "npm:^0.8.0"

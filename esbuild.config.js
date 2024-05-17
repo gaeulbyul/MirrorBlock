@@ -6,7 +6,7 @@ const alias = require('esbuild-plugin-alias')
 
 const dev = /^dev/i.test(process.env.NODE_ENV)
 
-const base = {
+const buildConfig = {
   entryPoints: {
     background: './src/scripts/background/background.ts',
     twitter: './src/scripts/mirrorblock/twitter.ts',
@@ -15,15 +15,9 @@ const base = {
     popup: './src/popup/popup.ts',
     options_ui: './src/options/options.ts',
   },
+  outdir: './build/bundled',
   outExtension: { '.js': '.bun.js' },
-  // outdir: './build/bundled',
   bundle: true,
-  target: [
-    'es2022',
-    'chrome100',
-    'firefox91',
-    'edge100',
-  ],
   minifyWhitespace: !dev,
   minifyIdentifiers: !dev,
   minifySyntax: !dev,
@@ -32,16 +26,12 @@ const base = {
 
 async function main() {
   console.log('<esbuild> building...')
-  const mv2 = esbuild.build({
-    ...base,
-    outdir: './build/bundled',
-  })
-  const mv3 = esbuild.build({
-    ...base,
-    outdir: './build-v3/bundled',
-  })
-  await Promise.all([mv2, mv3])
+  await esbuild.build(buildConfig)
   console.log('<esbuild> DONE')
 }
 
-main()
+module.exports = buildConfig
+
+if (require.main == module) {
+  main()
+}
