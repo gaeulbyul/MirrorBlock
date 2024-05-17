@@ -17,6 +17,27 @@ const cp = util.promisify(ncp)
 const rmrf = util.promisify(rimraf)
 const exec = util.promisify(proc.exec)
 
+const copyOptions = {
+  stopOnErr: true,
+  filter(filename) {
+    return !/\.tsx?$/.test(filename)
+  },
+}
+
+async function writeChromeManifest(manifest) {
+  const chromeManifest = structuredClone(manifest)
+  chromeManifest.background = {
+    service_worker: manifest.background.scripts[0],
+  }
+  const manifestAsString = JSON.stringify(chromeManifest, null, 2)
+  await fs.writeFile('build-chrome/manifest.json', manifestAsString, 'utf8')
+}
+
+async function copyBundledDirectory() {
+  await cp('build-firefox/bundled/', 'build-chrome/bundled/', copyOptions)
+}
+
+
 task('check-tsc', async () => {
   await exec('tsc --noEmit')
 })
@@ -24,10 +45,19 @@ task('check-tsc', async () => {
 task('bundle', async () => {
   // await exec('node esbuild.config.js')
   await esbuild.build(buildConfig)
+  await copyBundledDirectory()
 })
 
 task('esbuild-watch', async () => {
-  const watchLogger = () => [{
+  const copyBundles = {
+    name: 'copy-bundles',
+    setup(build) {
+      build.onEnd(() => {
+        copyBundledDirectory()
+      })
+    }
+  }
+  const watchLogger = {
     name: 'log-on-build',
     setup(build) {
       build.onEnd(result =>
@@ -39,34 +69,33 @@ task('esbuild-watch', async () => {
         )
       )
     },
-  }]
+  }
   const ctx = await esbuild.context({
     ...buildConfig,
-    plugins: watchLogger(),
+    plugins: [watchLogger, copyBundles],
   })
   logger.info('esbuild: watching...')
   await ctx.watch()
 })
 
 task('copy-assets', async () => {
-  const copyOptions = {
-    stopOnErr: true,
-    filter(filename) {
-      return !/\.tsx?$/.test(filename)
-    },
-  }
-  await cp('src/', 'build/', copyOptions)
+  await cp('src/', 'build-firefox/', copyOptions)
+  await cp('src/', 'build-chrome/', copyOptions)
+  await writeChromeManifest(manifest)
 })
 
 task('clean', async () => {
-  await rmrf('build/')
+  await rmrf('build-firefox/')
+  await rmrf('build-chrome/')
 })
 
 task('zip', async () => {
-  const filename = `${name}-v${version}.zip`
-  logger.info(`zipping into "dist/${filename}"...`)
+  const filenameFirefox = `${name}-v${version}-ff.zip`
+  const filenameChrome = `${name}-v${version}-cr.zip`
+  logger.info(`zipping into "dist/${filenameFirefox}"...`)
   await mkdirp('dist/')
-  await exec(`7z a -r "dist/${filename}" build/.`)
+  await exec(`7z a -r "dist/${filenameFirefox}" build-firefox/.`)
+  await exec(`7z a -r "dist/${filenameChrome}" build-chrome/.`)
 })
 
 task('srczip', async () => {

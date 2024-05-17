@@ -15,7 +15,7 @@ const buildConfig = {
     popup: './src/popup/popup.ts',
     options_ui: './src/options/options.ts',
   },
-  outdir: './build/bundled',
+  outdir: './build-firefox/bundled',
   outExtension: { '.js': '.bun.js' },
   bundle: true,
   minifyWhitespace: !dev,

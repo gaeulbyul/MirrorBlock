@@ -13,6 +13,12 @@
     "128": "icons/icon-128.png"
   },
 
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{85e5d0a4-fc52-4d60-8634-7c67239276de}"
+    }
+  },
+
   "host_permissions": [
     "https://twitter.com/*",
     "https://x.com/*"
@@ -25,7 +31,7 @@
   },
 
   "background": {
-    "service_worker": "service-worker-loader.js"
+    "scripts": ["bundled/background.bun.js"]
   },
 
   "content_scripts": [
