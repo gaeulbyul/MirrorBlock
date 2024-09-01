@@ -1,4 +1,6 @@
+import type { TwitterUser } from '미러블락/scripts/api/twitter-api'
 import type { TwitterUserMap } from '미러블락/scripts/common'
+import type { ReduxStoreEventNames } from './redux-types'
 
 // 파이어폭스에서 CustomEvent의 detail 개체 전달용
 export function cloneDetail<T>(detail: T): T {

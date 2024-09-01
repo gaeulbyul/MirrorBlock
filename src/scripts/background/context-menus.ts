@@ -1,6 +1,7 @@
 import browser from 'webextension-polyfill'
+import type { FollowKind } from '미러블락/scripts/api/twitter-api'
 import { sendBrowserTabMessage } from '미러블락/scripts/browser-apis'
-import { getUserNameFromTweetUrl } from '미러블락/scripts/common'
+import { getUserNameFromTweetUrl, type MBStartChainBlockMessage } from '미러블락/scripts/common'
 
 function getUserNameFromClickInfo(info: browser.Menus.OnClickData): string | null {
   const { linkUrl } = info

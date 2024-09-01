@@ -1,4 +1,6 @@
+import type { TwitterUser, Tweet } from '미러블락/scripts/api/twitter-api'
 import * as EventNames from '미러블락/scripts/event-names'
+import type { ReduxStore, TweetEntity } from '미러블락/scripts/mirrorblock/redux-store/redux-types'
 import { iterateUntouchedElems } from '../../common'
 import { getReactEventHandler } from './inject-common'
 

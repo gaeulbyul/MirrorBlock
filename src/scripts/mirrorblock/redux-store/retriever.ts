@@ -1,3 +1,5 @@
+import type { TwitterUser, TwitterUserEntities, DMData } from '미러블락/scripts/api/twitter-api'
+import type { ReduxStoreEventNames } from './redux-types'
 import { cloneDetail } from './updater'
 
 async function triggerPageEventWithResponse(

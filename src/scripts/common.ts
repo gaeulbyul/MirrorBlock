@@ -1,4 +1,5 @@
-import * as TwitterAPI from '미러블락/scripts/twitter-api'
+import type { TwitterUser, TwitterUserEntities, FollowKind } from '미러블락/scripts/api/twitter-api'
+import { TwClient } from '미러블락/scripts/api/twitter-api'
 
 const USER_NAME_BLACKLIST = Object.freeze([
   '1',
@@ -156,7 +157,58 @@ export async function checkLogin(): Promise<boolean> {
   } catch (err) {
     console.warn('warning. login-check logic should update.')
     console.warn('error: %o', err)
-    const checkViaAPI = await TwitterAPI.getMyself().catch(() => null)
+    const twClient = new TwClient()
+    const checkViaAPI = await twClient.getMyself().catch(() => null)
     return !!checkViaAPI
   }
 }
+
+export function unwrap<T>(maybeValue: Either<Error, T>) {
+  if (maybeValue.ok) {
+    return maybeValue.value
+  } else {
+    const { error } = maybeValue
+    console.error(error)
+    throw error
+  }
+}
+
+export function wrapEitherRight<T>(value: T): EitherRight<T> {
+  return {
+    ok: true,
+    value,
+  }
+}
+
+interface EitherRight<T> {
+  ok: true
+  value: T
+}
+
+interface EitherLeft<E> {
+  ok: false
+  error: E
+}
+
+export type Either<E, T> = EitherLeft<E> | EitherRight<T>
+
+interface EventStore {
+  [eventName: string]: Function[]
+}
+
+export type MBAction =
+  | 'MirrorBlock/StartChainBlock'
+  | 'MirrorBlock/Alert'
+
+export interface MBStartChainBlockMessage {
+  action: 'MirrorBlock/StartChainBlock'
+  userName: string
+  followKind: FollowKind
+}
+
+export interface MBAlertMessage {
+  action: 'MirrorBlock/Alert'
+  message: string
+}
+
+export type MBMessage = MBStartChainBlockMessage | MBAlertMessage

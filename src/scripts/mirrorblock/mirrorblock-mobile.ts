@@ -1,7 +1,9 @@
 import { injectScript } from '미러블락/scripts/browser-apis'
 import * as Utils from '미러블락/scripts/common'
 import * as EventNames from '미러블락/scripts/event-names'
-import * as TwitterAPI from '미러블락/scripts/twitter-api'
+
+import { TwClient } from '미러블락/scripts/api/twitter-api'
+import type { TwitterUser, Tweet, DMData } from '미러블락/scripts/api/twitter-api'
 import { reflectBlock } from './mirrorblock-r'
 import { StoreRetriever, StoreUpdater, UserGetter } from './redux-store'
 
@@ -26,7 +28,8 @@ async function detectProfile(rootElem: HTMLElement) {
     return
   }
   // const user = StoreRetriever.getUserByName(userName)
-  const user = await TwitterAPI.getSingleUserByName(userName)
+  const twClient = new TwClient()
+  const user = await twClient.getSingleUserByName(userName)
   if (!user) {
     return
   }

@@ -1,5 +1,7 @@
 import browser from 'webextension-polyfill'
+import type { TwitterUser, Limit } from '미러블락/scripts/api/twitter-api'
 import { EventEmitter, sleep } from '미러블락/scripts/common'
+import type { ChainMirrorBlockProgress, FoundUser } from './chainblock-types'
 
 const CHAINBLOCK_UI_HTML = `
   <div class="mobcb-bg modal-container block-dialog" style="display:flex">

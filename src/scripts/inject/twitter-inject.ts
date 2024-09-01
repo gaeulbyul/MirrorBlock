@@ -1,3 +1,5 @@
+import type { ReduxStore } from '미러블락/scripts/mirrorblock/redux-store/redux-types'
+
 import * as Detector from './twitter-inject/detector'
 import * as ReduxDispatcher from './twitter-inject/redux-dispatcher'
 import * as ReduxFetcher from './twitter-inject/redux-fetchter'

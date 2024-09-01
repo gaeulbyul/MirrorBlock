@@ -1,3 +1,6 @@
+import type { TwitterUser, TwitterUserEntities } from '미러블락/scripts/api/twitter-api'
+import type { ReduxStoreEventNames, ReduxStore } from '미러블락/scripts/mirrorblock/redux-store/redux-types'
+
 function addEventWithResponse(
   name: ReduxStoreEventNames,
   callback: (event: CustomEvent) => any,

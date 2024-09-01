@@ -22,3 +22,10 @@ export async function load(): Promise<MirrorBlockOption> {
   const loaded = await browser.storage.local.get('option')
   return Object.assign<object, MirrorBlockOption, any>({}, defaults, loaded.option)
 }
+
+export interface MirrorBlockOption {
+  outlineBlockUser: boolean
+  enableBlockReflection: boolean
+  blockMutedUser: boolean
+  alwaysImmediatelyBlockMode: boolean
+}

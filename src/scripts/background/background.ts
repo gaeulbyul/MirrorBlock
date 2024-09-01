@@ -4,7 +4,7 @@ import { initializeContextMenus } from './context-menus'
 
 type BrowserAction = typeof browser.browserAction
 
-function updateBadge(option: MirrorBlockOption) {
+function updateBadge(option: Options.MirrorBlockOption) {
   const { enableBlockReflection } = option
   const manifest = browser.runtime.getManifest()
   const versionName = manifest.version_name ?? manifest.version
@@ -29,7 +29,7 @@ function initialize() {
     if (!optionChange) {
       return
     }
-    const option = optionChange.newValue as MirrorBlockOption
+    const option = optionChange.newValue as Options.MirrorBlockOption
     updateBadge(option)
   })
 

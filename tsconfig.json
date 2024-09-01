@@ -2,10 +2,8 @@
   "include": ["src/**/*"],
   "exclude": ["src/vendor/*", "*/**/flycheck_*"],
   "compilerOptions": {
-    // target을 명시적으로 es2019로 해야 `?.` / `??` 문법을 쓸 수 있는듯
-    // https://github.com/TypeStrong/ts-loader/issues/1061
-    "target": "es2019",
-    "module": "es2020",
+    "target": "esnext",
+    "module": "esnext",
     "moduleResolution": "node",
     "allowJs": true,
     "checkJs": false,
@@ -28,6 +26,7 @@
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "skipLibCheck": true,
     "strict": true,
     "strictBindCallApply": true,
     "strictFunctionTypes": true,

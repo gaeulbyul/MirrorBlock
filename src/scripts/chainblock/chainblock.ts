@@ -1,11 +1,18 @@
 import browser from 'webextension-polyfill'
+import type { MirrorBlockOption } from '미러블락/extoption'
 import * as Options from '미러블락/extoption'
-import { checkLogin, copyFrozenObject, sleep } from '미러블락/scripts/common'
-import * as TwitterAPI from '미러블락/scripts/twitter-api'
+import type { TwitterUser, FollowKind } from '미러블락/scripts/api/twitter-api'
+import { TwClient } from '미러블락/scripts/api/twitter-api'
+import { UserScrapingAPIClient } from '미러블락/scripts/api/user-scraping-api'
+import { checkLogin, copyFrozenObject, type MBMessage } from '미러블락/scripts/common'
+import type { BlockResult, UserState, ChainMirrorBlockProgress } from './chainblock-types'
+
 import ChainMirrorBlockUI from './chainblock-ui'
 
 class ChainMirrorBlock {
   private readonly ui = new ChainMirrorBlockUI()
+  private readonly twClient = new TwClient()
+  private readonly scraper = new UserScrapingAPIClient(this.twClient)
   private get immediatelyBlockMode(): boolean {
     return this.ui.immediatelyBlockModeChecked
   }
@@ -77,7 +84,7 @@ class ChainMirrorBlock {
       this.blockResults.set(user.id_str, 'pending')
     })
     const immBlockPromises = usersToBlock.map(async ({ user }) => {
-      return TwitterAPI.blockUser(user)
+      return this.twClient.blockUser(user)
         .then(blocked => {
           const bresult: BlockResult = blocked ? 'blockSuccess' : 'blockFailed'
           this.blockResults.set(user.id_str, bresult)
@@ -89,7 +96,7 @@ class ChainMirrorBlock {
           return false
         })
         .then(result => {
-          this.ui.updateBlockResult(user, result)
+          this.ui.updateBlockResult(user, !!result)
         })
     })
     Promise.all(immBlockPromises)
@@ -128,38 +135,29 @@ class ChainMirrorBlock {
       }
       const total = getTotalFollows(targetUser, followKind)
       this.ui.initProgress(total)
-      const delay = total > 1e4 ? 950 : 300
-      const scraper = TwitterAPI.getAllFollows(targetUser, followKind, {
-        delay,
-      })
-      let rateLimited = false
+      const scraper = this.scraper.getAllFollowsUserList(followKind, targetUser)
       for await (const maybeFollower of scraper) {
         if (this.shouldStop) {
           break
         }
         if (!maybeFollower.ok) {
           const { error } = maybeFollower
-          if (error.response.status === 429) {
-            rateLimited = true
-            TwitterAPI.getFollowsScraperRateLimitStatus(followKind).then(this.ui.rateLimited)
-            await sleep(1000 * 60 * 2)
-            continue
-          } else {
-            console.error(error)
-            break
+          console.error(error)
+          // TODO: handle error.
+          if (error instanceof Error) {
+            window.alert(`${browser.i18n.getMessage('error_occurred')}\n${error.message}`)
           }
+          break
         }
-        const follower = maybeFollower.value
-        if (rateLimited) {
-          rateLimited = false
-          this.ui.rateLimitResetted()
+        const followers = maybeFollower.value.users
+        for (const follower of followers) {
+          ;++this.progress.scraped
+          if (!follower.blocked_by) {
+            continue
+          }
+          addUserToFounded(follower)
         }
-        ;++this.progress.scraped
         updateProgress()
-        if (!follower.blocked_by) {
-          continue
-        }
-        addUserToFounded(follower)
         this.processImmediatelyBlockMode()
       }
       if (!this.shouldStop) {
@@ -180,7 +178,7 @@ class ChainMirrorBlock {
         .filter(user => this.blockResults.get(user.id_str) === 'notYet')
       const blockPromises = Promise.all(
         usersToBlock.map(user => {
-          return TwitterAPI.blockUser(user)
+          return this.twClient.blockUser(user)
             .then(blocked => {
               const bresult: BlockResult = blocked ? 'blockSuccess' : 'blockFailed'
               this.blockResults.set(user.id_str, bresult)
@@ -192,7 +190,7 @@ class ChainMirrorBlock {
               return false
             })
             .then(result => {
-              this.ui.updateBlockResult(user, result)
+              this.ui.updateBlockResult(user, !!result)
             })
         }),
       )
@@ -226,12 +224,9 @@ export async function startChainBlock(targetUserName: string, followKind: Follow
     window.alert(browser.i18n.getMessage('please_check_login_before_chainblock'))
     return
   }
-  const targetUser = await TwitterAPI.getSingleUserByName(targetUserName).catch(err => {
-    if (err instanceof TwitterAPI.APIError) {
-      const json = err.response.body
-      const jsonstr = JSON.stringify(json, null, 2)
-      window.alert(`${browser.i18n.getMessage('error_occurred_from_twitter_server')}\n${jsonstr}`)
-    } else if (err instanceof Error) {
+  const twClient = new TwClient()
+  const targetUser = await twClient.getSingleUserByName(targetUserName).catch(err => {
+    if (err instanceof Error) {
       window.alert(`${browser.i18n.getMessage('error_occurred')}\n${err.message}`)
     }
     return null

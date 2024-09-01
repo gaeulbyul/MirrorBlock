@@ -1,4 +1,5 @@
 import browser from 'webextension-polyfill'
+import type { TwitterUser } from '미러블락/scripts/api/twitter-api'
 
 export default class Badge {
   private readonly badgedAttr = 'data-mirrorblock-badged'

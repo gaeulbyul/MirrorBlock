@@ -1,5 +1,6 @@
 import * as Options from '미러블락/extoption'
-import * as TwitterAPI from '미러블락/scripts/twitter-api'
+
+import { type TwitterUser, TwClient } from '미러블락/scripts/api/twitter-api'
 import Badge from './mirrorblock-badge'
 
 interface ReflectionOptions {
@@ -13,9 +14,10 @@ export async function reflectBlock({
   indicateBlock,
   indicateReflection,
 }: ReflectionOptions): Promise<void> {
+  const twClient = new TwClient()
   // Redux store에서 꺼내온 유저 개체에 blocked_by가 빠져있는 경우가 있더라.
   if (typeof user.blocked_by !== 'boolean') {
-    const userFromAPI = await TwitterAPI.getSingleUserById(user.id_str)
+    const userFromAPI = await twClient.getSingleUserById(user.id_str)
     if (typeof userFromAPI.blocked_by !== 'boolean') {
       throw new Error('unexpected: still no blocked_by property')
     }
@@ -30,7 +32,7 @@ export async function reflectBlock({
   const muteSkip = user.muting && !extOptions.blockMutedUser
   const shouldBlock = extOptions.enableBlockReflection && !muteSkip && !user.blocking
   if (shouldBlock) {
-    const blockResult = await TwitterAPI.blockUser(user).catch(err => {
+    const blockResult = await twClient.safelyBlockUser(user).catch(err => {
       console.error(err)
       return false
     })

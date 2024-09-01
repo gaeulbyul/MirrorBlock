@@ -1,7 +1,8 @@
 import browser from 'webextension-polyfill'
 import * as Options from '미러블락/extoption'
+import type { FollowKind } from '미러블락/scripts/api/twitter-api'
 import { sendBrowserTabMessage } from '미러블락/scripts/browser-apis'
-import { getUserNameFromTweetUrl } from '미러블락/scripts/common'
+import { getUserNameFromTweetUrl, type MBAlertMessage, type MBStartChainBlockMessage } from '미러블락/scripts/common'
 import { applyI18NOnHtml } from '미러블락/scripts/i18n'
 
 function closePopup() {

@@ -1,5 +1,5 @@
+import { type TwitterUser, TwClient } from '미러블락/scripts/api/twitter-api'
 import { TwitterUserMap, isTwitterUser } from '미러블락/scripts/common'
-import * as TwitterAPI from '미러블락/scripts/twitter-api'
 import * as StoreRetriever from './retriever'
 import * as StoreUpdater from './updater'
 
@@ -32,7 +32,8 @@ export async function getUserById(userId: string, useAPI: boolean): Promise<Twit
   } else if (userCacheById.has(userId)) {
     return userCacheById.get(userId)!
   } else if (useAPI) {
-    const user = await TwitterAPI.getSingleUserById(userId).catch(treatAsNonExistUser([userId]))
+    const twClient = new TwClient()
+    const user = await twClient.getSingleUserById(userId).catch(treatAsNonExistUser([userId]))
     if (user) {
       addUserToCache(user)
       StoreUpdater.insertSingleUserIntoStore(user)
@@ -57,7 +58,8 @@ export async function getUserByName(
   } else if (userCacheByName.has(userName)) {
     return userCacheByName.get(userName)!
   } else if (useAPI) {
-    const user = await TwitterAPI.getSingleUserByName(userName).catch(
+    const twClient = new TwClient()
+    const user = await twClient.getSingleUserByName(userName).catch(
       treatAsNonExistUser([userName]),
     )
     if (user) {
@@ -87,8 +89,9 @@ export async function getMultipleUsersById(userIds: string[]): Promise<TwitterUs
       idsToRequestAPI.push(userId)
     }
   }
+  const twClient = new TwClient()
   if (idsToRequestAPI.length === 1) {
-    const requestedUser = await TwitterAPI.getSingleUserById(idsToRequestAPI[0]!).catch(
+    const requestedUser = await twClient.getSingleUserById(idsToRequestAPI[0]!).catch(
       treatAsNonExistUser(idsToRequestAPI),
     )
     if (requestedUser) {
@@ -97,7 +100,7 @@ export async function getMultipleUsersById(userIds: string[]): Promise<TwitterUs
       resultUserMap.addUser(requestedUser)
     }
   } else if (idsToRequestAPI.length > 1) {
-    const requestedUsers = await TwitterAPI.getMultipleUsersById(idsToRequestAPI)
+    const requestedUsers = await twClient.getMultipleUsers({ user_id: idsToRequestAPI })
       .then(users => TwitterUserMap.fromUsersArray(users))
       .catch(treatAsNonExistUser(idsToRequestAPI))
     if (requestedUsers) {
