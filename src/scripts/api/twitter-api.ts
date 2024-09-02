@@ -1,6 +1,7 @@
 import { setDefaultParams, encodedFeatures, encodedFieldToggles } from './api-default-params'
 import { type GraphQLQueryData, getQueryDataByOperationName, instructionsPath } from './graphql-querydata'
 import {
+  getUserFromResult,
   extractTweetsFromInstructions,
   extractCursorsFromInstructions,
   extractTwitterUsersFromInstructions,
@@ -16,13 +17,12 @@ function getCsrfTokenFromCookies(): string {
 
 const isTwitterHostname = location.hostname === 'twitter.com'
 
-const apiPrefix = isTwitterHostname ? 'https://twitter.com/i/api/1.1' : 'https://x.com/i/api/1.1'
+const apiPrefix = isTwitterHostname ? 'https://twitter.com/i/api/' : 'https://x.com/i/api/'
 const referrer = isTwitterHostname ? 'https://twitter.com/' : 'https://x.com/'
 
 export class TwClient {
   // TODO: readonly?
   public prefix = apiPrefix
-  // prefix = 'x.com/i/api'
   public constructor() {}
 
   public async getMyself(): Promise<TwitterUser> {
@@ -197,25 +197,23 @@ export class TwClient {
     return await this.request1('get', '/users/lookup.json', requestParams)
   }
 
-  public async getSingleUserById(user_id: string): Promise<TwitterUser> {
-    throw new Error('not implemented')
+  public async getSingleUserById(userId: string): Promise<TwitterUser> {
+    const queryData = await getQueryDataByOperationName('UserByRestId')
+    const response = await this.requestGraphQL(queryData, {
+      userId,
+      withSafetyModeUserFields: true,
+    })
+    const user = getUserFromResult(response.data.user.result)
+    return user
   }
   public async getSingleUserByName(screen_name: string): Promise<TwitterUser> {
-    throw new Error('not implemented')
-  }
-
-  // TODO: no longer works.
-  public async getSingleUser(options: GetSingleUserOption): Promise<TwitterUser> {
-    const requestParams: URLParamsObj = {
-      skip_status: true,
-      include_entities: false,
-    }
-    if ('user_id' in options) {
-      requestParams.user_id = options.user_id
-    } else if ('screen_name' in options) {
-      requestParams.screen_name = options.screen_name
-    }
-    return await this.request1('get', '/users/show.json', requestParams)
+    const queryData = await getQueryDataByOperationName('UserByScreenName')
+    const response = await this.requestGraphQL(queryData, {
+      screen_name,
+      withSafetyModeUserFields: true,
+    })
+    const user = getUserFromResult(response.data.user.result)
+    return user
   }
 
   public async getRetweeters(tweet: Tweet, cursor?: string | null): Promise<UserInstructionsResponse> {
@@ -262,8 +260,8 @@ export class TwClient {
   }
 
   private async request1(method: HTTPMethods, path: string, paramsObj: URLParamsObj = {}) {
-    const fetchOptions = await prepareTwitterRequest({ method })
-    const url = new URL(`https://${this.prefix}/1.1${path}`)
+    const fetchOptions = prepareTwitterRequest({ method })
+    const url = new URL(`${this.prefix}1.1${path}`)
     let params: URLSearchParams
     if (method === 'get') {
       params = url.searchParams
@@ -280,8 +278,8 @@ export class TwClient {
     variables: URLParamsObj = {},
   ) {
     const method = operationType === 'query' ? 'get' : 'post'
-    const fetchOptions = await prepareTwitterRequest({ method })
-    const url = new URL(`https://${this.prefix}/graphql/${queryId}/${operationName}`)
+    const fetchOptions = prepareTwitterRequest({ method })
+    const url = new URL(`${this.prefix}graphql/${queryId}/${operationName}`)
     if (variables.cursor == null) {
       delete variables.cursor
     }
@@ -302,9 +300,9 @@ export class TwClient {
   }
 }
 
-async function prepareTwitterRequest(
+function prepareTwitterRequest(
   obj: RequestInit,
-): Promise<RequestInit> {
+): RequestInit {
   const headers = new Headers()
   const ct0 = getCsrfTokenFromCookies()
   headers.set('x-csrf-token', ct0)
@@ -364,7 +362,7 @@ type URLParamsObj = {
   [key: string]: string | number | boolean | null | undefined | string[] | number[]
 }
 
-export type FollowKind = 'followers' | 'following'
+export type FollowKind = 'followers' | 'friends'
 
 export interface TwitterUser {
   id_str: string
@@ -440,7 +438,6 @@ export interface Tweet {
     user_mentions?: UserMentionEntity[]
     urls?: UrlEntity[]
   }
-  collaborators?: string[] // id_str의 배열
 }
 
 interface UserMentionEntity {
@@ -451,31 +448,6 @@ interface UserMentionEntity {
 
 interface UrlEntity {
   expanded_url: string
-}
-
-export interface AudioSpace {
-  metadata: {
-    rest_id: string
-    state: 'Running' | 'Ended' | 'NotStarted'
-    title: string
-    created_at: number // timestamp (ex. 1621037312345)
-    started_at: number
-    updated_at: number
-    scheduled_start: number
-    is_locked: boolean
-  }
-  participants: {
-    total: number
-    admins: AudioSpaceParticipant[]
-    speakers: AudioSpaceParticipant[]
-    listeners: AudioSpaceParticipant[]
-  }
-}
-
-interface AudioSpaceParticipant {
-  twitter_screen_name: string
-  display_name: string
-  avatar_url: string
 }
 
 export interface Limit {
@@ -514,15 +486,6 @@ export interface LimitStatus {
   users: {
     '/users/lookup': Limit
   }
-  search: {
-    '/search/adaptive': Limit
-  }
-}
-
-export interface TweetThreadResponse {
-  tweets: Tweet[]
-  scrollCursor: string | null
-  showMoreCursor: string | null
 }
 
 interface ErrorResponseItem {
@@ -546,4 +509,3 @@ export interface DMData {
 }
 
 type GetMultipleUsersOption = { user_id: string[] } | { screen_name: string[] }
-type GetSingleUserOption = { user_id: string } | { screen_name: string }

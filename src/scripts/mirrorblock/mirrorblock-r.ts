@@ -5,23 +5,29 @@ import Badge from './mirrorblock-badge'
 
 interface ReflectionOptions {
   user: TwitterUser
-  indicateBlock: (badge: Badge) => void
-  indicateReflection: (badge: Badge) => void
+  indicateBlock(badge: Badge): void
+  indicateReflection(badge: Badge): void
+  passBlockedBy?: boolean
 }
 
 export async function reflectBlock({
   user,
   indicateBlock,
   indicateReflection,
+  passBlockedBy,
 }: ReflectionOptions): Promise<void> {
+  console.info('rB: initial user %o', user)
   const twClient = new TwClient()
   // Redux store에서 꺼내온 유저 개체에 blocked_by가 빠져있는 경우가 있더라.
-  if (typeof user.blocked_by !== 'boolean') {
+  if (typeof user.blocked_by !== 'boolean' && !passBlockedBy) {
     const userFromAPI = await twClient.getSingleUserById(user.id_str)
-    if (typeof userFromAPI.blocked_by !== 'boolean') {
-      throw new Error('unexpected: still no blocked_by property')
-    }
-    return reflectBlock({ user: userFromAPI, indicateBlock, indicateReflection })
+    console.info('rB: from API %o', userFromAPI)
+    return reflectBlock({
+      user: userFromAPI,
+      indicateBlock,
+      indicateReflection,
+      passBlockedBy: true,
+    })
   }
   if (!user.blocked_by) {
     return

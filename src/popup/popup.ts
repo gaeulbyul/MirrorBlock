@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   })
   document.querySelector('.menu-item.chain-block-following')!.addEventListener('click', event => {
     event.preventDefault()
-    executeChainBlock('following')
+    executeChainBlock('friends')
   })
   document.querySelector('.menu-item.open-option')!.addEventListener('click', event => {
     event.preventDefault()

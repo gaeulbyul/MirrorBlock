@@ -27,7 +27,7 @@ browser.contextMenus.onClicked.addListener((clickInfo, tab) => {
       followKind = 'followers'
       break
     case 'run_chainblock_from_following_contextmenu':
-      followKind = 'following'
+      followKind = 'friends'
       break
     default:
       throw new Error('unreachable')

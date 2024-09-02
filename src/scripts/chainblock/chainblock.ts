@@ -143,7 +143,6 @@ class ChainMirrorBlock {
         if (!maybeFollower.ok) {
           const { error } = maybeFollower
           console.error(error)
-          // TODO: handle error.
           if (error instanceof Error) {
             window.alert(`${browser.i18n.getMessage('error_occurred')}\n${error.message}`)
           }
@@ -206,7 +205,7 @@ class ChainMirrorBlock {
 function getTotalFollows(user: TwitterUser, followKind: FollowKind): number {
   if (followKind === 'followers') {
     return user.followers_count
-  } else if (followKind === 'following') {
+  } else if (followKind === 'friends') {
     return user.friends_count
   } else {
     throw new Error('unreachable')
@@ -248,7 +247,7 @@ export async function startChainBlock(targetUserName: string, followKind: Follow
     case 'followers':
       confirmMessage = browser.i18n.getMessage('confirm_chainblock_to_followers', targetUser.screen_name)
       break
-    case 'following':
+    case 'friends':
       confirmMessage = browser.i18n.getMessage('confirm_chainblock_to_following', targetUser.screen_name)
       break
   }
